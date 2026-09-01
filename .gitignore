@@ -1,0 +1,135 @@
+# ==========================================
+# HyperCube Connected Planning Engine
+# Production & Security Git Ignore Configuration
+# ==========================================
+
+# ------------------------------------------
+# 1. Environment Variables & Secrets (CRITICAL)
+# ------------------------------------------
+.env
+.env*
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+*.token
+*.secret
+credentials.json
+service_account.json
+client_secret*.json
+token.json
+
+# ------------------------------------------
+# 2. Local Databases & Persistence (CRITICAL)
+# ------------------------------------------
+# Do NOT commit SQLite databases containing local credentials or user hashes
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.duckdb
+*.duckdb.wal
+backend/app/data/*.db
+backend/app/data/ai_settings.db
+backend/app/data/users.db
+backend/app/data/cvm/*.duckdb
+backend/app/data/cvm/*.wal
+backend/app/data/cvm/cache/
+
+# ------------------------------------------
+# 3. Node & Next.js Builds
+# ------------------------------------------
+node_modules/
+frontend/node_modules/
+.next/
+frontend/.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+frontend/tsconfig.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ------------------------------------------
+# 4. Python, Virtual Envs & Caches
+# ------------------------------------------
+__pycache__/
+backend/**/__pycache__/
+frontend/**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.installed.cfg
+*.egg
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+parts/
+var/
+sdist/
+wheels/
+share/python-wheels/
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ------------------------------------------
+# 5. Client Uploads & Custom Ingested Files
+# ------------------------------------------
+backend/app/data/custom_*
+backend/app/data/*.pdf
+backend/app/data/*.xlsx
+backend/app/data/*.xls
+frontend/backend/
+uploads/
+frontend/uploads/
+*.pdf
+
+# ------------------------------------------
+# 6. Testing Artifacts, Playwright & Media
+# ------------------------------------------
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+test_screenshots/
+artifacts/
+remotion/out/
+remotion/public/recordings/
+scripts/output/
+scratch/
+temp/
+tmp/
+*.log
+*.tmp
+
+# ------------------------------------------
+# 7. Operating System & IDE Artifacts
+# ------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HyperCube — Video Institucional (60s Storyboard)</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Inter, system-ui, sans-serif;
+      background: #0a0e1a;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .header {
+      padding: 20px;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 24px;
+      background: linear-gradient(135deg, #FF4F30, #38BDF8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header p { color: #94a3b8; font-size: 13px; margin-top: 4px; }
+    
+    .player-container {
+      position: relative;
+      width: 960px;
+      max-width: 95vw;
+      aspect-ratio: 16/9;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,79,48,0.2);
+    }
+    .player-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0; left: 0;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .player-container img.active { opacity: 1; }
+    
+    .progress-bar {
+      width: 960px;
+      max-width: 95vw;
+      height: 4px;
+      background: #1e293b;
+      border-radius: 2px;
+      margin-top: 12px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #FF4F30, #38BDF8);
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.3s linear;
+    }
+    
+    .info-panel {
+      width: 960px;
+      max-width: 95vw;
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .scene-info {
+      flex: 1;
+    }
+    .scene-info .scene-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #FF4F30;
+    }
+    .scene-info .scene-narration {
+      font-size: 13px;
+      color: #cbd5e1;
+      margin-top: 4px;
+      line-height: 1.5;
+      font-style: italic;
+    }
+    .scene-info .scene-time {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 6px;
+      font-family: monospace;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .controls button {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .controls button:hover {
+      background: #334155;
+      border-color: #FF4F30;
+    }
+    .controls button.play-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FF4F30, #e03e22);
+      border: none;
+      font-size: 22px;
+      box-shadow: 0 4px 20px rgba(255,79,48,0.3);
+    }
+    .controls button.play-btn:hover {
+      box-shadow: 0 4px 30px rgba(255,79,48,0.5);
+      transform: scale(1.05);
+    }
+    
+    .timeline {
+      width: 960px;
+      max-width: 95vw;
+      margin-top: 24px;
+      display: flex;
+      gap: 6px;
+    }
+    .timeline .scene-thumb {
+      flex: 1;
+      aspect-ratio: 16/9;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.3s;
+      opacity: 0.5;
+    }
+    .timeline .scene-thumb.active {
+      border-color: #FF4F30;
+      opacity: 1;
+      box-shadow: 0 0 12px rgba(255,79,48,0.3);
+    }
+    .timeline .scene-thumb:hover { opacity: 0.8; }
+    .timeline .scene-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .timeline .scene-thumb .label {
+      position: absolute;
+      bottom: 2px;
+      left: 2px;
+      font-size: 9px;
+      background: rgba(0,0,0,0.7);
+      padding: 1px 4px;
+      border-radius: 3px;
+      color: #fff;
+    }
+    
+    .footer {
+      margin-top: 32px;
+      padding: 20px;
+      text-align: center;
+      color: #475569;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>HyperCube 4D — Video Institucional (60s)</h1>
+    <p>Storyboard animado com 9 cenas &middot; Connected Planning Engine</p>
+  </div>
+
+  <div class="player-container" id="player">
+    <!-- Images loaded dynamically -->
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <div class="info-panel">
+    <div class="scene-info">
+      <div class="scene-title" id="sceneTitle">Cena 01 — Abertura & Marca</div>
+      <div class="scene-narration" id="sceneNarration">"E se toda decisao financeira da sua empresa pudesse ser simulada em tempo real?"</div>
+      <div class="scene-time" id="sceneTime">00:00 / 01:00 — Cena 1/9 (5s)</div>
+    </div>
+    <div class="controls">
+      <button onclick="prevScene()" title="Anterior">&#9664;</button>
+      <button class="play-btn" onclick="togglePlay()" id="playBtn" title="Play/Pause">&#9654;</button>
+      <button onclick="nextScene()" title="Proximo">&#9654;</button>
+    </div>
+  </div>
+
+  <div class="timeline" id="timeline"></div>
+
+  <div class="footer">
+    Jose Eduardo Moraes (FP&A) &middot; HyperCube Connected Planning Engine &middot; 2026
+  </div>
+
+  <script>
+    const SCENES = [
+      { id: 1, title: "Abertura & Marca", duration: 5, narration: "E se toda decisao financeira da sua empresa pudesse ser simulada em tempo real?", time: "0s-5s" },
+      { id: 2, title: "Sala de Reuniao", duration: 7, narration: "Imagine sua reuniao de FP&A trimestral. O diretor abre o HyperCube e toda a demonstracao financeira ja esta carregada.", time: "5s-12s" },
+      { id: 3, title: "DRE & Simulacao What-If", duration: 10, narration: "No painel de DRE, ele simula um corte de 5% nas despesas administrativas. Em milissegundos, o motor topologico propaga o impacto por 18 nos do grafo contabil.", time: "12s-22s" },
+      { id: 4, title: "DFC — Fluxo de Caixa", duration: 8, narration: "No Fluxo de Caixa, cada conta e um no do DAG — o Caixa Final se recalcula em cascata. O time pode projetar cenarios de liquidez em segundos.", time: "22s-30s" },
+      { id: 5, title: "BP — Balanco Patrimonial", duration: 8, narration: "O Balanco Patrimonial aplica automaticamente a decomposicao Dupont do ROE e o modelo Fleuriet de capital de giro. 29 nos, zero desbalanceamento.", time: "30s-38s" },
+      { id: 6, title: "Grafo DAG Topologico", duration: 6, narration: "Por tras de tudo, o Grafo DAG Topologico — construido em Rustworkx — garante recalculo em menos de dois milissegundos.", time: "38s-44s" },
+      { id: 7, title: "Cubo OLAP 3D", duration: 6, narration: "O Cubo OLAP N-Dimensional permite fatiamento tridimensional em tempo real — cada celula e navegavel, cada dimensao e filtravel.", time: "44s-50s" },
+      { id: 8, title: "Economia & Valuation", duration: 5, narration: "Integrado ao Banco Central do Brasil e modelos de Valuation DCF — tudo em uma unica plataforma.", time: "50s-55s" },
+      { id: 9, title: "Fechamento & CTA", duration: 5, narration: "HyperCube — a infraestrutura de decisao para a empresa agentica. Agende uma demonstracao.", time: "55s-60s" },
+    ];
+
+    let currentScene = 0;
+    let isPlaying = false;
+    let timer = null;
+    let sceneProgress = 0;
+    let elapsed = 0;
+    const totalDuration = SCENES.reduce((s, c) => s + c.duration, 0);
+
+    const player = document.getElementById('player');
+    const timeline = document.getElementById('timeline');
+
+    // Build player images and timeline
+    SCENES.forEach((scene, i) => {
+      const img = document.createElement('img');
+      img.src = `output/frames/cena_${String(scene.id).padStart(2, '0')}.png`;
+      img.alt = scene.title;
+      if (i === 0) img.classList.add('active');
+      player.appendChild(img);
+
+      const thumb = document.createElement('div');
+      thumb.className = `scene-thumb${i === 0 ? ' active' : ''}`;
+      thumb.style.position = 'relative';
+      thumb.onclick = () => goToScene(i);
+      thumb.innerHTML = `<img src="output/frames/cena_${String(scene.id).padStart(2, '0')}.png" alt="${scene.title}"><span class="label">${scene.id}</span>`;
+      timeline.appendChild(thumb);
+    });
+
+    function updateUI() {
+      const scene = SCENES[currentScene];
+      const imgs = player.querySelectorAll('img');
+      imgs.forEach((img, i) => img.classList.toggle('active', i === currentScene));
+
+      const thumbs = timeline.querySelectorAll('.scene-thumb');
+      thumbs.forEach((t, i) => t.classList.toggle('active', i === currentScene));
+
+      document.getElementById('sceneTitle').textContent = `Cena ${String(scene.id).padStart(2, '0')} — ${scene.title}`;
+      document.getElementById('sceneNarration').textContent = `"${scene.narration}"`;
+
+      // Calculate elapsed time
+      elapsed = SCENES.slice(0, currentScene).reduce((s, c) => s + c.duration, 0) + sceneProgress;
+      const elapsed_s = Math.floor(elapsed);
+      const total_s = totalDuration;
+      document.getElementById('sceneTime').textContent = 
+        `${String(Math.floor(elapsed_s/60)).padStart(2,'0')}:${String(elapsed_s%60).padStart(2,'0')} / ${String(Math.floor(total_s/60)).padStart(2,'0')}:${String(total_s%60).padStart(2,'0')} — Cena ${scene.id}/9 (${scene.duration}s) [${scene.time}]`;
+
+      document.getElementById('progressFill').style.width = `${(elapsed / totalDuration) * 100}%`;
+    }
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      document.getElementById('playBtn').innerHTML = isPlaying ? '&#10074;&#10074;' : '&#9654;';
+      if (isPlaying) {
+        startTimer();
+      } else {
+        clearInterval(timer);
+      }
+    }
+
+    function startTimer() {
+      clearInterval(timer);
+      const interval = 100; // ms
+      timer = setInterval(() => {
+        sceneProgress += interval / 1000;
+        if (sceneProgress >= SCENES[currentScene].duration) {
+          sceneProgress = 0;
+          if (currentScene < SCENES.length - 1) {
+            currentScene++;
+          } else {
+            // Loop back
+            currentScene = 0;
+            isPlaying = false;
+            document.getElementById('playBtn').innerHTML = '&#9654;';
+            clearInterval(timer);
+          }
+        }
+        updateUI();
+      }, interval);
+    }
+
+    function nextScene() {
+      sceneProgress = 0;
+      currentScene = Math.min(currentScene + 1, SCENES.length - 1);
+      updateUI();
+      if (isPlaying) startTimer();
+    }
+
+    function prevScene() {
+      sceneProgress = 0;
+      currentScene = Math.max(currentScene - 1, 0);
+      updateUI();
+      if (isPlaying) startTimer();
+    }
+
+    function goToScene(i) {
+      sceneProgress = 0;
+      currentScene = i;
+      updateUI();
+      if (isPlaying) startTimer();
+    }
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+      if (e.code === 'ArrowRight') nextScene();
+      if (e.code === 'ArrowLeft') prevScene();
+    });
+
+    updateUI();
+  </script>
+</body>
+</html>

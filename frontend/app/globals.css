@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f4f6f9;
+  --foreground: #142436;
+}
+
+.dark {
+  --background: #071526;
+  --foreground: #f8fafc;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Anaplan Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(96, 114, 137, 0.25);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(96, 114, 137, 0.45);
+}
+
+/* ReactFlow Dark Mode Controls Styling */
+.dark .react-flow__controls {
+  background-color: #0c2340 !important;
+  border: 1px solid #14335a !important;
+  border-radius: 10px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden !important;
+}
+
+.dark .react-flow__controls-button {
+  background-color: #0c2340 !important;
+  border-bottom: 1px solid #14335a !important;
+  color: #f8fafc !important;
+  fill: #f8fafc !important;
+}
+
+.dark .react-flow__controls-button:hover {
+  background-color: #14335a !important;
+}
+
+.dark .react-flow__controls-button svg {
+  fill: #ff5537 !important;
+  stroke: #ff5537 !important;
+}
+
+.hero-gradient {
+  background: radial-gradient(circle at 15% 25%, rgba(255, 85, 55, 0.18) 0%, transparent 45%),
+              radial-gradient(circle at 85% 75%, rgba(0, 163, 224, 0.12) 0%, transparent 45%);
+}
+
+.mesh-lines {
+  background-image: radial-gradient(#ffffff10 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Anaplan Grid Table Styles */
+.anaplan-grid-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.anaplan-cell-edit {
+  outline: 2px solid #ff5537 !important;
+  outline-offset: -2px;
+}
+
+/* Stitch MCP Fintech / Bloomberg & Pigment Terminal Utilities */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.stitch-table th,
+.stitch-table td {
+  border-bottom: 1px solid #222a3d;
+  padding: 6px 10px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.stitch-table tr:hover {
+  background-color: rgba(56, 189, 248, 0.04);
+}
+
+.stitch-editable-cell {
+  border-bottom: 1px dashed #38bdf8 !important;
+  cursor: pointer;
+}
+
+.stitch-editable-cell:focus {
+  outline: 1px solid #38bdf8 !important;
+  outline-offset: -1px;
+  background-color: #171f33;
+}

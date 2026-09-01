@@ -1,0 +1,314 @@
+[
+  {
+    "id": "conn_totvs_protheus_local",
+    "instrument_id": "totvs_protheus",
+    "name": "TOTVS Protheus (MSSQL Local ERP)",
+    "environment": "local",
+    "config": {
+      "host": "localhost",
+      "port": 1433,
+      "db_engine": "mssql",
+      "database": "PROTHEUS_PRD",
+      "company_branch": "01",
+      "table_mapping": "CT2010",
+      "username": "sa",
+      "ssl_mode": "prefer"
+    },
+    "is_active": true,
+    "last_sync": "Agora (Tempo Real)",
+    "status": "connected",
+    "latency_ms": 1.82,
+    "created_at": "2026-08-15T10:00:00Z"
+  },
+  {
+    "id": "conn_sap_s4hana_cloud",
+    "instrument_id": "sap_s4hana",
+    "name": "SAP S/4HANA Finance (Cloud Corporate)",
+    "environment": "cloud",
+    "config": {
+      "host": "sap-hana-cloud.corp.enterprise.com",
+      "port": 30015,
+      "instance_number": "00",
+      "client": "100",
+      "database": "HDB_CORP",
+      "schema": "SAPABAP1",
+      "table_mapping": "ACDOCA",
+      "username": "HYPERCUBE_FPNA",
+      "ssl_mode": "require"
+    },
+    "is_active": false,
+    "last_sync": "Ontem às 18:30",
+    "status": "idle",
+    "latency_ms": 12.45,
+    "created_at": "2026-08-20T14:30:00Z"
+  },
+  {
+    "id": "conn_oracle_adw",
+    "instrument_id": "oracle_database",
+    "name": "Oracle Autonomous DW (Financials)",
+    "environment": "cloud",
+    "config": {
+      "host": "adw.sa-east-1.oraclecloud.com",
+      "port": 1521,
+      "service_name": "adw_fpa_high.oraclecloud.com",
+      "username": "ADMIN_FPNA",
+      "table_mapping": "VW_DRE_GERENCIAL"
+    },
+    "is_active": false,
+    "last_sync": "Há 3 dias",
+    "status": "idle",
+    "latency_ms": 18.9,
+    "created_at": "2026-08-22T09:15:00Z"
+  },
+  {
+    "id": "conn_totvs_protheus_1788255583",
+    "instrument_id": "totvs_protheus",
+    "name": "TOTVS Test Connection",
+    "environment": "local",
+    "config": {
+      "host": "localhost",
+      "port": 1433,
+      "database": "TEST_DB",
+      "company_branch": "01",
+      "username": "sa",
+      "password": "test_password"
+    },
+    "is_active": false,
+    "created_at": "2026-09-01T06:39:43Z",
+    "status": "idle"
+  },
+  {
+    "id": "conn_totvs_protheus_1788256023",
+    "instrument_id": "totvs_protheus",
+    "name": "TOTVS Test Connection",
+    "environment": "local",
+    "config": {
+      "host": "localhost",
+      "port": 1433,
+      "database": "TEST_DB",
+      "company_branch": "01",
+      "username": "sa",
+      "password": "test_password"
+    },
+    "is_active": false,
+    "created_at": "2026-09-01T06:47:03Z",
+    "status": "idle"
+  },
+  {
+    "id": "conn_totvs_protheus_1788257182",
+    "instrument_id": "totvs_protheus",
+    "name": "TOTVS Test Connection",
+    "environment": "local",
+    "config": {
+      "host": "localhost",
+      "port": 1433,
+      "database": "TEST_DB",
+      "company_branch": "01",
+      "username": "sa",
+      "password": "test_password"
+    },
+    "is_active": false,
+    "created_at": "2026-09-01T07:06:22Z",
+    "status": "idle"
+  },
+  {
+    "id": "conn_totvs_protheus_1788257334",
+    "instrument_id": "totvs_protheus",
+    "name": "TOTVS Test Connection",
+    "environment": "local",
+    "config": {
+      "host": "localhost",
+      "port": 1433,
+      "database": "TEST_DB",
+      "company_branch": "01",
+      "username": "sa",
+      "password": "test_password"
+    },
+    "is_active": false,
+    "created_at": "2026-09-01T07:08:54Z",
+    "status": "idle"
+  },
+  {
+    "id": "conn_oracle_cloud_erp_1788257468",
+    "instrument_id": "oracle_cloud_erp",
+    "name": "Oracle Cloud ERP (Sandbox OCI Fictício)",
+    "environment": "cloud",
+    "config": {
+      "host": "adw.sa-east-1.oraclecloud.com",
+      "port": 1521,
+      "service_name": "adw_sandbox.oraclecloud.com",
+      "schema": "GL",
+      "table_mapping": "GL_BALANCES_V",
+      "username": "ORACLE_DEMO_USER",
+      "password": "DemoPassword2026!",
+      "ssl_mode": "tcps_server"
+    },
+    "is_active": false,
+    "created_at": "2026-09-01T07:11:08Z",
+    "status": "idle",
+    "last_sync": "Agora (Tempo Real)"
+  },
+  {
+    "id": "conn_oracle_cloud_erp_1788257536",
+    "instrument_id": "oracle_cloud_erp",
+    "name": "Oracle Cloud ERP (Sandbox OCI Fictício)",
+    "environment": "cloud",
+    "config": {
+      "host": "adw.sa-east-1.oraclecloud.com",
+      "port": 1521,
+      "service_name": "adw_sandbox.oraclecloud.com",
+      "schema": "GL",
+      "table_mapping": "GL_BALANCES_V",
+      "username": "ORACLE_DEMO_USER",
+      "password": "DemoPassword2026!",
+      "ssl_mode": "tcps_server"
+    },
+    "is_active": false,
+    "created_at": "2026-09-01T07:12:16Z",
+    "status": "idle",
+    "last_sync": "Agora (Tempo Real)"
+  },
+  {
+    "id": "conn_sap_s4hana_1788258128",
+    "instrument_id": "sap_s4hana",
+    "name": "SAP S/4HANA Finance (Sandbox Fictício)",
+    "environment": "cloud",
+    "config": {
+      "host": "sap-s4hana.sandbox.hypercube.internal",
+      "port": 30015,
+      "instance_number": "00",
+      "client": "100",
+      "database": "HDB_SANDBOX",
+      "schema": "SAPABAP1",
+      "table_mapping": "ACDOCA",
+      "username": "SAP_SANDBOX_USER",
+      "password": "DemoPassword2026!",
+      "ssl_mode": "require"
+    },
+    "is_active": false,
+    "created_at": "2026-09-01T07:22:08Z",
+    "status": "idle",
+    "last_sync": "Agora (Tempo Real)"
+  },
+  {
+    "id": "conn_oracle_cloud_erp_1788258254",
+    "instrument_id": "oracle_cloud_erp",
+    "name": "Oracle Cloud ERP (Sandbox OCI Fictício)",
+    "environment": "cloud",
+    "config": {
+      "host": "adw.sa-east-1.oraclecloud.com",
+      "port": 1521,
+      "service_name": "adw_sandbox.oraclecloud.com",
+      "schema": "GL",
+      "table_mapping": "GL_BALANCES_V",
+      "username": "ORACLE_DEMO_USER",
+      "password": "DemoPassword2026!",
+      "ssl_mode": "tcps_server"
+    },
+    "is_active": false,
+    "created_at": "2026-09-01T07:24:14Z",
+    "status": "idle",
+    "last_sync": "Agora (Tempo Real)"
+  },
+  {
+    "id": "conn_totvs_protheus_1788268782",
+    "instrument_id": "totvs_protheus",
+    "name": "TOTVS Test Connection",
+    "environment": "local",
+    "config": {
+      "host": "localhost",
+      "port": 1433,
+      "database": "TEST_DB",
+      "company_branch": "01",
+      "username": "sa",
+      "password": "test_password"
+    },
+    "is_active": false,
+    "created_at": "2026-09-01T10:19:42Z",
+    "status": "idle"
+  },
+  {
+    "id": "conn_totvs_protheus_1788274615",
+    "instrument_id": "totvs_protheus",
+    "name": "TOTVS Test Connection",
+    "environment": "local",
+    "config": {
+      "host": "localhost",
+      "port": 1433,
+      "database": "TEST_DB",
+      "company_branch": "01",
+      "username": "sa",
+      "password": "test_password"
+    },
+    "is_active": false,
+    "created_at": "2026-09-01T11:56:55Z",
+    "status": "idle"
+  },
+  {
+    "id": "conn_totvs_protheus_1788274760",
+    "instrument_id": "totvs_protheus",
+    "name": "TOTVS Test Connection",
+    "environment": "local",
+    "config": {
+      "host": "localhost",
+      "port": 1433,
+      "database": "TEST_DB",
+      "company_branch": "01",
+      "username": "sa",
+      "password": "test_password"
+    },
+    "is_active": false,
+    "created_at": "2026-09-01T11:59:20Z",
+    "status": "idle"
+  },
+  {
+    "id": "conn_totvs_protheus_1788275932",
+    "instrument_id": "totvs_protheus",
+    "name": "TOTVS Test Connection",
+    "environment": "local",
+    "config": {
+      "host": "localhost",
+      "port": 1433,
+      "database": "TEST_DB",
+      "company_branch": "01",
+      "username": "sa",
+      "password": "test_password"
+    },
+    "is_active": false,
+    "created_at": "2026-09-01T12:18:52Z",
+    "status": "idle"
+  },
+  {
+    "id": "conn_totvs_protheus_1788283993",
+    "instrument_id": "totvs_protheus",
+    "name": "TOTVS Test Connection",
+    "environment": "local",
+    "config": {
+      "host": "localhost",
+      "port": 1433,
+      "database": "TEST_DB",
+      "company_branch": "01",
+      "username": "sa",
+      "password": "test_password"
+    },
+    "is_active": false,
+    "created_at": "2026-09-01T14:33:13Z",
+    "status": "idle"
+  },
+  {
+    "id": "conn_totvs_protheus_1788286590",
+    "instrument_id": "totvs_protheus",
+    "name": "TOTVS Test Connection",
+    "environment": "local",
+    "config": {
+      "host": "localhost",
+      "port": 1433,
+      "database": "TEST_DB",
+      "company_branch": "01",
+      "username": "sa",
+      "password": "test_password"
+    },
+    "is_active": false,
+    "created_at": "2026-09-01T15:16:30Z"
+  }
+]

@@ -1,0 +1,32 @@
+{
+  "name": "hypercube-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix frontend",
+    "dev:backend": "python backend/run.py",
+    "dev:frontend": "npm run dev:frontend --prefix frontend",
+    "start": "npm run dev",
+    "demo:record": "npx tsx scripts/record-demo.ts",
+    "demo:render": "npx remotion render remotion/index.ts MainComposition remotion/out/hypercube-promo.mp4",
+    "demo:preview": "npx remotion preview remotion/index.ts",
+    "demo:all": "npm run demo:record && npm run demo:render"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.260",
+    "@remotion/player": "^4.0.260",
+    "lucide-react": "^0.475.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "remotion": "^4.0.260"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.19",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "concurrently": "^10.0.5",
+    "playwright": "^1.50.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  }
+}

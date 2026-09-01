@@ -1,0 +1,41 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -k -n \"backend,frontend\" -c \"cyan,magenta\" \"python ../backend/run.py\" \"next dev\"",
+    "dev:frontend": "next dev",
+    "dev:backend": "python ../backend/run.py",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "demo:record": "npm run --prefix .. demo:record",
+    "demo:render": "npm run --prefix .. demo:render",
+    "demo:preview": "npm run --prefix .. demo:preview"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "@types/three": "^0.185.1",
+    "@xyflow/react": "^12.4.2",
+    "autoprefixer": "^10.5.4",
+    "lucide-react": "^0.475.0",
+    "next": "^15.1.7",
+    "postcss": "^8.5.25",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^2.15.1",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "concurrently": "^10.0.5",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^15.1.7",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.0.0"
+  }
+}
