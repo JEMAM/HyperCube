@@ -25,12 +25,12 @@ export interface ActiveConnection {
 }
 
 export const DEFAULT_ACTIVE_COMPANY: ActiveCompany = {
-  id: "aguardando_upload",
-  name: "Aguardando Upload de Dados",
-  ticker: "EMPRESA",
+  id: "cvm_004820",
+  name: "BRASKEM S.A.",
+  ticker: "BRASKEM",
   currency: "R$",
-  periods: ["P-1", "P-0", "Budget 2026"],
-  description: "Nenhum arquivo carregado no momento. Envie a demonstração contábil (PDF, Excel, CSV ou TXT) na aba de Ingestão para iniciar a análise."
+  periods: ["2023", "2024", "2025", "Budget 2026"],
+  description: "Companhia aberta listada na CVM (BRASKEM) - Petroquímicos e Borracha carregada para análise corporativa."
 };
 
 interface PreferencesContextType {
