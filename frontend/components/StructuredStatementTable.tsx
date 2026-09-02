@@ -48,7 +48,10 @@ export default function StructuredStatementTable({
     const fetchTable = async () => {
       setLoading(true);
       try {
-        const endpoint = `${apiBaseUrl}/api/${statementType.toLowerCase()}/table`;
+        const param = activeCompany?.id && activeCompany.id !== "aguardando_upload" 
+          ? `?company_id=${encodeURIComponent(activeCompany.id)}` 
+          : "";
+        const endpoint = `${apiBaseUrl}/api/${statementType.toLowerCase()}/table${param}`;
         const res = await fetch(endpoint);
         if (res.ok) {
           const data = await res.json();
@@ -70,7 +73,7 @@ export default function StructuredStatementTable({
     return () => {
       isMounted = false;
     };
-  }, [apiBaseUrl, statementType]);
+  }, [apiBaseUrl, statementType, activeCompany?.id]);
 
   const company = tableData.company || activeCompany || {
     name: "Aguardando Upload / CVM Watch",

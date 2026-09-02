@@ -12,47 +12,73 @@ interface DAGData {
 }
 
 const dreNodePositions: Record<string, { x: number; y: number }> = {
-  // Coluna 1: Premissas de Entrada (Input Nodes)
+  // Coluna 1: Entradas Primárias de Intermediação / Operacionais (x: 40)
   receita_com_operacoes_de_credito_e_repasses: { x: 40, y: 40 },
   despesas_de_captacao: { x: 40, y: 150 },
-  despesas_pessoal_e_administrativas: { x: 40, y: 260 },
-  provisao_para_risco_de_credito_prc: { x: 40, y: 370 },
-  participacao_nos_lucros: { x: 40, y: 480 },
+  provisao_para_risco_de_credito_prc: { x: 40, y: 260 },
+  receitas_prestacao_servicos_tarifas: { x: 40, y: 370 },
+  despesas_pessoal_e_administrativas: { x: 40, y: 480 },
   resultado_com_participacoes_societarias: { x: 40, y: 590 },
-  tributos_sobre_o_lucro: { x: 40, y: 700 },
+  despesas_tributarias: { x: 40, y: 700 },
+  outras_despesas_liquidas: { x: 40, y: 810 },
+  tributos_sobre_o_lucro: { x: 40, y: 920 },
+  participacao_nos_lucros: { x: 40, y: 1030 },
 
-  // Coluna 2: Lucro Bruto
-  produto_da_intermediacao_financeira: { x: 420, y: 95 },
+  // Commercial / Retail fallback IDs mapped cleanly too
+  receita_bruta: { x: 40, y: 40 },
+  deducoes_receita: { x: 40, y: 150 },
+  custo_produtos_vendidos: { x: 40, y: 260 },
+  despesas_vendas: { x: 40, y: 480 },
+  despesas_gerais_adm: { x: 40, y: 590 },
+  resultado_financeiro: { x: 40, y: 700 },
 
-  // Coluna 3: Lucro Operacional (EBIT)
-  resultado_da_intermediacao_financeira: { x: 800, y: 260 },
+  // Coluna 2: Margem Bruta / Intermediação (x: 440)
+  produto_da_intermediacao_financeira: { x: 440, y: 95 },
+  receita_liquida: { x: 440, y: 95 },
 
-  // Coluna 4: Lucro Antes dos Tributos (EBT / LAIR)
-  resultado_antes_da_tributacao: { x: 1180, y: 425 },
+  // Coluna 3: Resultado Líquido de PDD / Lucro Bruto (x: 840)
+  resultado_da_intermediacao_financeira: { x: 840, y: 200 },
+  lucro_bruto: { x: 840, y: 200 },
 
-  // Coluna 5: Target Node (Lucro Líquido do Exercício)
-  lucro_liquido: { x: 1560, y: 560 },
+  // Coluna 4: Resultado Operacional / EBIT (x: 1240)
+  resultado_operacional: { x: 1240, y: 420 },
+  ebit: { x: 1240, y: 420 },
+
+  // Coluna 5: LAIR / EBT (x: 1640)
+  resultado_antes_da_tributacao: { x: 1640, y: 620 },
+  lair: { x: 1640, y: 620 },
+
+  // Coluna 6: Target Node (Lucro Líquido do Exercício) (x: 2040)
+  lucro_liquido: { x: 2040, y: 820 },
 };
 
 const dfcNodePositions: Record<string, { x: number; y: number }> = {
   // FCO
   recebimento_vendas: { x: 30, y: 30 },
+  lucro_ajustado: { x: 30, y: 30 },
+  var_titulos: { x: 30, y: 110 },
   pagamento_fornecedores: { x: 30, y: 110 },
+  var_credito: { x: 30, y: 190 },
   pagamento_salarios: { x: 30, y: 190 },
+  var_depositos: { x: 30, y: 270 },
   pagamento_despesas_operacionais: { x: 30, y: 270 },
   pagamento_impostos: { x: 30, y: 350 },
   fco_caixa_liquido: { x: 450, y: 190 },
 
   // FCI
+  capex_ti: { x: 30, y: 460 },
   aquisicao_ativos_imobilizados: { x: 30, y: 460 },
+  alienacao_ativos: { x: 30, y: 540 },
   compra_imoveis_veiculos: { x: 30, y: 540 },
   venda_ativos_equipamentos: { x: 30, y: 620 },
   fci_caixa_liquido: { x: 450, y: 540 },
 
   // FCF
+  letras_financeiras: { x: 30, y: 730 },
   aporte_capital: { x: 30, y: 730 },
   captacao_emprestimos: { x: 30, y: 810 },
   amortizacao_dividas: { x: 30, y: 890 },
+  dividendos_jcp: { x: 30, y: 970 },
   pagamento_dividendos_jcp: { x: 30, y: 970 },
   fcf_caixa_liquido: { x: 450, y: 850 },
 
@@ -109,42 +135,110 @@ const bpNodePositions: Record<string, { x: number; y: number }> = {
   endividamento_geral: { x: 1310, y: 1020 },
 };
 
-const DEFAULT_DRE_FALLBACK: DAGData = {
+const BANKING_DRE_FALLBACK: DAGData = {
   nodes: [
-    { id: "receita_com_operacoes_de_credito_e_repasses", type: "input", label: "(+) Receitas da Intermediação / Vendas" },
-    { id: "despesas_de_captacao", type: "input", label: "(-) Custos de Captação / CMV" },
-    { id: "provisao_para_risco_de_credito_prc", type: "input", label: "(-) Provisão para Perdas de Crédito (PDD)" },
-    { id: "despesas_pessoal_e_administrativas", type: "input", label: "(-) Despesas Pessoal e Administrativas (SG&A)" },
-    { id: "resultado_com_participacoes_societarias", type: "input", label: "(+) Resultado de Participações / Financeiro" },
+    { id: "receita_com_operacoes_de_credito_e_repasses", type: "input", label: "(+) Receitas da Intermediação Financeira" },
+    { id: "despesas_de_captacao", type: "input", label: "(-) Despesas da Intermediação (Captações)" },
+    { id: "provisao_para_risco_de_credito_prc", type: "input", label: "(-) Provisão para Perdas com Crédito (PCLD / PDD)" },
+    { id: "receitas_prestacao_servicos_tarifas", type: "input", label: "(+) Rendas de Prestação de Serviços e Tarifas" },
+    { id: "despesas_pessoal_e_administrativas", type: "input", label: "(-) Despesas com Pessoal e Administrativas" },
+    { id: "resultado_com_participacoes_societarias", type: "input", label: "(+) Resultado de Participações em Coligadas" },
     { id: "despesas_tributarias", type: "input", label: "(-) Despesas Tributárias" },
-    { id: "outras_despesas_liquidas", type: "input", label: "(-) Outras Despesas Operacionais & Provisões" },
-    { id: "tributos_sobre_o_lucro", type: "input", label: "(+/-) Impostos sobre o Lucro (IR/CSLL)" },
+    { id: "outras_despesas_liquidas", type: "input", label: "(-/+) Outras Despesas e Receitas Operacionais" },
+    { id: "tributos_sobre_o_lucro", type: "input", label: "(-) Impostos sobre o Lucro (IR/CSLL)" },
     { id: "participacao_nos_lucros", type: "input", label: "(-) PLR & Participação Não Controladores" },
-    { id: "produto_da_intermediacao_financeira", type: "calculated", label: "(=) Margem Bruta", formula: "Receitas - Custos" },
-    { id: "resultado_da_intermediacao_financeira", type: "calculated", label: "(=) Margem Líquida de PDD / EBIT", formula: "Margem Bruta - PDD" },
-    { id: "resultado_antes_da_tributacao", type: "calculated", label: "(=) Lucro Antes dos Tributos (LAIR / EBT)", formula: "EBIT + Financeiro - SG&A" },
-    { id: "lucro_liquido", type: "target", label: "(=) Lucro Líquido", formula: "EBT - Tributos - PLR" }
+    { id: "produto_da_intermediacao_financeira", type: "calculated", label: "(=) Resultado Bruto da Intermediação Financeira", formula: "Receitas Intermediação - Despesas Captação" },
+    { id: "resultado_da_intermediacao_financeira", type: "calculated", label: "(=) Resultado da Intermediação Líquido de PDD", formula: "Resultado Bruto - PCLD" },
+    { id: "resultado_operacional", type: "calculated", label: "(=) Resultado Operacional Bancário", formula: "Resultado Líquido PDD + Tarifas - Despesas Pessoal/Admin" },
+    { id: "resultado_antes_da_tributacao", type: "calculated", label: "(=) Resultado Antes da Tributação (LAIR / EBT)", formula: "Resultado Operacional + Participações" },
+    { id: "lucro_liquido", type: "target", label: "(=) Lucro Líquido do Exercício", formula: "LAIR - Tributos - PLR" }
   ],
   edges: [
     { source: "receita_com_operacoes_de_credito_e_repasses", target: "produto_da_intermediacao_financeira" },
     { source: "despesas_de_captacao", target: "produto_da_intermediacao_financeira" },
     { source: "produto_da_intermediacao_financeira", target: "resultado_da_intermediacao_financeira" },
     { source: "provisao_para_risco_de_credito_prc", target: "resultado_da_intermediacao_financeira" },
-    { source: "resultado_da_intermediacao_financeira", target: "resultado_antes_da_tributacao" },
-    { source: "despesas_pessoal_e_administrativas", target: "resultado_antes_da_tributacao" },
+    { source: "resultado_da_intermediacao_financeira", target: "resultado_operacional" },
+    { source: "receitas_prestacao_servicos_tarifas", target: "resultado_operacional" },
+    { source: "despesas_pessoal_e_administrativas", target: "resultado_operacional" },
+    { source: "despesas_tributarias", target: "resultado_operacional" },
+    { source: "outras_despesas_liquidas", target: "resultado_operacional" },
+    { source: "resultado_operacional", target: "resultado_antes_da_tributacao" },
     { source: "resultado_com_participacoes_societarias", target: "resultado_antes_da_tributacao" },
-    { source: "despesas_tributarias", target: "resultado_antes_da_tributacao" },
-    { source: "outras_despesas_liquidas", target: "resultado_antes_da_tributacao" },
     { source: "resultado_antes_da_tributacao", target: "lucro_liquido" },
     { source: "tributos_sobre_o_lucro", target: "lucro_liquido" },
     { source: "participacao_nos_lucros", target: "lucro_liquido" }
   ]
 };
 
+const DEFAULT_DRE_FALLBACK: DAGData = {
+  nodes: [
+    { id: "receita_bruta", type: "input", label: "(+) Receita Bruta de Vendas e Serviços" },
+    { id: "deducoes_receita", type: "input", label: "(-) Deduções e Tributos sobre Vendas" },
+    { id: "custo_produtos_vendidos", type: "input", label: "(-) Custo dos Produtos Vendidos (CPV/CMV)" },
+    { id: "despesas_vendas", type: "input", label: "(-) Despesas com Vendas e Logística" },
+    { id: "despesas_gerais_adm", type: "input", label: "(-) Despesas Gerais e Administrativas" },
+    { id: "resultado_financeiro", type: "input", label: "(+/-) Resultado Financeiro Líquido" },
+    { id: "tributos_sobre_o_lucro", type: "input", label: "(-) Imposto de Renda e CSLL" },
+    { id: "receita_liquida", type: "calculated", label: "(=) Receita Líquida de Vendas", formula: "Receita Bruta - Deduções" },
+    { id: "lucro_bruto", type: "calculated", label: "(=) Lucro Bruto", formula: "Receita Líquida - CPV" },
+    { id: "ebit", type: "calculated", label: "(=) Lucro Operacional (EBIT)", formula: "Lucro Bruto - Despesas Vendas - G&A" },
+    { id: "resultado_antes_da_tributacao", type: "calculated", label: "(=) Resultado Antes dos Tributos (LAIR / EBT)", formula: "EBIT + Resultado Financeiro" },
+    { id: "lucro_liquido", type: "target", label: "(=) Lucro Líquido do Exercício", formula: "LAIR - IR/CSLL" }
+  ],
+  edges: [
+    { source: "receita_bruta", target: "receita_liquida" },
+    { source: "deducoes_receita", target: "receita_liquida" },
+    { source: "receita_liquida", target: "lucro_bruto" },
+    { source: "custo_produtos_vendidos", target: "lucro_bruto" },
+    { source: "lucro_bruto", target: "ebit" },
+    { source: "despesas_vendas", target: "ebit" },
+    { source: "despesas_gerais_adm", target: "ebit" },
+    { source: "ebit", target: "resultado_antes_da_tributacao" },
+    { source: "resultado_financeiro", target: "resultado_antes_da_tributacao" },
+    { source: "resultado_antes_da_tributacao", target: "lucro_liquido" },
+    { source: "tributos_sobre_o_lucro", target: "lucro_liquido" }
+  ]
+};
+
+const BANKING_DFC_FALLBACK: DAGData = {
+  nodes: [
+    { id: "lucro_ajustado", type: "input", label: "(+) Lucro Líquido Ajustado" },
+    { id: "var_titulos", type: "input", label: "(+/-) Variação em Títulos e TVM" },
+    { id: "var_credito", type: "input", label: "(+/-) Variação em Operações de Crédito" },
+    { id: "var_depositos", type: "input", label: "(+/-) Variação em Depósitos e Captações" },
+    { id: "fco_caixa_liquido", type: "calculated", label: "(=) Caixa Líquido das Atividades Operacionais (FCO)", formula: "Lucro Ajustado + Variações Operacionais" },
+    { id: "capex_ti", type: "input", label: "(-) Capex de TI, Sistemas e Imobilizado" },
+    { id: "alienacao_ativos", type: "input", label: "(+) Desinvestimentos / Venda de Ativos" },
+    { id: "fci_caixa_liquido", type: "calculated", label: "(=) Caixa Líquido em Investimentos (FCI)", formula: "Alienação - Capex TI" },
+    { id: "letras_financeiras", type: "input", label: "(+) Captação de Letras Financeiras / Dívida Subordinada" },
+    { id: "dividendos_jcp", type: "input", label: "(-) Proventos Pagos (Dividendos/JCP)" },
+    { id: "fcf_caixa_liquido", type: "calculated", label: "(=) Caixa Líquido em Financiamento (FCF)", formula: "Captações - Proventos" },
+    { id: "variacao_liquida_caixa", type: "calculated", label: "(=) Variação Líquida de Caixa", formula: "FCO + FCI + FCF" },
+    { id: "saldo_inicial_caixa", type: "input", label: "Saldo Inicial de Caixa e Disponibilidades" },
+    { id: "saldo_final_caixa", type: "target", label: "(=) Saldo Final de Caixa e Disponibilidades", formula: "Saldo Inicial + Variação" }
+  ],
+  edges: [
+    { source: "lucro_ajustado", target: "fco_caixa_liquido" },
+    { source: "var_titulos", target: "fco_caixa_liquido" },
+    { source: "var_credito", target: "fco_caixa_liquido" },
+    { source: "var_depositos", target: "fco_caixa_liquido" },
+    { source: "capex_ti", target: "fci_caixa_liquido" },
+    { source: "alienacao_ativos", target: "fci_caixa_liquido" },
+    { source: "letras_financeiras", target: "fcf_caixa_liquido" },
+    { source: "dividendos_jcp", target: "fcf_caixa_liquido" },
+    { source: "fco_caixa_liquido", target: "variacao_liquida_caixa" },
+    { source: "fci_caixa_liquido", target: "variacao_liquida_caixa" },
+    { source: "fcf_caixa_liquido", target: "variacao_liquida_caixa" },
+    { source: "variacao_liquida_caixa", target: "saldo_final_caixa" },
+    { source: "saldo_inicial_caixa", target: "saldo_final_caixa" }
+  ]
+};
+
 const DEFAULT_DFC_FALLBACK: DAGData = {
   nodes: [
-    { id: "recebimento_vendas", type: "input", label: "(+) Recebimentos de Clientes / Operações" },
-    { id: "pagamento_fornecedores", type: "input", label: "(-) Pagamentos a Fornecedores / Captações" },
+    { id: "recebimento_vendas", type: "input", label: "(+) Recebimentos de Clientes" },
+    { id: "pagamento_fornecedores", type: "input", label: "(-) Pagamentos a Fornecedores" },
     { id: "pagamento_salarios", type: "input", label: "(-) Pagamento de Salários e Pessoal" },
     { id: "pagamento_despesas_operacionais", type: "input", label: "(-) Despesas Operacionais e Administrativas" },
     { id: "pagamento_impostos", type: "input", label: "(-) Tributos Pagos" },
@@ -295,8 +389,18 @@ export default function DagViewer({ viewMode = "DRE", refreshKey = 0, companyNam
 
   useEffect(() => {
     let isMounted = true;
-    const fallback = viewMode === "DFC" ? DEFAULT_DFC_FALLBACK : (viewMode === "BP" ? DEFAULT_BP_FALLBACK : DEFAULT_DRE_FALLBACK);
-    const endpoint = viewMode === "DFC" ? `${apiBaseUrl}/api/dfc/dag` : (viewMode === "BP" ? `${apiBaseUrl}/api/bp/dag` : `${apiBaseUrl}/api/dag`);
+    const compName = (companyName || prefActiveCompany?.name || activeCompany || "").toLowerCase();
+    const compId = (prefActiveCompany?.id || "").toLowerCase();
+    const isBanking = compName.includes("banco") || compName.includes("bank") || compName.includes("daycoval") || compName.includes("abc") || compId.includes("20796") || compId.includes("20958") || compId.includes("banco");
+    
+    const fallback = viewMode === "DFC" 
+      ? (isBanking ? BANKING_DFC_FALLBACK : DEFAULT_DFC_FALLBACK) 
+      : (viewMode === "BP" ? DEFAULT_BP_FALLBACK : (isBanking ? BANKING_DRE_FALLBACK : DEFAULT_DRE_FALLBACK));
+    
+    const companyParam = prefActiveCompany?.id ? `?company_id=${encodeURIComponent(prefActiveCompany.id)}` : "";
+    const endpoint = viewMode === "DFC" 
+      ? `${apiBaseUrl}/api/dfc/dag${companyParam}` 
+      : (viewMode === "BP" ? `${apiBaseUrl}/api/bp/dag${companyParam}` : `${apiBaseUrl}/api/dag${companyParam}`);
     
     fetch(endpoint)
       .then((res) => {
@@ -307,6 +411,8 @@ export default function DagViewer({ viewMode = "DRE", refreshKey = 0, companyNam
         if (isMounted && data && ((data.nodes && data.nodes.length > 0) || (Array.isArray(data) && data.length > 0))) {
           setDag(data);
           setError(null);
+        } else if (isMounted) {
+          setDag(fallback);
         }
       })
       .catch((err) => {
@@ -327,7 +433,7 @@ export default function DagViewer({ viewMode = "DRE", refreshKey = 0, companyNam
     return () => {
       isMounted = false;
     };
-  }, [apiBaseUrl, viewMode, refreshKey, companyName]);
+  }, [apiBaseUrl, viewMode, refreshKey, companyName, prefActiveCompany?.id, prefActiveCompany?.name, activeCompany]);
 
   const isDark = theme === "dark";
 

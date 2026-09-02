@@ -137,15 +137,195 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
 
   // 4. DRE & DFC Tables
   if (path === "dre/table") {
+    const url = new URL(req.url);
+    const companyId = url.searchParams.get("company_id") || req.headers.get("x-company-id");
+    if (companyId) {
+      sessionStore.ensureCompanyLoaded(companyId);
+    }
     return NextResponse.json(sessionStore.getDreTable());
   }
 
   if (path === "dfc/table") {
+    const url = new URL(req.url);
+    const companyId = url.searchParams.get("company_id") || req.headers.get("x-company-id");
+    if (companyId) {
+      sessionStore.ensureCompanyLoaded(companyId);
+    }
     return NextResponse.json(sessionStore.getDfcTable());
+  }
+
+  // 4.1 DAG Calculation Graph Endpoints
+  if (path === "dag" || path === "dre/dag") {
+    const url = new URL(req.url);
+    const companyId = url.searchParams.get("company_id") || req.headers.get("x-company-id");
+    if (companyId) {
+      sessionStore.ensureCompanyLoaded(companyId);
+    }
+    const comp = sessionStore.getActiveCompany();
+    const compName = (comp.name + " " + (comp.ticker || "")).toLowerCase();
+    const isBanking = comp.id.includes("banco") || compName.includes("banco") || compName.includes("bank") || compName.includes("daycoval") || compName.includes("abc") || comp.id.includes("20796") || comp.id.includes("20958");
+
+    if (isBanking) {
+      return NextResponse.json({
+        nodes: [
+          { id: "receita_com_operacoes_de_credito_e_repasses", type: "input", label: "(+) Receitas da Intermediação Financeira" },
+          { id: "despesas_de_captacao", type: "input", label: "(-) Despesas da Intermediação (Captações)" },
+          { id: "provisao_para_risco_de_credito_prc", type: "input", label: "(-) Provisão para Perdas com Crédito (PCLD / PDD)" },
+          { id: "receitas_prestacao_servicos_tarifas", type: "input", label: "(+) Rendas de Prestação de Serviços e Tarifas" },
+          { id: "despesas_pessoal_e_administrativas", type: "input", label: "(-) Despesas com Pessoal e Administrativas" },
+          { id: "resultado_com_participacoes_societarias", type: "input", label: "(+) Resultado de Participações em Coligadas" },
+          { id: "despesas_tributarias", type: "input", label: "(-) Despesas Tributárias" },
+          { id: "outras_despesas_liquidas", type: "input", label: "(-/+) Outras Despesas e Receitas Operacionais" },
+          { id: "tributos_sobre_o_lucro", type: "input", label: "(-) Impostos sobre o Lucro (IR/CSLL)" },
+          { id: "participacao_nos_lucros", type: "input", label: "(-) PLR & Participação Não Controladores" },
+          { id: "produto_da_intermediacao_financeira", type: "calculated", label: "(=) Resultado Bruto da Intermediação Financeira", formula: "Receitas Intermediação - Despesas Captação" },
+          { id: "resultado_da_intermediacao_financeira", type: "calculated", label: "(=) Resultado da Intermediação Líquido de PDD", formula: "Resultado Bruto - PCLD" },
+          { id: "resultado_operacional", type: "calculated", label: "(=) Resultado Operacional Bancário", formula: "Resultado Líquido PDD + Tarifas - Despesas Pessoal/Admin" },
+          { id: "resultado_antes_da_tributacao", type: "calculated", label: "(=) Resultado Antes da Tributação (LAIR / EBT)", formula: "Resultado Operacional + Participações" },
+          { id: "lucro_liquido", type: "target", label: "(=) Lucro Líquido do Exercício", formula: "LAIR - Tributos - PLR" }
+        ],
+        edges: [
+          { id: "e1", source: "receita_com_operacoes_de_credito_e_repasses", target: "produto_da_intermediacao_financeira" },
+          { id: "e2", source: "despesas_de_captacao", target: "produto_da_intermediacao_financeira" },
+          { id: "e3", source: "produto_da_intermediacao_financeira", target: "resultado_da_intermediacao_financeira" },
+          { id: "e4", source: "provisao_para_risco_de_credito_prc", target: "resultado_da_intermediacao_financeira" },
+          { id: "e5", source: "resultado_da_intermediacao_financeira", target: "resultado_operacional" },
+          { id: "e6", source: "receitas_prestacao_servicos_tarifas", target: "resultado_operacional" },
+          { id: "e7", source: "despesas_pessoal_e_administrativas", target: "resultado_operacional" },
+          { id: "e8", source: "despesas_tributarias", target: "resultado_operacional" },
+          { id: "e9", source: "outras_despesas_liquidas", target: "resultado_operacional" },
+          { id: "e10", source: "resultado_operacional", target: "resultado_antes_da_tributacao" },
+          { id: "e11", source: "resultado_com_participacoes_societarias", target: "resultado_antes_da_tributacao" },
+          { id: "e12", source: "resultado_antes_da_tributacao", target: "lucro_liquido" },
+          { id: "e13", source: "tributos_sobre_o_lucro", target: "lucro_liquido" },
+          { id: "e14", source: "participacao_nos_lucros", target: "lucro_liquido" }
+        ]
+      });
+    }
+
+    return NextResponse.json({
+      nodes: [
+        { id: "receita_bruta", type: "input", label: "(+) Receita Bruta de Vendas e Serviços" },
+        { id: "deducoes_receita", type: "input", label: "(-) Deduções e Tributos sobre Vendas" },
+        { id: "custo_produtos_vendidos", type: "input", label: "(-) Custo dos Produtos Vendidos (CPV/CMV)" },
+        { id: "despesas_vendas", type: "input", label: "(-) Despesas com Vendas e Logística" },
+        { id: "despesas_gerais_adm", type: "input", label: "(-) Despesas Gerais e Administrativas" },
+        { id: "resultado_financeiro", type: "input", label: "(+/-) Resultado Financeiro Líquido" },
+        { id: "tributos_sobre_o_lucro", type: "input", label: "(-) Imposto de Renda e CSLL" },
+        { id: "receita_liquida", type: "calculated", label: "(=) Receita Líquida de Vendas", formula: "Receita Bruta - Deduções" },
+        { id: "lucro_bruto", type: "calculated", label: "(=) Lucro Bruto", formula: "Receita Líquida - CPV" },
+        { id: "ebit", type: "calculated", label: "(=) Lucro Operacional (EBIT)", formula: "Lucro Bruto - Despesas Vendas - G&A" },
+        { id: "resultado_antes_da_tributacao", type: "calculated", label: "(=) Resultado Antes dos Tributos (LAIR / EBT)", formula: "EBIT + Resultado Financeiro" },
+        { id: "lucro_liquido", type: "target", label: "(=) Lucro Líquido do Exercício", formula: "LAIR - IR/CSLL" }
+      ],
+      edges: [
+        { id: "e1", source: "receita_bruta", target: "receita_liquida" },
+        { id: "e2", source: "deducoes_receita", target: "receita_liquida" },
+        { id: "e3", source: "receita_liquida", target: "lucro_bruto" },
+        { id: "e4", source: "custo_produtos_vendidos", target: "lucro_bruto" },
+        { id: "e5", source: "lucro_bruto", target: "ebit" },
+        { id: "e6", source: "despesas_vendas", target: "ebit" },
+        { id: "e7", source: "despesas_gerais_adm", target: "ebit" },
+        { id: "e8", source: "ebit", target: "resultado_antes_da_tributacao" },
+        { id: "e9", source: "resultado_financeiro", target: "resultado_antes_da_tributacao" },
+        { id: "e10", source: "resultado_antes_da_tributacao", target: "lucro_liquido" },
+        { id: "e11", source: "tributos_sobre_o_lucro", target: "lucro_liquido" }
+      ]
+    });
+  }
+
+  if (path === "dfc/dag") {
+    const url = new URL(req.url);
+    const companyId = url.searchParams.get("company_id") || req.headers.get("x-company-id");
+    if (companyId) {
+      sessionStore.ensureCompanyLoaded(companyId);
+    }
+    const comp = sessionStore.getActiveCompany();
+    const compName = (comp.name + " " + (comp.ticker || "")).toLowerCase();
+    const isBanking = comp.id.includes("banco") || compName.includes("banco") || compName.includes("bank") || compName.includes("daycoval") || compName.includes("abc") || comp.id.includes("20796") || comp.id.includes("20958");
+
+    if (isBanking) {
+      return NextResponse.json({
+        nodes: [
+          { id: "lucro_ajustado", type: "input", label: "(+) Lucro Líquido Ajustado" },
+          { id: "var_titulos", type: "input", label: "(+/-) Variação em Títulos e TVM" },
+          { id: "var_credito", type: "input", label: "(+/-) Variação em Operações de Crédito" },
+          { id: "var_depositos", type: "input", label: "(+/-) Variação em Depósitos e Captações" },
+          { id: "fco_caixa_liquido", type: "calculated", label: "(=) Caixa Líquido das Atividades Operacionais (FCO)", formula: "Lucro Ajustado + Variações Operacionais" },
+          { id: "capex_ti", type: "input", label: "(-) Capex de TI, Sistemas e Imobilizado" },
+          { id: "alienacao_ativos", type: "input", label: "(+) Desinvestimentos / Venda de Ativos" },
+          { id: "fci_caixa_liquido", type: "calculated", label: "(=) Caixa Líquido em Investimentos (FCI)", formula: "Alienação - Capex TI" },
+          { id: "letras_financeiras", type: "input", label: "(+) Captação de Letras Financeiras / Dívida Subordinada" },
+          { id: "dividendos_jcp", type: "input", label: "(-) Proventos Pagos (Dividendos/JCP)" },
+          { id: "fcf_caixa_liquido", type: "calculated", label: "(=) Caixa Líquido em Financiamento (FCF)", formula: "Captações - Proventos" },
+          { id: "variacao_liquida_caixa", type: "calculated", label: "(=) Variação Líquida de Caixa", formula: "FCO + FCI + FCF" },
+          { id: "saldo_inicial_caixa", type: "input", label: "Saldo Inicial de Caixa e Disponibilidades" },
+          { id: "saldo_final_caixa", type: "target", label: "(=) Saldo Final de Caixa e Disponibilidades", formula: "Saldo Inicial + Variação" }
+        ],
+        edges: [
+          { id: "dfc-e1", source: "lucro_ajustado", target: "fco_caixa_liquido" },
+          { id: "dfc-e2", source: "var_titulos", target: "fco_caixa_liquido" },
+          { id: "dfc-e3", source: "var_credito", target: "fco_caixa_liquido" },
+          { id: "dfc-e4", source: "var_depositos", target: "fco_caixa_liquido" },
+          { id: "dfc-e5", source: "capex_ti", target: "fci_caixa_liquido" },
+          { id: "dfc-e6", source: "alienacao_ativos", target: "fci_caixa_liquido" },
+          { id: "dfc-e7", source: "letras_financeiras", target: "fcf_caixa_liquido" },
+          { id: "dfc-e8", source: "dividendos_jcp", target: "fcf_caixa_liquido" },
+          { id: "dfc-e9", source: "fco_caixa_liquido", target: "variacao_liquida_caixa" },
+          { id: "dfc-e10", source: "fci_caixa_liquido", target: "variacao_liquida_caixa" },
+          { id: "dfc-e11", source: "fcf_caixa_liquido", target: "variacao_liquida_caixa" },
+          { id: "dfc-e12", source: "variacao_liquida_caixa", target: "saldo_final_caixa" },
+          { id: "dfc-e13", source: "saldo_inicial_caixa", target: "saldo_final_caixa" }
+        ]
+      });
+    }
+
+    return NextResponse.json({
+      nodes: [
+        { id: "recebimento_vendas", type: "input", label: "(+) Recebimentos de Clientes" },
+        { id: "pagamento_fornecedores", type: "input", label: "(-) Pagamentos a Fornecedores" },
+        { id: "pagamento_salarios", type: "input", label: "(-) Pagamento de Salários e Pessoal" },
+        { id: "pagamento_despesas_operacionais", type: "input", label: "(-) Despesas Operacionais e Administrativas" },
+        { id: "pagamento_impostos", type: "input", label: "(-) Tributos Pagos" },
+        { id: "fco_caixa_liquido", type: "calculated", label: "(=) Caixa Gerado pelas Operações (FCO)", formula: "Recebimentos - Pagamentos" },
+        { id: "aquisicao_ativos_imobilizados", type: "input", label: "(-) Capex / Imobilizado e Intangíveis" },
+        { id: "venda_ativos_equipamentos", type: "input", label: "(+) Desinvestimentos / Venda de Ativos" },
+        { id: "fci_caixa_liquido", type: "calculated", label: "(=) Caixa Utilizado em Investimento (FCI)", formula: "Vendas - Aquisições" },
+        { id: "captacao_emprestimos", type: "input", label: "(+) Captação de Financiamentos" },
+        { id: "amortizacao_dividas", type: "input", label: "(-) Amortização de Dívidas" },
+        { id: "pagamento_dividendos_jcp", type: "input", label: "(-) Proventos Pagos (Dividendos/JCP)" },
+        { id: "fcf_caixa_liquido", type: "calculated", label: "(=) Caixa Utilizado em Financiamento (FCF)", formula: "Captações - Amortizações - Dividendos" },
+        { id: "variacao_liquida_caixa", type: "calculated", label: "(=) Variação Líquida de Caixa", formula: "FCO + FCI + FCF" },
+        { id: "saldo_inicial_caixa", type: "input", label: "Saldo Inicial de Caixa" },
+        { id: "saldo_final_caixa", type: "target", label: "(=) Saldo Final de Caixa", formula: "Saldo Inicial + Variação" }
+      ],
+      edges: [
+        { id: "dfc-c1", source: "recebimento_vendas", target: "fco_caixa_liquido" },
+        { id: "dfc-c2", source: "pagamento_fornecedores", target: "fco_caixa_liquido" },
+        { id: "dfc-c3", source: "pagamento_salarios", target: "fco_caixa_liquido" },
+        { id: "dfc-c4", source: "pagamento_despesas_operacionais", target: "fco_caixa_liquido" },
+        { id: "dfc-c5", source: "pagamento_impostos", target: "fco_caixa_liquido" },
+        { id: "dfc-c6", source: "aquisicao_ativos_imobilizados", target: "fci_caixa_liquido" },
+        { id: "dfc-c7", source: "venda_ativos_equipamentos", target: "fci_caixa_liquido" },
+        { id: "dfc-c8", source: "captacao_emprestimos", target: "fcf_caixa_liquido" },
+        { id: "dfc-c9", source: "amortizacao_dividas", target: "fcf_caixa_liquido" },
+        { id: "dfc-c10", source: "pagamento_dividendos_jcp", target: "fcf_caixa_liquido" },
+        { id: "dfc-c11", source: "fco_caixa_liquido", target: "variacao_liquida_caixa" },
+        { id: "dfc-c12", source: "fci_caixa_liquido", target: "variacao_liquida_caixa" },
+        { id: "dfc-c13", source: "fcf_caixa_liquido", target: "variacao_liquida_caixa" },
+        { id: "dfc-c14", source: "variacao_liquida_caixa", target: "saldo_final_caixa" },
+        { id: "dfc-c15", source: "saldo_inicial_caixa", target: "saldo_final_caixa" }
+      ]
+    });
   }
 
   // 5. Balanço Patrimonial (BP Table, KPIs, DAG)
   if (path === "bp/table") {
+    const url = new URL(req.url);
+    const companyId = url.searchParams.get("company_id") || req.headers.get("x-company-id");
+    if (companyId) {
+      sessionStore.ensureCompanyLoaded(companyId);
+    }
     return NextResponse.json(sessionStore.getBpTable());
   }
 

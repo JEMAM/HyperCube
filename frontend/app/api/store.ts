@@ -1,4 +1,5 @@
 import canonicalData from "./canonical_payloads.json";
+import { CVM_COMPANIES } from "@/lib/cvmData";
 
 export interface CompanyInfo {
   id: string;
@@ -39,6 +40,30 @@ class SessionStore {
         : (isReal ? ["2023", "2024", "2025", "Budget 2026"] : [])
     };
     this.hasCustomUpload = isReal;
+    return this.activeCompany;
+  }
+
+  public ensureCompanyLoaded(companyId: string): CompanyInfo {
+    if (this.hasCustomUpload && this.activeCompany.id === companyId) {
+      return this.activeCompany;
+    }
+    if (!companyId || companyId === "aguardando_upload") {
+      return this.activeCompany;
+    }
+    const cleanId = companyId.replace("cvm_", "");
+    const cod = parseInt(cleanId, 10);
+    const comp = CVM_COMPANIES.find(c => c.cod_cvm === cod || c.codigo_cvm_str === cleanId);
+    if (comp) {
+      return this.setActiveCompany({
+        id: `cvm_${comp.cod_cvm}`,
+        name: comp.denom_social,
+        ticker: comp.nome_pregao,
+        currency: "R$",
+        periods: ["2023", "2024", "2025", "Budget 2026"],
+        description: `Companhia aberta listada na CVM (${comp.denom_social}) carregada via CVM Watch & Análise.`
+      });
+    }
+    this.hasCustomUpload = true;
     return this.activeCompany;
   }
 
@@ -151,6 +176,34 @@ class SessionStore {
       };
     }
     const p = comp.periods;
+    const compName = (comp.name + " " + (comp.ticker || "")).toLowerCase();
+    const isBanking = comp.id.includes("banco") || compName.includes("banco") || compName.includes("bank") || compName.includes("daycoval") || compName.includes("abc") || comp.id.includes("20796") || comp.id.includes("20958");
+
+    if (isBanking) {
+      return {
+        company: comp,
+        periods: p,
+        rows: [
+          { id: "receitas_intermediacao", code: "3.01", name: "Receitas da Intermediação Financeira", is_header: true, level: 0, periods: this.buildRowPeriods(p, 4850.0, 1.08) },
+          { id: "operacoes_credito", code: "3.01.01", name: "(+) Operações de Crédito e Financiamentos", is_header: false, level: 1, periods: this.buildRowPeriods(p, 3450.0, 1.08) },
+          { id: "titulos_valores_mob", code: "3.01.02", name: "(+) Títulos e Valores Mobiliários (TVM)", is_header: false, level: 1, periods: this.buildRowPeriods(p, 1400.0, 1.08) },
+          { id: "despesas_intermediacao", code: "3.02", name: "(-) Despesas da Intermediação Financeira", is_header: true, level: 0, periods: this.buildRowPeriods(p, -1950.0, 1.07) },
+          { id: "captacoes_mercado", code: "3.02.01", name: "(-) Captações no Mercado (CDB, LF, Depósitos)", is_header: false, level: 1, periods: this.buildRowPeriods(p, -1550.0, 1.07) },
+          { id: "emprestimos_repasses", code: "3.02.02", name: "(-) Empréstimos e Repasses Interfinanceiros", is_header: false, level: 1, periods: this.buildRowPeriods(p, -400.0, 1.07) },
+          { id: "resultado_bruto_intermediacao", code: "3.03", name: "(=) Resultado Bruto da Intermediação Financeira", is_header: true, level: 0, periods: this.buildRowPeriods(p, 2900.0, 1.09) },
+          { id: "outras_receitas_despesas_op", code: "3.04", name: "Outras Receitas / (Despesas) Operacionais", is_header: true, level: 0, periods: this.buildRowPeriods(p, -1320.0, 1.05) },
+          { id: "provisao_credito_pdd", code: "3.04.01", name: "(-) Provisão para Perdas com Crédito (PCLD / PDD)", is_header: false, level: 1, periods: this.buildRowPeriods(p, -590.0, 1.05) },
+          { id: "receitas_prestacao_servicos", code: "3.04.02", name: "(+) Rendas de Prestação de Serviços e Tarifas", is_header: false, level: 1, periods: this.buildRowPeriods(p, 420.0, 1.08) },
+          { id: "despesas_pessoal", code: "3.04.03", name: "(-) Despesas de Pessoal", is_header: false, level: 1, periods: this.buildRowPeriods(p, -680.0, 1.04) },
+          { id: "despesas_administrativas", code: "3.04.04", name: "(-) Outras Despesas Administrativas", is_header: false, level: 1, periods: this.buildRowPeriods(p, -470.0, 1.04) },
+          { id: "resultado_operacional", code: "3.05", name: "(=) Resultado Operacional Bancário", is_header: true, level: 0, periods: this.buildRowPeriods(p, 1580.0, 1.12) },
+          { id: "lair", code: "3.06", name: "(=) Resultado Antes da Tributação (LAIR / EBT)", is_header: true, level: 0, periods: this.buildRowPeriods(p, 1580.0, 1.12) },
+          { id: "impostos", code: "3.07", name: "(-) Imposto de Renda e Contribuição Social (CSLL)", is_header: false, level: 1, periods: this.buildRowPeriods(p, -490.0, 1.12) },
+          { id: "lucro_liquido", code: "3.08", name: "(=) Lucro Líquido do Exercício", is_header: true, level: 0, periods: this.buildRowPeriods(p, 1090.0, 1.12) },
+        ]
+      };
+    }
+
     return {
       company: comp,
       periods: p,
@@ -184,6 +237,32 @@ class SessionStore {
       };
     }
     const p = comp.periods;
+    const compName = (comp.name + " " + (comp.ticker || "")).toLowerCase();
+    const isBanking = comp.id.includes("banco") || compName.includes("banco") || compName.includes("bank") || compName.includes("daycoval") || compName.includes("abc") || comp.id.includes("20796") || comp.id.includes("20958");
+
+    if (isBanking) {
+      return {
+        company: comp,
+        periods: p,
+        rows: [
+          { id: "fco_total", code: "6.01", name: "(=) Caixa Líquido das Atividades Operacionais (FCO)", is_header: true, level: 0, periods: this.buildRowPeriods(p, 1690.0, 1.10) },
+          { id: "lucro_ajustado", code: "6.01.01", name: "Lucro Líquido Ajustado", is_header: false, level: 1, periods: this.buildRowPeriods(p, 1090.0, 1.12) },
+          { id: "var_titulos", code: "6.01.02", name: "Variação em Títulos e Valores Mobiliários (TVM)", is_header: false, level: 1, periods: this.buildRowPeriods(p, 820.0, 1.08) },
+          { id: "var_credito", code: "6.01.03", name: "Variação na Carteira de Operações de Crédito", is_header: false, level: 1, periods: this.buildRowPeriods(p, -710.0, 1.07) },
+          { id: "var_depositos", code: "6.01.04", name: "Variação em Depósitos e Captações no Mercado", is_header: false, level: 1, periods: this.buildRowPeriods(p, 490.0, 1.09) },
+          { id: "fci_total", code: "6.02", name: "(=) Caixa Líquido das Atividades de Investimento (FCI)", is_header: true, level: 0, periods: this.buildRowPeriods(p, -380.0, 1.05) },
+          { id: "capex_ti", code: "6.02.01", name: "(-) Aquisição de Imobilizado e Intangível (Capex de TI/Sistemas)", is_header: false, level: 1, periods: this.buildRowPeriods(p, -410.0, 1.05) },
+          { id: "alienacao_ativos", code: "6.02.02", name: "(+) Alienação de Ativos e Desinvestimentos", is_header: false, level: 1, periods: this.buildRowPeriods(p, 30.0, 1.00) },
+          { id: "fcf_total", code: "6.03", name: "(=) Caixa Líquido das Atividades de Financiamento (FCF)", is_header: true, level: 0, periods: this.buildRowPeriods(p, -270.0, 1.04) },
+          { id: "letras_financeiras", code: "6.03.01", name: "(+) Captação de Letras Financeiras e Dívida Subordinada", is_header: false, level: 1, periods: this.buildRowPeriods(p, 380.0, 1.05) },
+          { id: "dividendos_jcp", code: "6.03.02", name: "(-) Pagamento de Juros sobre Capital Próprio (JCP) e Dividendos", is_header: false, level: 1, periods: this.buildRowPeriods(p, -650.0, 1.10) },
+          { id: "variacao_liquida", code: "6.04", name: "(=) Variação Líquida de Caixa e Disponibilidades", is_header: true, level: 0, periods: this.buildRowPeriods(p, 1040.0, 1.18) },
+          { id: "saldo_inicial", code: "6.05.01", name: "Saldo Inicial de Caixa e Disponibilidades", is_header: false, level: 1, periods: this.buildRowPeriods(p, 3880.0, 1.12) },
+          { id: "saldo_final", code: "6.05.02", name: "Saldo Final de Caixa e Disponibilidades", is_header: true, level: 0, periods: this.buildRowPeriods(p, 4920.0, 1.14) },
+        ]
+      };
+    }
+
     return {
       company: comp,
       periods: p,

@@ -127,6 +127,16 @@ export function generateCvmAnalysis(cod_cvm: number): CVMAnalysisResponse {
     grossMargin = 0.48;
     ebitMargin = 0.42;
     netMargin = 0.26;
+  } else if (cod_cvm === 20796 || nameUpper.includes("DAYCOVAL")) {
+    baseRev = 4850.0;
+    grossMargin = 0.62;
+    ebitMargin = 0.35;
+    netMargin = 0.22;
+  } else if (cod_cvm === 20958 || nameUpper.includes("ABC BRASIL")) {
+    baseRev = 3900.0;
+    grossMargin = 0.61;
+    ebitMargin = 0.34;
+    netMargin = 0.21;
   } else if (cod_cvm === 1023 || nameUpper.includes("BANCO DO BRASIL")) {
     baseRev = 38500.0;
     grossMargin = 0.64;
@@ -195,21 +205,23 @@ export function generateCvmAnalysis(cod_cvm: number): CVMAnalysisResponse {
     netMargin = ebitMargin * 0.65;
   }
 
+  const isBanking = company.setor === "Bancos" || nameUpper.includes("BANCO") || nameUpper.includes("BANK") || [1023, 19348, 20796, 20958, 906, 24600, 20567].includes(cod_cvm);
+
   const quarters = [
     { period: "2023-03-31", year: "2023", quarter: "03/2023", tipo: "ITR", factor: 0.88 },
     { period: "2023-06-30", year: "2023", quarter: "06/2023", tipo: "ITR", factor: 0.90 },
     { period: "2023-09-30", year: "2023", quarter: "09/2023", tipo: "ITR", factor: 0.92 },
     { period: "2023-12-31", year: "2023", quarter: "12/2023", tipo: "DFP", factor: 0.95 },
-    { period: "2024-03-31", year: "2024", quarter: "03/2024", tipo: "ITR", factor: 0.96 },
-    { period: "2024-06-30", year: "2024", quarter: "06/2024", tipo: "ITR", factor: 0.98 },
-    { period: "2024-09-30", year: "2024", quarter: "09/2024", tipo: "ITR", factor: 1.00 },
-    { period: "2024-12-31", year: "2024", quarter: "12/2024", tipo: "DFP", factor: 1.04 },
-    { period: "2025-03-31", year: "2025", quarter: "03/2025", tipo: "ITR", factor: 1.05 },
-    { period: "2025-06-30", year: "2025", quarter: "06/2025", tipo: "ITR", factor: 1.08 },
-    { period: "2025-09-30", year: "2025", quarter: "09/2025", tipo: "ITR", factor: 1.11 },
-    { period: "2025-12-31", year: "2025", quarter: "12/2025", tipo: "DFP", factor: 1.15 },
-    { period: "2026-03-31", year: "2026", quarter: "03/2026", tipo: "ITR", factor: 1.18 },
-    { period: "2026-06-30", year: "2026", quarter: "06/2026", tipo: "ITR", factor: 1.22 }
+    { period: "2024-03-31", year: "2024", quarter: "03/2024", tipo: "ITR", factor: 0.95 },
+    { period: "2024-06-30", year: "2024", quarter: "06/2024", tipo: "ITR", factor: 0.97 },
+    { period: "2024-09-30", year: "2024", quarter: "09/2024", tipo: "ITR", factor: 0.98 },
+    { period: "2024-12-31", year: "2024", quarter: "12/2024", tipo: "DFP", factor: 1.00 },
+    { period: "2025-03-31", year: "2025", quarter: "03/2025", tipo: "ITR", factor: 1.02 },
+    { period: "2025-06-30", year: "2025", quarter: "06/2025", tipo: "ITR", factor: 1.04 },
+    { period: "2025-09-30", year: "2025", quarter: "09/2025", tipo: "ITR", factor: 1.06 },
+    { period: "2025-12-31", year: "2025", quarter: "12/2025", tipo: "DFP", factor: 1.08 },
+    { period: "2026-03-31", year: "2026", quarter: "03/2026", tipo: "ITR", factor: 1.10 },
+    { period: "2026-12-31", year: "2026", quarter: "Budget 2026", tipo: "PROJ", factor: 1.15 }
   ];
 
   const time_series = quarters.map((q) => {
@@ -235,7 +247,20 @@ export function generateCvmAnalysis(cod_cvm: number): CVMAnalysisResponse {
       margem_bruta: Math.round((gross / rev) * 1000) / 10,
       margem_ebit: Math.round((ebit / rev) * 1000) / 10,
       margem_liquida: Math.round((net / rev) * 1000) / 10,
-      raw_accounts: [
+      raw_accounts: isBanking ? [
+        { cd_conta: "3.01", ds_conta: "Receitas da Intermediação Financeira", vl_conta: rev, conta_canonical: "receitas_intermediacao" },
+        { cd_conta: "3.02", ds_conta: "(-) Despesas da Intermediação Financeira (Captações)", vl_conta: cpv, conta_canonical: "despesas_intermediacao" },
+        { cd_conta: "3.03", ds_conta: "(=) Resultado Bruto da Intermediação Financeira", vl_conta: gross, conta_canonical: "resultado_bruto_intermediacao" },
+        { cd_conta: "3.04", ds_conta: "Outras Receitas / (Despesas) Operacionais", vl_conta: opex, conta_canonical: "outras_despesas_operacionais" },
+        { cd_conta: "3.04.01", ds_conta: "(-) Provisão para Perdas com Crédito (PCLD / PDD)", vl_conta: Math.round(opex * 0.45 * 100) / 100, conta_canonical: "provisao_credito_pdd" },
+        { cd_conta: "3.04.02", ds_conta: "(+) Rendas de Prestação de Serviços e Tarifas Bancárias", vl_conta: Math.round(rev * 0.22 * 100) / 100, conta_canonical: "receita_servicos_tarifas" },
+        { cd_conta: "3.04.03", ds_conta: "(-) Despesas de Pessoal e Administrativas", vl_conta: Math.round(opex * 0.40 * 100) / 100, conta_canonical: "despesas_pessoal_administrativas" },
+        { cd_conta: "3.04.04", ds_conta: "(-/+) Outras Despesas e Receitas Operacionais", vl_conta: Math.round(opex * 0.15 * 100) / 100, conta_canonical: "outras_despesas_liquidas" },
+        { cd_conta: "3.05", ds_conta: "(=) Resultado Operacional Bancário", vl_conta: ebit, conta_canonical: "resultado_operacional" },
+        { cd_conta: "3.06", ds_conta: "(=) Resultado Antes da Tributação (LAIR / EBT)", vl_conta: lair, conta_canonical: "resultado_antes_tributos" },
+        { cd_conta: "3.07", ds_conta: "(-) Imposto de Renda e Contribuição Social (CSLL)", vl_conta: tax, conta_canonical: "imposto_renda_contribuicao" },
+        { cd_conta: "3.08", ds_conta: "(=) Lucro Líquido do Exercício", vl_conta: net, conta_canonical: "lucro_liquido" }
+      ] : [
         { cd_conta: "3.01", ds_conta: "Receita Líquida de Vendas e/ou Serviços", vl_conta: rev, conta_canonical: "receita_liquida" },
         { cd_conta: "3.02", ds_conta: "Custo dos Bens e/ou Serviços Vendidos", vl_conta: cpv, conta_canonical: "custo_bens_servicos" },
         { cd_conta: "3.03", ds_conta: "Resultado Bruto", vl_conta: gross, conta_canonical: "lucro_bruto" },
@@ -247,6 +272,38 @@ export function generateCvmAnalysis(cod_cvm: number): CVMAnalysisResponse {
         { cd_conta: "3.07", ds_conta: "Resultado Antes dos Tributos sobre o Lucro", vl_conta: lair, conta_canonical: "resultado_antes_tributos" },
         { cd_conta: "3.08", ds_conta: "Imposto de Renda e Contribuição Social", vl_conta: tax, conta_canonical: "imposto_renda_contribuicao" },
         { cd_conta: "3.11", ds_conta: "Lucro/Prejuízo Consolidado do Período", vl_conta: net, conta_canonical: "lucro_liquido" }
+      ],
+      dfc_raw_accounts: isBanking ? [
+        { cd_conta: "6.01", ds_conta: "(=) Caixa Líquido das Atividades Operacionais (FCO)", vl_conta: Math.round(net * 1.55 * 100) / 100 },
+        { cd_conta: "6.01.01", ds_conta: "Lucro Líquido Ajustado", vl_conta: net },
+        { cd_conta: "6.01.02", ds_conta: "Variação em Títulos e Aplicações Interfinanceiras", vl_conta: Math.round(net * 0.75 * 100) / 100 },
+        { cd_conta: "6.01.03", ds_conta: "Variação na Carteira de Operações de Crédito", vl_conta: Math.round(-net * 0.65 * 100) / 100 },
+        { cd_conta: "6.01.04", ds_conta: "Variação em Depósitos e Captações no Mercado", vl_conta: Math.round(net * 0.45 * 100) / 100 },
+        { cd_conta: "6.02", ds_conta: "(=) Caixa Líquido das Atividades de Investimento (FCI)", vl_conta: Math.round(-net * 0.35 * 100) / 100 },
+        { cd_conta: "6.02.01", ds_conta: "(-) Aquisição de Imobilizado e Intangível (Capex TI/Sistemas)", vl_conta: Math.round(-net * 0.38 * 100) / 100 },
+        { cd_conta: "6.02.02", ds_conta: "(+) Alienação de Ativos e Desinvestimentos", vl_conta: Math.round(net * 0.03 * 100) / 100 },
+        { cd_conta: "6.03", ds_conta: "(=) Caixa Líquido das Atividades de Financiamento (FCF)", vl_conta: Math.round(-net * 0.25 * 100) / 100 },
+        { cd_conta: "6.03.01", ds_conta: "(+) Captação de Letras Financeiras e Dívida Subordinada", vl_conta: Math.round(net * 0.35 * 100) / 100 },
+        { cd_conta: "6.03.02", ds_conta: "(-) Pagamento de Juros sobre Capital Próprio (JCP) e Dividendos", vl_conta: Math.round(-net * 0.60 * 100) / 100 },
+        { cd_conta: "6.04", ds_conta: "(=) Variação Líquida de Caixa e Disponibilidades", vl_conta: Math.round(net * 0.95 * 100) / 100 },
+        { cd_conta: "6.05.01", ds_conta: "Saldo Inicial de Caixa e Disponibilidades", vl_conta: Math.round(baseRev * 0.8 * 100) / 100 },
+        { cd_conta: "6.05.02", ds_conta: "Saldo Final de Caixa e Disponibilidades", vl_conta: Math.round((baseRev * 0.8 + net * 0.95) * 100) / 100 }
+      ] : [
+        { cd_conta: "6.01", ds_conta: "(=) Fluxo de Caixa das Atividades Operacionais (FCO)", vl_conta: Math.round(rev * 0.22 * 100) / 100 },
+        { cd_conta: "6.01.01", ds_conta: "(+) Recebimento de Vendas de Clientes", vl_conta: Math.round(rev * 1.05 * 100) / 100 },
+        { cd_conta: "6.01.02", ds_conta: "(-) Pagamento a Fornecedores e Materiais", vl_conta: Math.round(cpv * 0.85 * 100) / 100 },
+        { cd_conta: "6.01.03", ds_conta: "(-) Pagamento de Pessoal e Encargos", vl_conta: Math.round(opex * 0.5 * 100) / 100 },
+        { cd_conta: "6.01.04", ds_conta: "(-) Tributos e Impostos Pagos", vl_conta: Math.round(tax * 100) / 100 },
+        { cd_conta: "6.02", ds_conta: "(=) Fluxo de Caixa das Atividades de Investimento (FCI)", vl_conta: Math.round(-rev * 0.12 * 100) / 100 },
+        { cd_conta: "6.02.01", ds_conta: "(-) Aquisição de Imobilizado e Intangível (Capex)", vl_conta: Math.round(-rev * 0.13 * 100) / 100 },
+        { cd_conta: "6.02.02", ds_conta: "(+) Alienação de Ativos e Desinvestimentos", vl_conta: Math.round(rev * 0.01 * 100) / 100 },
+        { cd_conta: "6.03", ds_conta: "(=) Fluxo de Caixa das Atividades de Financiamento (FCF)", vl_conta: Math.round(-rev * 0.06 * 100) / 100 },
+        { cd_conta: "6.03.01", ds_conta: "(+) Captação de Financiamentos e Empréstimos", vl_conta: Math.round(rev * 0.08 * 100) / 100 },
+        { cd_conta: "6.03.02", ds_conta: "(-) Amortização de Dívidas e Juros", vl_conta: Math.round(-rev * 0.10 * 100) / 100 },
+        { cd_conta: "6.03.03", ds_conta: "(-) Pagamento de Dividendos e JCP", vl_conta: Math.round(-net * 0.4 * 100) / 100 },
+        { cd_conta: "6.04", ds_conta: "(=) Variação Líquida de Caixa e Equivalentes", vl_conta: Math.round(rev * 0.04 * 100) / 100 },
+        { cd_conta: "6.05.01", ds_conta: "Saldo Inicial de Caixa e Equivalentes", vl_conta: Math.round(rev * 0.18 * 100) / 100 },
+        { cd_conta: "6.05.02", ds_conta: "Saldo Final de Caixa e Equivalentes", vl_conta: Math.round(rev * 0.22 * 100) / 100 }
       ]
     };
   });

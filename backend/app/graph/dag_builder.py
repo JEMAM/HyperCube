@@ -28,37 +28,57 @@ class UniversalFinancialDAG:
         self.nx_graph.clear()
         self.node_metadata.clear()
 
-        if company_id in ["banco_do_brasil", "bb", "bbas3"]:
+        cid = str(company_id).lower()
+        is_bank = (
+            cid in ["banco_do_brasil", "bb", "bbas3", "daycoval", "banco_daycoval"]
+            or "banco" in cid
+            or "bank" in cid
+            or "daycoval" in cid
+            or "abc" in cid
+            or "itau" in cid
+            or "bradesco" in cid
+            or "santander" in cid
+            or "btg" in cid
+            or "safra" in cid
+            or "inter" in cid
+            or "pan" in cid
+            or "pine" in cid
+            or "bmg" in cid
+            or "20796" in cid
+            or "20958" in cid
+        )
+
+        if is_bank:
             nodes = [
-                ("receita_com_operacoes_de_credito_e_repasses", {"type": "input", "label": "Receitas Intermediação Financeira (R$ 304.392 M)"}),
-                ("despesas_de_captacao", {"type": "input", "label": "(-) Despesas Intermediação (Captações: R$ 198.953 M)"}),
-                ("provisao_para_risco_de_credito_prc", {"type": "input", "label": "(-) Provisão para Perdas de Crédito (PDD: R$ 66.388 M)"}),
-                ("despesas_pessoal_e_administrativas", {"type": "input", "label": "(-) Despesas com Pessoal e Administrativas (R$ 41.213 M)"}),
-                ("resultado_com_participacoes_societarias", {"type": "input", "label": "(+) Resultado de Participações (Equivalência: R$ 8.317 M)"}),
-                ("despesas_tributarias", {"type": "input", "label": "(-) Despesas Tributárias (R$ 8.968 M)"}),
-                ("outras_despesas_liquidas", {"type": "input", "label": "(-) Outras Despesas & Provisões Cíveis/Fiscais (R$ 17.112 M)"}),
-                ("tributos_sobre_o_lucro", {"type": "input", "label": "(+) Crédito Líquido IR/CSLL (R$ 8.095 M)"}),
-                ("participacao_nos_lucros", {"type": "input", "label": "(-) PLR & Participação Não Controladores (R$ 5.598 M)"}),
+                ("receita_com_operacoes_de_credito_e_repasses", {"type": "input", "label": "(+) Receitas da Intermediação Financeira"}),
+                ("despesas_de_captacao", {"type": "input", "label": "(-) Despesas da Intermediação (Captações)"}),
+                ("provisao_para_risco_de_credito_prc", {"type": "input", "label": "(-) Provisão para Perdas com Crédito (PCLD / PDD)"}),
+                ("despesas_pessoal_e_administrativas", {"type": "input", "label": "(-) Despesas com Pessoal e Administrativas"}),
+                ("resultado_com_participacoes_societarias", {"type": "input", "label": "(+) Resultado de Participações Societárias"}),
+                ("despesas_tributarias", {"type": "input", "label": "(-) Despesas Tributárias"}),
+                ("outras_despesas_liquidas", {"type": "input", "label": "(-/+) Outras Despesas & Receitas Operacionais"}),
+                ("tributos_sobre_o_lucro", {"type": "input", "label": "(-) Impostos sobre o Lucro (IR/CSLL)"}),
+                ("participacao_nos_lucros", {"type": "input", "label": "(-) PLR & Participação Não Controladores"}),
 
                 ("produto_da_intermediacao_financeira", {
                     "type": "calculated",
-                    "label": "(=) Margem Bruta de Intermediação (R$ 105.439 M)",
+                    "label": "(=) Resultado Bruto da Intermediação Financeira",
                     "formula": "Receitas Intermediação - Despesas Captação"
                 }),
                 ("resultado_da_intermediacao_financeira", {
                     "type": "calculated",
-                    "label": "(=) Resultado da Intermediação Líquido de PDD (R$ 39.051 M)",
-                    "formula": "Margem Bruta - PDD/PRC"
+                    "label": "(=) Resultado da Intermediação Líquido de PDD",
+                    "formula": "Resultado Bruto - PDD/PRC"
                 }),
                 ("resultado_antes_da_tributacao", {
                     "type": "calculated",
-                    "label": "(=) Resultado Antes dos Tributos LAIR / EBT (R$ 15.312 M)",
+                    "label": "(=) Resultado Antes dos Tributos (LAIR / EBT)",
                     "formula": "Resultado Intermediação - SG&A + Participações - Tributos - Provisões"
                 }),
                 ("lucro_liquido", {
                     "type": "target",
-                    "label": "(=) Lucro Líquido dos Controladores (R$ 17.808 M)",
-                    "formula": "EBT + IR/CSLL - PLR - Não Controladores"
+                    "label": "(=) Lucro Líquido do Exercício",
+                    "formula": "EBT - IR/CSLL - PLR - Não Controladores"
                 })
             ]
             edges = [
