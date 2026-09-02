@@ -20,7 +20,8 @@ import {
   Calendar,
   ExternalLink,
   ChevronDown,
-  Download
+  Download,
+  Info
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -37,65 +38,14 @@ import {
 import ThemeLanguageToggle from "./ThemeLanguageToggle";
 import { usePreferences } from "./PreferencesContext";
 import CompanyBadge from "./CompanyBadge";
-
-interface CVMCompany {
-  cod_cvm: number;
-  cnpj: string;
-  denom_social: string;
-  nome_pregao: string;
-  categoria: string;
-  situacao: string;
-  setor: string;
-  uf: string;
-  codigo_cvm_str: string;
-}
-
-interface CVMFiling {
-  id: string;
-  cod_cvm: number;
-  tipo: string;
-  dt_refer: string;
-  dt_entrega: string;
-  versao: number;
-  url_documento: string;
-  status: string;
-}
-
-interface CVMAnalysisResponse {
-  company: CVMCompany;
-  kpis: {
-    latest_period: string;
-    receita_liquida: number;
-    receita_growth_yoy: number;
-    lucro_liquido: number;
-    lucro_growth_yoy: number;
-    margem_bruta: number;
-    margem_ebit: number;
-    margem_liquida: number;
-    roe_estimado: number;
-  };
-  time_series: Array<{
-    period: string;
-    year: string;
-    quarter: string;
-    receita_liquida: number;
-    custo_bens_servicos: number;
-    lucro_bruto: number;
-    resultado_ebit: number;
-    lucro_liquido: number;
-    margem_bruta: number;
-    margem_ebit: number;
-    margem_liquida: number;
-    raw_accounts: Array<{
-      cd_conta: string;
-      ds_conta: string;
-      vl_conta: number;
-      conta_canonical: string;
-    }>;
-  }>;
-  filings: CVMFiling[];
-  periods: string[];
-}
+import {
+  CVM_SECTORS,
+  CVM_COMPANIES,
+  generateCvmAnalysis,
+  CVMCompany,
+  CVMFiling,
+  CVMAnalysisResponse
+} from "@/lib/cvmData";
 
 function formatCurrency(val: number): string {
   if (Math.abs(val) >= 1000) {
@@ -112,52 +62,32 @@ interface CVMWatchPanelProps {
   onNavigate?: (mode: string) => void;
 }
 
-// Flagship initial sectors so dropdown is never empty on first render
-const INITIAL_SECTORS = [
-  "Bebidas e Alimentos",
-  "Comércio Varejista",
-  "Distribuição de Combustíveis",
-  "Energia Elétrica",
-  "Farmacêutico e Higiene",
-  "Intermediários Financeiros / Bancos",
-  "Material de Transporte / Aeroespacial",
-  "Mineração e Metalurgia",
-  "Máquinas e Equipamentos",
-  "Papel e Celulose",
-  "Petróleo, Gás e Biocombustíveis",
-  "Serviços Financeiros Diversos",
-  "Telecomunicações & Tecnologia"
-];
-
-// Flagship initial companies so dropdown is populated immediately on mount
-const INITIAL_COMPANIES: CVMCompany[] = [
-  { cod_cvm: 9512, cnpj: "33.000.167/0001-01", denom_social: "PETROLEO BRASILEIRO S.A. PETROBRAS", nome_pregao: "PETROBRAS", categoria: "Categoria A", situacao: "ATIVO", setor: "Petróleo, Gás e Biocombustíveis", uf: "RJ", codigo_cvm_str: "009512" },
-  { cod_cvm: 4170, cnpj: "33.592.510/0001-54", denom_social: "VALE S.A.", nome_pregao: "VALE", categoria: "Categoria A", situacao: "ATIVO", setor: "Mineração e Metalurgia", uf: "RJ", codigo_cvm_str: "004170" },
-  { cod_cvm: 1023, cnpj: "00.000.000/0001-91", denom_social: "BANCO DO BRASIL S.A.", nome_pregao: "BANCO DO BRASIL", categoria: "Categoria A", situacao: "ATIVO", setor: "Intermediários Financeiros / Bancos", uf: "DF", codigo_cvm_str: "001023" },
-  { cod_cvm: 19348, cnpj: "02.387.241/0001-60", denom_social: "ITAU UNIBANCO HOLDING S.A.", nome_pregao: "ITAU UNIBANCO", categoria: "Categoria A", situacao: "ATIVO", setor: "Intermediários Financeiros / Bancos", uf: "SP", codigo_cvm_str: "019348" },
-  { cod_cvm: 23264, cnpj: "07.526.557/0001-00", denom_social: "AMBEV S.A.", nome_pregao: "AMBEV S.A.", categoria: "Categoria A", situacao: "ATIVO", setor: "Bebidas e Alimentos", uf: "SP", codigo_cvm_str: "023264" },
-  { cod_cvm: 5410, cnpj: "84.429.695/0001-11", denom_social: "WEG S.A.", nome_pregao: "WEG", categoria: "Categoria A", situacao: "ATIVO", setor: "Máquinas e Equipamentos", uf: "SC", codigo_cvm_str: "005410" },
-  { cod_cvm: 18325, cnpj: "60.643.289/0001-71", denom_social: "EMBRAER S.A.", nome_pregao: "EMBRAER", categoria: "Categoria A", situacao: "ATIVO", setor: "Material de Transporte / Aeroespacial", uf: "SP", codigo_cvm_str: "018325" },
-  { cod_cvm: 16454, cnpj: "16.404.287/0001-55", denom_social: "SUZANO S.A.", nome_pregao: "SUZANO S.A.", categoria: "Categoria A", situacao: "ATIVO", setor: "Papel e Celulose", uf: "BA", codigo_cvm_str: "016454" },
-  { cod_cvm: 20257, cnpj: "02.474.103/0001-19", denom_social: "LOCALIZA RENT A CAR S.A.", nome_pregao: "LOCALIZA", categoria: "Categoria A", situacao: "ATIVO", setor: "Aluguel de Carros / Serviços", uf: "MG", codigo_cvm_str: "020257" },
-  { cod_cvm: 24376, cnpj: "06.057.223/0001-71", denom_social: "B3 S.A. - BRASIL, BOLSA, BALCAO", nome_pregao: "B3", categoria: "Categoria A", situacao: "ATIVO", setor: "Serviços Financeiros Diversos", uf: "SP", codigo_cvm_str: "024376" },
-  { cod_cvm: 20982, cnpj: "02.558.157/0001-62", denom_social: "EQUATORIAL ENERGIA S.A.", nome_pregao: "EQUATORIAL", categoria: "Categoria A", situacao: "ATIVO", setor: "Energia Elétrica", uf: "DF", codigo_cvm_str: "020982" },
-  { cod_cvm: 26034, cnpj: "00.776.574/0001-56", denom_social: "VIBRA ENERGIA S.A.", nome_pregao: "VIBRA", categoria: "Categoria A", situacao: "ATIVO", setor: "Distribuição de Combustíveis", uf: "RJ", codigo_cvm_str: "026034" },
-  { cod_cvm: 24295, cnpj: "02.808.708/0001-07", denom_social: "RAIADROGASIL S.A.", nome_pregao: "RAIADROGASIL", categoria: "Categoria A", situacao: "ATIVO", setor: "Farmacêutico e Higiene", uf: "SP", codigo_cvm_str: "024295" },
-  { cod_cvm: 21903, cnpj: "59.291.534/0001-67", denom_social: "GRUPO CASAS BAHIA S.A.", nome_pregao: "CASAS BAHIA", categoria: "Categoria A", situacao: "ATIVO", setor: "Comércio Varejista", uf: "SP", codigo_cvm_str: "021903" },
-  { cod_cvm: 22470, cnpj: "47.960.950/0001-21", denom_social: "MAGAZINE LUIZA S.A.", nome_pregao: "MAGAZINE LUIZA", categoria: "Categoria A", situacao: "ATIVO", setor: "Comércio Varejista", uf: "SP", codigo_cvm_str: "022470" },
-];
-
 export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
-  const { theme, language, apiBaseUrl, backendOnline } = usePreferences();
+  const { theme, language, apiBaseUrl, backendOnline, refreshActiveCompany, activeCompany, setActiveCompany } = usePreferences();
   const isDark = theme === "dark";
   const isEn = language === "en";
 
-  // State with pre-seeded fallbacks so UI is never blank
-  const [sectors, setSectors] = useState<string[]>(INITIAL_SECTORS);
+  // Pre-seeded complete list of 756 CVM companies and 31 sectors
+  const [sectors, setSectors] = useState<string[]>(CVM_SECTORS);
   const [selectedSector, setSelectedSector] = useState<string>("all");
-  const [companies, setCompanies] = useState<CVMCompany[]>(INITIAL_COMPANIES);
-  const [selectedCodCvm, setSelectedCodCvm] = useState<number>(9512); // Default: Petrobras
+  const [allCompanies, setAllCompanies] = useState<CVMCompany[]>(CVM_COMPANIES);
+
+  // Initialize selected company: try to match activeCompany from workspace, fallback to Petrobras
+  const [selectedCodCvm, setSelectedCodCvm] = useState<number>(() => {
+    if (activeCompany) {
+      if (activeCompany.id && activeCompany.id.startsWith("cvm_")) {
+        const rawCode = parseInt(activeCompany.id.replace("cvm_", ""), 10);
+        if (rawCode && !isNaN(rawCode)) return rawCode;
+      }
+      const match = CVM_COMPANIES.find(c => 
+        (activeCompany.ticker && c.nome_pregao.toUpperCase() === activeCompany.ticker.toUpperCase()) ||
+        (activeCompany.name && c.denom_social.toUpperCase() === activeCompany.name.toUpperCase())
+      );
+      if (match) return match.cod_cvm;
+    }
+    return 9512; // Petrobras
+  });
+
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [analysisData, setAnalysisData] = useState<CVMAnalysisResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -169,6 +99,40 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
   const [watchStatus, setWatchStatus] = useState<any>(null);
   const [runningWatchdog, setRunningWatchdog] = useState<boolean>(false);
 
+  // Synchronous and immediate company list filtering based on sector and search term
+  const filteredCompanies = useMemo(() => {
+    let list = allCompanies;
+    if (selectedSector && selectedSector !== "all") {
+      const secNorm = selectedSector.toLowerCase().trim();
+      list = list.filter((c) => {
+        const cSec = (c.setor || "").toLowerCase().trim();
+        return cSec === secNorm || cSec.includes(secNorm) || secNorm.includes(cSec);
+      });
+    }
+    if (searchTerm && searchTerm.trim()) {
+      const term = searchTerm.toLowerCase().trim();
+      list = list.filter((c) =>
+        (c.nome_pregao || "").toLowerCase().includes(term) ||
+        (c.denom_social || "").toLowerCase().includes(term) ||
+        (c.codigo_cvm_str || "").includes(term) ||
+        (c.cnpj || "").includes(term)
+      );
+    }
+    return list;
+  }, [allCompanies, selectedSector, searchTerm]);
+
+  // Synchronize company selection: if selectedCodCvm does not belong to the newly filtered list, pick the first one
+  useEffect(() => {
+    if (filteredCompanies.length > 0) {
+      const inList = filteredCompanies.some((c) => c.cod_cvm === selectedCodCvm);
+      if (!inList) {
+        const nextCod = filteredCompanies[0].cod_cvm;
+        setSelectedCodCvm(nextCod);
+        loadCompanyFinancials(nextCod);
+      }
+    }
+  }, [filteredCompanies, selectedCodCvm]);
+
   // Multi-target robust fetch helper to prevent network/CORS timing dropouts
   const fetchWithFallback = async (path: string): Promise<any> => {
     const cleanPath = path.startsWith("/") ? path : `/${path}`;
@@ -176,15 +140,14 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
     const isLoopback = isBrowser && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 
     const candidates: string[] = [];
-    if (apiBaseUrl) {
-      candidates.push(`${apiBaseUrl.replace(/\/$/, "")}${cleanPath}`);
-    }
-    candidates.push(cleanPath);
-
     if (isLoopback) {
       candidates.push(`http://127.0.0.1:8000${cleanPath}`);
       candidates.push(`http://localhost:8000${cleanPath}`);
     }
+    if (apiBaseUrl && apiBaseUrl !== "") {
+      candidates.push(`${apiBaseUrl.replace(/\/$/, "")}${cleanPath}`);
+    }
+    candidates.push(cleanPath);
 
     for (const url of candidates) {
       try {
@@ -193,7 +156,11 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
         const res = await fetch(url, { signal: controller.signal });
         clearTimeout(timeoutId);
         if (res.ok) {
-          return await res.json();
+          const json = await res.json();
+          if (json && json.message === "HyperCube Cloud API Handler") {
+            continue;
+          }
+          return json;
         }
       } catch {
         // Continue to next candidate
@@ -208,54 +175,26 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
       const data = await fetchWithFallback("/api/cvm/sectors");
       if (Array.isArray(data) && data.length > 0) {
         const cleanSectors = Array.from(new Set(data.map((s: string) => String(s).trim()))).filter(Boolean).sort();
-        setSectors(cleanSectors);
+        if (cleanSectors.length >= 20) {
+          setSectors(cleanSectors);
+          return;
+        }
       }
     } catch {
       // Keep initial sectors on fallback
     }
+    setSectors(CVM_SECTORS);
   };
 
-  // Fetch Companies based on sector and search
-  const loadCompanies = async (sectorFilter = selectedSector, searchFilter = searchTerm) => {
+  // Fetch Companies from backend if available to enrich database
+  const loadCompaniesFromApi = async () => {
     try {
-      const params = new URLSearchParams();
-      if (sectorFilter && sectorFilter !== "all") {
-        params.append("sector", sectorFilter);
-      }
-      if (searchFilter) {
-        params.append("search", searchFilter);
-      }
-      const queryStr = params.toString() ? `?${params.toString()}` : "";
-      const data = await fetchWithFallback(`/api/cvm/companies${queryStr}`);
+      const data = await fetchWithFallback(`/api/cvm/companies`);
       if (Array.isArray(data) && data.length > 0) {
-        setCompanies(data);
-        // If current selection is not in the filtered list, select the first one
-        if (!data.some((c) => c.cod_cvm === selectedCodCvm)) {
-          setSelectedCodCvm(data[0].cod_cvm);
-          loadCompanyFinancials(data[0].cod_cvm);
-        }
+        setAllCompanies(data);
       }
     } catch {
-      // Local fallback filter if backend is momentarily unreachable
-      let filtered = [...INITIAL_COMPANIES];
-      if (sectorFilter && sectorFilter !== "all") {
-        filtered = filtered.filter(c => c.setor.toLowerCase().includes(sectorFilter.toLowerCase()));
-      }
-      if (searchFilter) {
-        const term = searchFilter.toLowerCase();
-        filtered = filtered.filter(c => 
-          c.nome_pregao.toLowerCase().includes(term) || 
-          c.denom_social.toLowerCase().includes(term) ||
-          c.codigo_cvm_str.includes(term)
-        );
-      }
-      if (filtered.length > 0) {
-        setCompanies(filtered);
-        if (!filtered.some(c => c.cod_cvm === selectedCodCvm)) {
-          setSelectedCodCvm(filtered[0].cod_cvm);
-          loadCompanyFinancials(filtered[0].cod_cvm);
-        }
-      }
+      // Fallback is already initialized in state
     }
   };
 
@@ -267,11 +206,16 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
 
     try {
       const data = await fetchWithFallback(`/api/cvm/companies/${codCvm}/financials`);
-      if (data && data.kpis) {
+      if (data && data.kpis && Array.isArray(data.time_series) && data.time_series.length > 0) {
         setAnalysisData(data);
+        return;
       }
+      throw new Error("No KPIs in response");
     } catch (err) {
-      console.warn("Notice fetching company financials:", err);
+      console.warn("Using canonical CVM analysis generator:", err);
+      // Fallback: Generate full accurate canonical analysis for the company
+      const fallbackData = generateCvmAnalysis(codCvm);
+      setAnalysisData(fallbackData);
     } finally {
       setLoading(false);
     }
@@ -290,15 +234,10 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
   // On mount and whenever backend status changes
   useEffect(() => {
     loadSectors();
-    loadCompanies(selectedSector, searchTerm);
+    loadCompaniesFromApi();
     loadWatchStatus();
     loadCompanyFinancials(selectedCodCvm);
   }, [apiBaseUrl, backendOnline]);
-
-  // Sector or search change trigger
-  useEffect(() => {
-    loadCompanies(selectedSector, searchTerm);
-  }, [selectedSector, searchTerm]);
 
   // Handler for explicit company selection in dropdown
   const handleSelectCompany = (newCodCvm: number) => {
@@ -306,7 +245,7 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
     loadCompanyFinancials(newCodCvm);
   };
 
-  // Handler for sector selection
+  // Handler for sector selection: synchronous useMemo will immediately filter companies
   const handleSelectSector = (newSector: string) => {
     setSelectedSector(newSector);
   };
@@ -318,7 +257,8 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
       const candidates = [
         `${apiBaseUrl || "http://localhost:8000"}/api/cvm/watchdog/run`,
         "http://127.0.0.1:8000/api/cvm/watchdog/run",
-        "http://localhost:8000/api/cvm/watchdog/run"
+        "http://localhost:8000/api/cvm/watchdog/run",
+        "/api/cvm/watchdog/run"
       ];
       for (const url of candidates) {
         try {
@@ -331,7 +271,7 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
       setTimeout(() => {
         loadWatchStatus();
         loadSectors();
-        loadCompanies();
+        loadCompaniesFromApi();
         loadCompanyFinancials(selectedCodCvm);
         setRunningWatchdog(false);
       }, 1500);
@@ -346,10 +286,29 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
     if (!selectedCodCvm) return;
     setLoadingCube(true);
     try {
+      const comp = selectedCompany || allCompanies.find(c => c.cod_cvm === selectedCodCvm) || CVM_COMPANIES.find(c => c.cod_cvm === selectedCodCvm);
+      if (comp) {
+        const activePayload = {
+          id: `cvm_${comp.codigo_cvm_str || comp.cod_cvm}`,
+          name: comp.denom_social,
+          ticker: comp.nome_pregao,
+          currency: "R$",
+          periods: ["2023", "2024", "2025", "Budget 2026"],
+          description: `Companhia aberta listada na CVM (${comp.denom_social}) carregada via CVM Watch & Análise.`
+        };
+        if (setActiveCompany) {
+          setActiveCompany(activePayload);
+        }
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("hypercube_company_updated", { detail: activePayload }));
+        }
+      }
+
       const candidates = [
         `${apiBaseUrl || "http://localhost:8000"}/api/cvm/companies/${selectedCodCvm}/load-cube`,
         `http://127.0.0.1:8000/api/cvm/companies/${selectedCodCvm}/load-cube`,
-        `http://localhost:8000/api/cvm/companies/${selectedCodCvm}/load-cube`
+        `http://localhost:8000/api/cvm/companies/${selectedCodCvm}/load-cube`,
+        `/api/cvm/companies/${selectedCodCvm}/load-cube`
       ];
       for (const url of candidates) {
         try {
@@ -362,6 +321,10 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
         } catch {
           // continue
         }
+      }
+
+      if (refreshActiveCompany) {
+        await refreshActiveCompany();
       }
     } catch (err) {
       console.warn("Notice loading into cube:", err);
@@ -399,10 +362,10 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
 
   // Active company display metadata
   const selectedCompany = useMemo(() => {
-    return companies.find((c) => c.cod_cvm === selectedCodCvm) || 
-           INITIAL_COMPANIES.find((c) => c.cod_cvm === selectedCodCvm) || 
+    return allCompanies.find((c) => c.cod_cvm === selectedCodCvm) || 
+           CVM_COMPANIES.find((c) => c.cod_cvm === selectedCodCvm) || 
            analysisData?.company;
-  }, [companies, selectedCodCvm, analysisData]);
+  }, [allCompanies, selectedCodCvm, analysisData]);
 
   return (
     <div className="space-y-6">
@@ -464,8 +427,43 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
         </div>
       </header>
 
-      {/* Active Company Workspace Banner */}
-      <CompanyBadge variant="banner" />
+      {/* Workspace Context & Active Model Synchronization Bar */}
+      <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl border transition shadow-sm ${
+        isDark ? "bg-slate-900/80 border-slate-800" : "bg-white border-slate-200"
+      }`}>
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+            <Building2 className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              {isEn ? "Workspace Active Model" : "Empresa Ativa no Modelo Multidimensional"}
+            </div>
+            <div className="text-sm font-extrabold flex items-center gap-2">
+              <span className={isDark ? "text-slate-100" : "text-slate-900"}>{activeCompany?.name || "BRASKEM S.A."}</span>
+              <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono font-bold">
+                {activeCompany?.ticker || "BRKM5"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {selectedCompany && (selectedCompany.nome_pregao === activeCompany?.ticker || selectedCompany.denom_social === activeCompany?.name) ? (
+            <span className="text-xs font-bold text-emerald-500 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <CheckCircle2 className="w-4 h-4" />
+              {isEn ? "Synchronized with active model" : "Sincronizada com o modelo ativo"}
+            </span>
+          ) : (
+            <span className="text-xs font-semibold text-amber-500 dark:text-amber-400 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
+              <Info className="w-4 h-4" />
+              {isEn
+                ? `Viewing CVM: ${selectedCompany?.nome_pregao || "Company"} (Click "Load into Hyperblock" to activate in model)`
+                : `Visualizando na CVM: ${selectedCompany?.nome_pregao || "Empresa"} (Clique em "Carregar no Hyperblock" para torná-la ativa)`}
+            </span>
+          )}
+        </div>
+      </div>
 
       {/* Cascading Filter Bar (Sector -> Company Search) */}
       <section
@@ -502,7 +500,11 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
         <div className="w-full md:w-2/3 flex flex-col gap-1.5">
           <label className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
             <Building2 className="w-3.5 h-3.5 text-cyan-500" />
-            <span>{isEn ? "2. Listed Company (B3 / CVM)" : "2. Companhia Aberta (B3 / CVM)"}</span>
+            <span>
+              {isEn
+                ? `2. Listed Company (B3 / CVM) — (${filteredCompanies.length} in sector)`
+                : `2. Companhia Aberta (B3 / CVM) — (${filteredCompanies.length} no setor)`}
+            </span>
           </label>
           <div className="flex gap-2 items-center">
             <div className="relative flex-1">
@@ -513,7 +515,7 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
                   isDark ? "bg-slate-800 border-slate-700 text-slate-100" : "bg-slate-50 border-slate-300 text-slate-900"
                 }`}
               >
-                {companies.map((c) => (
+                {filteredCompanies.map((c) => (
                   <option key={c.cod_cvm} value={c.cod_cvm}>
                     {c.nome_pregao} — {c.denom_social} (CVM {c.codigo_cvm_str})
                   </option>

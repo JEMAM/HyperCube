@@ -223,8 +223,8 @@ class CVMDatabase:
 
         if sector and sector != "all":
             norm_sec = normalize_sector(sector)
-            query += " AND (setor = ? OR setor = ? OR setor ILIKE ?)"
-            params.extend([sector, norm_sec, f"%{norm_sec}%"])
+            query += " AND (setor = ? OR setor = ? OR setor ILIKE ? OR LOWER(setor) LIKE LOWER(?))"
+            params.extend([sector, norm_sec, f"%{norm_sec}%", f"%{norm_sec}%"])
 
         if search:
             term = f"%{search.strip()}%"

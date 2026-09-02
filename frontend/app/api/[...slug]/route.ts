@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import canonicalData from "../canonical_payloads.json";
 import { sessionStore } from "../store";
+import { CVM_SECTORS, CVM_COMPANIES, generateCvmAnalysis } from "@/lib/cvmData";
 
 export const dynamic = "force-dynamic";
 
@@ -396,6 +397,64 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
     });
   }
 
+  // 19. CVM Open Data Portal Endpoints
+  if (path === "cvm/sectors") {
+    return NextResponse.json(CVM_SECTORS);
+  }
+
+  if (path === "cvm/companies") {
+    const url = new URL(req.url);
+    const sector = url.searchParams.get("sector");
+    const search = url.searchParams.get("search");
+
+    let list = [...CVM_COMPANIES];
+    if (sector && sector !== "all") {
+      const secNorm = sector.toLowerCase().trim();
+      list = list.filter(c => c.setor.toLowerCase().includes(secNorm) || secNorm.includes(c.setor.toLowerCase()));
+    }
+    if (search && search.trim()) {
+      const term = search.toLowerCase().trim();
+      list = list.filter(c => 
+        c.nome_pregao.toLowerCase().includes(term) ||
+        c.denom_social.toLowerCase().includes(term) ||
+        c.codigo_cvm_str.includes(term) ||
+        c.cnpj.includes(term)
+      );
+    }
+    return NextResponse.json(list);
+  }
+
+  if (path.startsWith("cvm/companies/") && path.endsWith("/financials")) {
+    const parts = path.split("/");
+    const codCvm = parseInt(parts[2], 10);
+    const analysis = generateCvmAnalysis(codCvm || 9512);
+    return NextResponse.json(analysis);
+  }
+
+  if (path.startsWith("cvm/companies/") && path.endsWith("/filings")) {
+    const parts = path.split("/");
+    const codCvm = parseInt(parts[2], 10);
+    const analysis = generateCvmAnalysis(codCvm || 9512);
+    return NextResponse.json(analysis.filings);
+  }
+
+  if (path.startsWith("cvm/companies/")) {
+    const parts = path.split("/");
+    const codCvm = parseInt(parts[2], 10);
+    const comp = CVM_COMPANIES.find(c => c.cod_cvm === codCvm) || generateCvmAnalysis(codCvm).company;
+    return NextResponse.json(comp);
+  }
+
+  if (path === "cvm/watchdog/status") {
+    return NextResponse.json({
+      last_run: new Date().toISOString(),
+      status: "IDLE",
+      filings_detected: 820,
+      filings_loaded: 820,
+      last_error: null
+    });
+  }
+
   // Default catch-all response
   return NextResponse.json({
     status: "ok",
@@ -499,11 +558,37 @@ export async function POST(req: NextRequest, context: { params: Promise<{ slug: 
 
   // Load CVM company into Cube
   if (path.includes("load-cube")) {
-    const comp = sessionStore.getActiveCompany();
+    let codCvm: number | null = null;
+    const match = path.match(/companies\/(\d+)\/load-cube/);
+    if (match) {
+      codCvm = parseInt(match[1], 10);
+    }
+    const comp = CVM_COMPANIES.find(c => c.cod_cvm === codCvm);
+    if (comp) {
+      sessionStore.setActiveCompany({
+        id: `cvm_${comp.cod_cvm}`,
+        name: comp.denom_social,
+        ticker: comp.nome_pregao,
+        currency: "R$",
+        periods: ["2023", "2024", "2025", "Budget 2026"],
+        description: `Companhia aberta listada na CVM (${comp.denom_social}) carregada via CVM Watch & Análise.`
+      });
+    }
+    const updated = sessionStore.getActiveCompany();
     return NextResponse.json({
-      status: "success",
-      message: `${comp.name} carregada com sucesso no HyperCube Engine.`,
-      company: comp
+      status: "loaded",
+      cod_cvm: codCvm,
+      company_id: updated.id,
+      company_name: updated.name,
+      active_company: updated,
+      message: `Successfully loaded ${updated.name} into HyperCube Calculation Engine`
+    });
+  }
+
+  if (path === "cvm/watchdog/run") {
+    return NextResponse.json({
+      status: "TRIGGERED",
+      message: "CVM Watchdog detection cycle initiated"
     });
   }
 

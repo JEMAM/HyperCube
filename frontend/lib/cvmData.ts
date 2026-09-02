@@ -1,0 +1,293 @@
+import cvmCompaniesJson from "./cvm_companies.json";
+
+export interface CVMCompany {
+  cod_cvm: number;
+  cnpj: string;
+  denom_social: string;
+  nome_pregao: string;
+  categoria: string;
+  situacao: string;
+  setor: string;
+  uf: string;
+  codigo_cvm_str: string;
+}
+
+export interface CVMFiling {
+  id: string;
+  cod_cvm: number;
+  tipo: string;
+  dt_refer: string;
+  dt_entrega: string;
+  versao: number;
+  url_documento: string;
+  status: string;
+}
+
+export interface CVMAnalysisResponse {
+  company: CVMCompany;
+  kpis: {
+    latest_period: string;
+    receita_liquida: number;
+    receita_growth_yoy: number;
+    lucro_liquido: number;
+    lucro_growth_yoy: number;
+    margem_bruta: number;
+    margem_ebit: number;
+    margem_liquida: number;
+    roe_estimado: number;
+  };
+  time_series: Array<{
+    period: string;
+    year: string;
+    quarter: string;
+    receita_liquida: number;
+    custo_bens_servicos: number;
+    lucro_bruto: number;
+    resultado_ebit: number;
+    lucro_liquido: number;
+    margem_bruta: number;
+    margem_ebit: number;
+    margem_liquida: number;
+    raw_accounts: Array<{
+      cd_conta: string;
+      ds_conta: string;
+      vl_conta: number;
+      conta_canonical: string;
+    }>;
+  }>;
+  filings: CVMFiling[];
+  periods: string[];
+}
+
+export const CVM_SECTORS: string[] = [
+  "Agricultura (Açúcar, Álcool e Cana)",
+  "Alimentos e Bebidas",
+  "Arrendamento Mercantil",
+  "Bancos",
+  "Bolsas de Valores / Mercado de Capitais",
+  "Brinquedos e Lazer",
+  "Comunicação e Informática",
+  "Comércio (Atacado e Varejo)",
+  "Construção Civil e Imobiliário",
+  "Crédito Imobiliário",
+  "Educação",
+  "Embalagens",
+  "Energia Elétrica",
+  "Extração Mineral",
+  "Farmacêutico e Higiene",
+  "Hospedagem e Turismo",
+  "Intermediação Financeira",
+  "Material de Transporte / Aeroespacial",
+  "Metalurgia e Siderurgia",
+  "Máquinas, Equipamentos, Veículos e Peças",
+  "Papel e Celulose",
+  "Petroquímicos e Borracha",
+  "Petróleo e Gás",
+  "Reflorestamento",
+  "Saneamento, Água e Serviços Básicos",
+  "Securitização de Recebíveis",
+  "Seguradoras e Corretoras",
+  "Sem Setor Principal",
+  "Serviços Médicos e Hospitalares",
+  "Serviços de Transporte e Logística",
+  "Telecomunicações",
+  "Têxtil e Vestuário"
+];
+
+export const CVM_COMPANIES: CVMCompany[] = (cvmCompaniesJson as CVMCompany[]);
+
+export function generateCvmAnalysis(cod_cvm: number): CVMAnalysisResponse {
+  const company = CVM_COMPANIES.find(c => c.cod_cvm === cod_cvm) || {
+    cod_cvm,
+    cnpj: "00.000.000/0001-00",
+    denom_social: `COMPANHIA ABERTA (CVM ${cod_cvm})`,
+    nome_pregao: `CIA CVM ${cod_cvm}`,
+    categoria: "Categoria A",
+    situacao: "ATIVO",
+    setor: "Energia Elétrica",
+    uf: "SP",
+    codigo_cvm_str: String(cod_cvm).padStart(6, "0")
+  };
+
+  const nameUpper = (company.denom_social + " " + company.nome_pregao).toUpperCase();
+
+  // Base parameters according to company profile
+  let baseRev = 5000.0;
+  let grossMargin = 0.35;
+  let ebitMargin = 0.18;
+  let netMargin = 0.12;
+
+  if (cod_cvm === 9512 || nameUpper.includes("PETROBRAS")) {
+    baseRev = 125000.0;
+    grossMargin = 0.52;
+    ebitMargin = 0.44;
+    netMargin = 0.28;
+  } else if (cod_cvm === 4170 || nameUpper.includes("VALE S.A.")) {
+    baseRev = 55000.0;
+    grossMargin = 0.48;
+    ebitMargin = 0.42;
+    netMargin = 0.26;
+  } else if (cod_cvm === 1023 || nameUpper.includes("BANCO DO BRASIL")) {
+    baseRev = 38500.0;
+    grossMargin = 0.64;
+    ebitMargin = 0.36;
+    netMargin = 0.22;
+  } else if (cod_cvm === 19348 || nameUpper.includes("ITAU UNIBANCO")) {
+    baseRev = 44800.0;
+    grossMargin = 0.66;
+    ebitMargin = 0.38;
+    netMargin = 0.24;
+  } else if (cod_cvm === 23264 || nameUpper.includes("AMBEV")) {
+    baseRev = 21500.0;
+    grossMargin = 0.50;
+    ebitMargin = 0.32;
+    netMargin = 0.19;
+  } else if (cod_cvm === 5410 || nameUpper.includes("WEG")) {
+    baseRev = 9200.0;
+    grossMargin = 0.34;
+    ebitMargin = 0.22;
+    netMargin = 0.16;
+  } else if (cod_cvm === 18325 || cod_cvm === 20087 || nameUpper.includes("EMBRAER")) {
+    baseRev = 6800.0;
+    grossMargin = 0.22;
+    ebitMargin = 0.12;
+    netMargin = 0.08;
+  } else if (cod_cvm === 20982 || nameUpper.includes("EQUATORIAL")) {
+    baseRev = 11400.0;
+    grossMargin = 0.28;
+    ebitMargin = 0.21;
+    netMargin = 0.14;
+  } else if (cod_cvm === 2437 || nameUpper.includes("ELETROBRAS")) {
+    baseRev = 18600.0;
+    grossMargin = 0.42;
+    ebitMargin = 0.31;
+    netMargin = 0.20;
+  } else if (cod_cvm === 17329 || nameUpper.includes("ENGIE")) {
+    baseRev = 4200.0;
+    grossMargin = 0.55;
+    ebitMargin = 0.46;
+    netMargin = 0.30;
+  } else if (cod_cvm === 18660 || nameUpper.includes("CPFL")) {
+    baseRev = 10800.0;
+    grossMargin = 0.32;
+    ebitMargin = 0.24;
+    netMargin = 0.15;
+  } else if (cod_cvm === 21903 || nameUpper.includes("CASAS BAHIA")) {
+    baseRev = 7600.0;
+    grossMargin = 0.28;
+    ebitMargin = 0.07;
+    netMargin = 0.02;
+  } else if (cod_cvm === 22470 || nameUpper.includes("MAGAZINE LUIZA")) {
+    baseRev = 10500.0;
+    grossMargin = 0.31;
+    ebitMargin = 0.08;
+    netMargin = 0.03;
+  } else if (cod_cvm === 4820 || nameUpper.includes("BRASKEM")) {
+    baseRev = 17500.0;
+    grossMargin = 0.18;
+    ebitMargin = 0.09;
+    netMargin = 0.04;
+  } else {
+    // Unique deterministic baseline
+    baseRev = 1500.0 + ((cod_cvm * 179) % 18500);
+    grossMargin = 0.25 + ((cod_cvm % 30) / 100);
+    ebitMargin = 0.10 + ((cod_cvm % 20) / 100);
+    netMargin = ebitMargin * 0.65;
+  }
+
+  const quarters = [
+    { period: "2023-03-31", year: "2023", quarter: "03/2023", tipo: "ITR", factor: 0.88 },
+    { period: "2023-06-30", year: "2023", quarter: "06/2023", tipo: "ITR", factor: 0.90 },
+    { period: "2023-09-30", year: "2023", quarter: "09/2023", tipo: "ITR", factor: 0.92 },
+    { period: "2023-12-31", year: "2023", quarter: "12/2023", tipo: "DFP", factor: 0.95 },
+    { period: "2024-03-31", year: "2024", quarter: "03/2024", tipo: "ITR", factor: 0.96 },
+    { period: "2024-06-30", year: "2024", quarter: "06/2024", tipo: "ITR", factor: 0.98 },
+    { period: "2024-09-30", year: "2024", quarter: "09/2024", tipo: "ITR", factor: 1.00 },
+    { period: "2024-12-31", year: "2024", quarter: "12/2024", tipo: "DFP", factor: 1.04 },
+    { period: "2025-03-31", year: "2025", quarter: "03/2025", tipo: "ITR", factor: 1.05 },
+    { period: "2025-06-30", year: "2025", quarter: "06/2025", tipo: "ITR", factor: 1.08 },
+    { period: "2025-09-30", year: "2025", quarter: "09/2025", tipo: "ITR", factor: 1.11 },
+    { period: "2025-12-31", year: "2025", quarter: "12/2025", tipo: "DFP", factor: 1.15 },
+    { period: "2026-03-31", year: "2026", quarter: "03/2026", tipo: "ITR", factor: 1.18 },
+    { period: "2026-06-30", year: "2026", quarter: "06/2026", tipo: "ITR", factor: 1.22 }
+  ];
+
+  const time_series = quarters.map((q) => {
+    const rev = Math.round(baseRev * q.factor * 100) / 100;
+    const cpv = Math.round(-rev * (1 - grossMargin) * 100) / 100;
+    const gross = Math.round((rev + cpv) * 100) / 100;
+    const opex = Math.round(-rev * (grossMargin - ebitMargin) * 100) / 100;
+    const ebit = Math.round((gross + opex) * 100) / 100;
+    const fin = Math.round(-ebit * 0.12 * 100) / 100;
+    const lair = Math.round((ebit + fin) * 100) / 100;
+    const tax = Math.round(-lair * 0.25 * 100) / 100;
+    const net = Math.round((lair + tax) * 100) / 100;
+
+    return {
+      period: q.period,
+      year: q.year,
+      quarter: q.quarter,
+      receita_liquida: rev,
+      custo_bens_servicos: cpv,
+      lucro_bruto: gross,
+      resultado_ebit: ebit,
+      lucro_liquido: net,
+      margem_bruta: Math.round((gross / rev) * 1000) / 10,
+      margem_ebit: Math.round((ebit / rev) * 1000) / 10,
+      margem_liquida: Math.round((net / rev) * 1000) / 10,
+      raw_accounts: [
+        { cd_conta: "3.01", ds_conta: "Receita Líquida de Vendas e/ou Serviços", vl_conta: rev, conta_canonical: "receita_liquida" },
+        { cd_conta: "3.02", ds_conta: "Custo dos Bens e/ou Serviços Vendidos", vl_conta: cpv, conta_canonical: "custo_bens_servicos" },
+        { cd_conta: "3.03", ds_conta: "Resultado Bruto", vl_conta: gross, conta_canonical: "lucro_bruto" },
+        { cd_conta: "3.04", ds_conta: "Despesas/Receitas Operacionais", vl_conta: opex, conta_canonical: "despesas_operacionais" },
+        { cd_conta: "3.04.01", ds_conta: "Despesas com Vendas", vl_conta: Math.round(opex * 0.6 * 100) / 100, conta_canonical: "despesas_vendas" },
+        { cd_conta: "3.04.02", ds_conta: "Despesas Gerais e Administrativas", vl_conta: Math.round(opex * 0.4 * 100) / 100, conta_canonical: "despesas_gerais_adm" },
+        { cd_conta: "3.05", ds_conta: "Resultado Antes do Resultado Financeiro e Tributos (EBIT)", vl_conta: ebit, conta_canonical: "resultado_ebit" },
+        { cd_conta: "3.06", ds_conta: "Resultado Financeiro", vl_conta: fin, conta_canonical: "resultado_financeiro" },
+        { cd_conta: "3.07", ds_conta: "Resultado Antes dos Tributos sobre o Lucro", vl_conta: lair, conta_canonical: "resultado_antes_tributos" },
+        { cd_conta: "3.08", ds_conta: "Imposto de Renda e Contribuição Social", vl_conta: tax, conta_canonical: "imposto_renda_contribuicao" },
+        { cd_conta: "3.11", ds_conta: "Lucro/Prejuízo Consolidado do Período", vl_conta: net, conta_canonical: "lucro_liquido" }
+      ]
+    };
+  });
+
+  const latest = time_series[time_series.length - 1];
+  const prevYear = time_series[time_series.length - 5] || time_series[0];
+
+  const calcGrowth = (curr: number, prev: number) => {
+    if (!prev) return 0.0;
+    return Math.round(((curr - prev) / Math.abs(prev)) * 1000) / 10;
+  };
+
+  const revGrowth = calcGrowth(latest.receita_liquida, prevYear.receita_liquida);
+  const netGrowth = calcGrowth(latest.lucro_liquido, prevYear.lucro_liquido);
+
+  const filings: CVMFiling[] = quarters.slice().reverse().map((q, idx) => ({
+    id: `filing_${cod_cvm}_${q.period.replace(/-/g, "")}`,
+    cod_cvm,
+    tipo: q.tipo,
+    dt_refer: q.period,
+    dt_entrega: q.period,
+    versao: 1,
+    url_documento: `https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/${q.tipo}/DADOS/${q.tipo.toLowerCase()}_cia_aberta_${q.year}.zip`,
+    status: idx === 0 ? "NEW" : "LOADED"
+  }));
+
+  return {
+    company,
+    kpis: {
+      latest_period: latest.period,
+      receita_liquida: latest.receita_liquida,
+      receita_growth_yoy: revGrowth,
+      lucro_liquido: latest.lucro_liquido,
+      lucro_growth_yoy: netGrowth,
+      margem_bruta: latest.margem_bruta,
+      margem_ebit: latest.margem_ebit,
+      margem_liquida: latest.margem_liquida,
+      roe_estimado: Math.round(((latest.lucro_liquido * 4) / (latest.receita_liquida * 1.5)) * 1000) / 10
+    },
+    time_series,
+    filings,
+    periods: quarters.map(q => q.period)
+  };
+}

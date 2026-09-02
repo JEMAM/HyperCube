@@ -129,37 +129,7 @@ def normalize_sector(raw_sector: Optional[str]) -> str:
     if not s or s.lower() == "none":
         return "Outros"
 
-    # Fix common encoding corruptions if present
-    replacements = {
-        "Servios": "Serviços",
-        "Servios": "Serviços",
-        "Comrcio": "Comércio",
-        "Comrcio": "Comércio",
-        "Farmcias": "Farmácias",
-        "Farmcias": "Farmácias",
-        "Distribuio": "Distribuição",
-        "Distribuio": "Distribuição",
-        "Distribuio": "Distribuição",
-        "Combustveis": "Combustíveis",
-        "Combustveis": "Combustíveis",
-        "Eltrica": "Elétrica",
-        "Eltrica": "Elétrica",
-        "Intermedirios": "Intermediários",
-        "Intermedirios": "Intermediários",
-        "Minerao": "Mineração",
-        "Minerao": "Mineração",
-        "Minerao": "Mineração",
-        "Mquinas": "Máquinas",
-        "Mquinas": "Máquinas",
-        "Petrleo": "Petróleo",
-        "Petrleo": "Petróleo",
-        "Gs": "Gás",
-        "Gs": "Gás",
-        "Biocombustveis": "Biocombustíveis",
-        "Biocombustveis": "Biocombustíveis",
-    }
-    for old, new in replacements.items():
-        s = s.replace(old, new)
+    s = s.replace("\ufffd", "").replace("", "")
 
     # Strip holding / corporate prefixes
     prefixes = [
@@ -178,45 +148,72 @@ def normalize_sector(raw_sector: Optional[str]) -> str:
 
     s_clean = _clean_str(s)
 
-    if "intermediacao" in s_clean or "banco" in s_clean or "credito" in s_clean:
-        return "Intermediários Financeiros / Bancos"
-    if "petroleo" in s_clean or "combustivel" in s_clean or "gas" in s_clean:
-        if "distribuicao" in s_clean:
-            return "Distribuição de Combustíveis"
-        return "Petróleo, Gás e Biocombustíveis"
-    if "mineracao" in s_clean or "metalurgia" in s_clean or "siderurgia" in s_clean:
-        return "Mineração e Metalurgia"
-    if "energia" in s_clean or "eletrica" in s_clean or "eletricidade" in s_clean:
-        return "Energia Elétrica"
-    if "farmacia" in s_clean or "drogaria" in s_clean or "medicamento" in s_clean:
-        return "Comércio / Farmácias"
-    if "varejista" in s_clean or "varejo" in s_clean or "lojas" in s_clean:
-        return "Comércio Varejista"
-    if "bebida" in s_clean or "alimento" in s_clean or "frigorifico" in s_clean:
-        return "Bebidas e Alimentos"
-    if "maquina" in s_clean or "equipamento" in s_clean or "motores" in s_clean:
-        return "Máquinas e Equipamentos"
-    if "papel" in s_clean or "celulose" in s_clean or "madeira" in s_clean:
-        return "Papel e Celulose"
-    if "aluguel" in s_clean or "locacao" in s_clean or "locadora" in s_clean or "carros" in s_clean:
-        return "Aluguel de Carros / Serviços"
-    if "transporte" in s_clean or "aeroespacial" in s_clean or "aeronaut" in s_clean or "aviacao" in s_clean:
-        return "Material de Transporte / Aeroespacial"
-    if "bolsa" in s_clean or "servicos financeiros" in s_clean:
-        return "Serviços Financeiros Diversos"
-    if "telecom" in s_clean or "telefonia" in s_clean or "tecnologia" in s_clean or "software" in s_clean:
-        return "Telecomunicações & Tecnologia"
-    if "saude" in s_clean or "hospital" in s_clean or "diagnostico" in s_clean:
-        return "Saúde & Serviços Hospitalares"
-    if "imobiliario" in s_clean or "construcao" in s_clean or "incorporacao" in s_clean:
-        return "Construção Civil & Imobiliário"
+    # 31 Canonical CVM Sectors
+    if "agricultura" in s_clean or "cana" in s_clean:
+        return "Agricultura (Açúcar, Álcool e Cana)"
+    if "bebida" in s_clean or "alimento" in s_clean or "fumo" in s_clean or "frigorifico" in s_clean:
+        return "Alimentos e Bebidas"
+    if "arrendamento" in s_clean:
+        return "Arrendamento Mercantil"
+    if "banco" in s_clean:
+        return "Bancos"
+    if "bolsa" in s_clean or "mercado de capitais" in s_clean:
+        return "Bolsas de Valores / Mercado de Capitais"
+    if "brinquedo" in s_clean or "lazer" in s_clean:
+        return "Brinquedos e Lazer"
+    if "comunicacao" in s_clean or "informatica" in s_clean:
+        return "Comunicação e Informática"
+    if "comercio" in s_clean or "atacado" in s_clean or "varejo" in s_clean or "lojas" in s_clean:
+        return "Comércio (Atacado e Varejo)"
+    if "construcao" in s_clean or "imobiliario" in s_clean or "incorporacao" in s_clean or "mat. const" in s_clean:
+        return "Construção Civil e Imobiliário"
+    if "credito imobiliario" in s_clean:
+        return "Crédito Imobiliário"
     if "educacao" in s_clean or "ensino" in s_clean:
         return "Educação"
-    if "saneamento" in s_clean or "agua" in s_clean:
-        return "Saneamento & Serviços Básicos"
-    if "agro" in s_clean or "agricultura" in s_clean or "graos" in s_clean:
-        return "Agronegócio"
+    if "embalagens" in s_clean or "embalagem" in s_clean:
+        return "Embalagens"
+    if "energia" in s_clean or "eletrica" in s_clean:
+        return "Energia Elétrica"
+    if "extracao mineral" in s_clean:
+        return "Extração Mineral"
+    if "farmac" in s_clean or "drogaria" in s_clean or "higiene" in s_clean or "medicamento" in s_clean:
+        return "Farmacêutico e Higiene"
+    if "hospedagem" in s_clean or "turismo" in s_clean or "hotel" in s_clean:
+        return "Hospedagem e Turismo"
+    if "intermediacao" in s_clean or "financeira" in s_clean:
+        return "Intermediação Financeira"
+    if "aeroespacial" in s_clean or "aeronaut" in s_clean or "material de transporte" in s_clean or "aviacao" in s_clean:
+        return "Material de Transporte / Aeroespacial"
+    if "metalurgia" in s_clean or "siderurgia" in s_clean:
+        return "Metalurgia e Siderurgia"
+    if "maquina" in s_clean or "equipamento" in s_clean or "motores" in s_clean or "veic" in s_clean or "pecas" in s_clean:
+        return "Máquinas, Equipamentos, Veículos e Peças"
+    if "papel" in s_clean or "celulose" in s_clean or "madeira" in s_clean:
+        return "Papel e Celulose"
+    if "petroquimico" in s_clean or "borracha" in s_clean:
+        return "Petroquímicos e Borracha"
+    if "petroleo" in s_clean or "gas" in s_clean or "combustivel" in s_clean:
+        return "Petróleo e Gás"
+    if "reflorestamento" in s_clean:
+        return "Reflorestamento"
+    if "saneamento" in s_clean or "agua" in s_clean or "esgoto" in s_clean:
+        return "Saneamento, Água e Serviços Básicos"
+    if "securitizacao" in s_clean:
+        return "Securitização de Recebíveis"
+    if "segurador" in s_clean or "corretora" in s_clean or "previdencia" in s_clean:
+        return "Seguradoras e Corretoras"
+    if "sem setor" in s_clean:
+        return "Sem Setor Principal"
+    if "medico" in s_clean or "hospital" in s_clean or "saude" in s_clean or "diagnostico" in s_clean:
+        return "Serviços Médicos e Hospitalares"
+    if "transporte" in s_clean or "logistica" in s_clean or "locacao" in s_clean:
+        return "Serviços de Transporte e Logística"
+    if "telecom" in s_clean or "telefonia" in s_clean:
+        return "Telecomunicações"
+    if "textil" in s_clean or "vestuario" in s_clean:
+        return "Têxtil e Vestuário"
 
-    return s if s else "Outros"
+    return s if s else "Sem Setor Principal"
 
 
