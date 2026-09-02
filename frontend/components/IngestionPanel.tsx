@@ -28,12 +28,12 @@ export interface UploadProgressState {
 }
 
 interface IngestionPanelProps {
-  onUploadSuccess?: (targetMode?: "DRE" | "DFC" | "BP" | "DRA" | "DMPL" | "DVA" | "NE" | "PLANNING") => void;
+  onUploadSuccess?: (targetMode?: "DRE" | "DFC" | "BP" | "DRA" | "DMPL" | "DVA" | "NE" | "PLANNING", companyInfo?: any) => void;
   onUploadProgress?: (progress: UploadProgressState) => void;
 }
 
 export default function IngestionPanel({ onUploadSuccess, onUploadProgress }: IngestionPanelProps) {
-  const { theme, language, apiBaseUrl } = usePreferences();
+  const { theme, language, apiBaseUrl, setActiveCompany } = usePreferences();
   const isDark = theme === "dark";
   const isEn = language === "en";
 
@@ -140,24 +140,33 @@ export default function IngestionPanel({ onUploadSuccess, onUploadProgress }: In
             : "Execução concluída! Todas as demonstrações e páginas preenchidas."
         });
 
+        if (data && data.company_info) {
+          setActiveCompany(data.company_info);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("hypercube_active_company", JSON.stringify(data.company_info));
+            window.dispatchEvent(new CustomEvent("hypercube_company_updated", { detail: data.company_info }));
+          }
+        }
+
         setFile(null);
         if (onUploadSuccess) {
+          const comp = data.company_info;
           if (statementType === "BP") {
-            onUploadSuccess("BP");
+            onUploadSuccess("BP", comp);
           } else if (statementType === "DFC") {
-            onUploadSuccess("DFC");
+            onUploadSuccess("DFC", comp);
           } else if (statementType === "DRA") {
-            onUploadSuccess("DRA");
+            onUploadSuccess("DRA", comp);
           } else if (statementType === "DMPL") {
-            onUploadSuccess("DMPL");
+            onUploadSuccess("DMPL", comp);
           } else if (statementType === "DVA") {
-            onUploadSuccess("DVA");
+            onUploadSuccess("DVA", comp);
           } else if (statementType === "NE") {
-            onUploadSuccess("NE");
+            onUploadSuccess("NE", comp);
           } else if (statementType === "ALL") {
-            onUploadSuccess("PLANNING");
+            onUploadSuccess("PLANNING", comp);
           } else {
-            onUploadSuccess("DRE");
+            onUploadSuccess("DRE", comp);
           }
         }
       } else {

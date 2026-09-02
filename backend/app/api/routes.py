@@ -216,21 +216,59 @@ def save_ai_keys(req: SaveCredentialsRequest):
 def get_current_company():
     return get_active_company_info()
 
+@router.post("/active-company")
+def update_active_company(info: Dict[str, Any]):
+    set_active_company_info(info)
+    return get_active_company_info()
+
 def _ensure_client_company_info(filename: str):
-    info = get_active_company_info()
-    if info.get("id") == "aguardando_upload":
-        clean_name = os.path.splitext(filename)[0].replace("_", " ").replace("-", " ").title()
-        new_info = {
-            "id": "empresa_cliente",
-            "name": clean_name,
-            "ticker": "CLIENTE",
-            "currency": "R$ Milhões",
-            "periods": ["P-1", "P-0", "Budget 2026"],
-            "description": f"Demonstração financeira importada de: {filename}."
-        }
-        set_active_company_info(new_info)
-        return new_info
-    return info
+    clean_name = os.path.splitext(filename)[0].replace("_", " ").replace("-", " ").title()
+    lower_fn = filename.lower()
+    cid = "empresa_cliente"
+    ticker = "CLIENTE"
+    periods = ["2024", "2025", "Budget 2026"]
+
+    if "casas" in lower_fn or "bahia" in lower_fn or "bhia" in lower_fn:
+        cid = "casas_bahia"
+        clean_name = "Grupo Casas Bahia S.A."
+        ticker = "BHIA3"
+        periods = ["1T25", "1T26", "Budget 2026"]
+    elif "banco do brasil" in lower_fn or "bbas" in lower_fn:
+        cid = "banco_do_brasil"
+        clean_name = "Banco do Brasil S.A."
+        ticker = "BBAS3"
+        periods = ["2S25", "2025", "Budget 2026"]
+    elif "master" in lower_fn:
+        cid = "banco_master"
+        clean_name = "Banco Master S.A."
+        ticker = "BANCO MASTER"
+        periods = ["2023", "2024", "Budget 2025"]
+    elif "klabin" in lower_fn or "klbn" in lower_fn:
+        cid = "klabin"
+        clean_name = "Klabin S.A."
+        ticker = "KLBN11"
+        periods = ["2024", "2025", "Budget 2026"]
+    elif "vale" in lower_fn:
+        cid = "vale"
+        clean_name = "Vale S.A."
+        ticker = "VALE3"
+        periods = ["2024", "2025", "Budget 2026"]
+    elif "ambev" in lower_fn or "abev" in lower_fn:
+        cid = "ambev"
+        clean_name = "Ambev S.A."
+        ticker = "ABEV3"
+        periods = ["4T24", "4T25", "Budget 2026"]
+
+    new_info = {
+        "id": cid,
+        "name": clean_name,
+        "ticker": ticker,
+        "currency": "R$ Milhões",
+        "periods": periods,
+        "description": f"Demonstração financeira importada de: {filename}."
+    }
+    set_active_company_info(new_info)
+    return new_info
 
 @router.post("/upload-dre")
 async def upload_dre_file(file: UploadFile = File(...)):

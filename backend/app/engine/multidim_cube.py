@@ -402,6 +402,11 @@ class MultiDimCube:
             time_dim.add_member("2024", "Exercício 2024 (Consolidado)", parent=None, order=1)
             time_dim.add_member("2023", "Exercício 2023 (Consolidado)", parent=None, order=2)
             time_dim.add_member("Budget_2025", "Orçamento 2025 (Budget Master)", parent=None, order=3)
+        elif company_id == "empresa_cliente":
+            from backend.app.data.loader import get_active_company_info
+            act = get_active_company_info()
+            for idx, p in enumerate(act.get("periods", ["2024", "2025", "Budget 2026"]), 1):
+                time_dim.add_member(p, f"Período {p}", parent=None, order=idx)
         else:
             time_dim.add_member("4T25", "4º Trimestre 2025 (4T25)", parent=None, order=1)
             time_dim.add_member("4T24", "4º Trimestre 2024 (4T24)", parent=None, order=2)
@@ -450,6 +455,13 @@ class MultiDimCube:
             ent_dim.add_member("Banco_Comercial", "Banco Comercial & Câmbio", parent="Total_Company", order=2)
             ent_dim.add_member("Investment_Banking", "Investment Banking & DTVM", parent="Total_Company", order=3)
             ent_dim.add_member("Credito_Varejo", "Crédito Consignado & Varejo", parent="Total_Company", order=4)
+        elif company_id == "empresa_cliente":
+            from backend.app.data.loader import get_active_company_info
+            act = get_active_company_info()
+            comp_name = act.get("name", "Empresa Cliente")
+            ent_dim.add_member("Total_Company", f"{comp_name} Consolidado", parent=None, order=1)
+            ent_dim.add_member("Operacoes_Principais", "Operações Principais", parent="Total_Company", order=2)
+            ent_dim.add_member("Outras_Operacoes", "Outras Unidades de Negócio", parent="Total_Company", order=3)
         else:
             ent_dim.add_member("Total_Company", "Ambev Consolidado", parent=None, order=1)
             ent_dim.add_member("Brasil_Cerveja", "Brasil Cerveja", parent="Total_Company", order=2)
@@ -673,6 +685,29 @@ class MultiDimCube:
             dre_exact = {
                 "2023": m2023, "2024": m2024, "Budget_2025": m2025
             }
+        elif company_id == "empresa_cliente":
+            from backend.app.data.loader import get_active_company_info
+            act = get_active_company_info()
+            periods = act.get("periods", ["2024", "2025", "Budget 2026"])
+            dre_exact = {}
+            for idx, p in enumerate(periods):
+                m = 1.0 + (idx * 0.08)
+                dre_exact[p] = {
+                    "Receita_Bruta": round(15000.0 * m, 2),
+                    "Deducoes_Receita": round(2500.0 * m, 2),
+                    "Receita_Liquida": round(12500.0 * m, 2),
+                    "CMV": round(8000.0 * m, 2),
+                    "Margem_Bruta": round(4500.0 * m, 2),
+                    "Despesas_Logistica": round(1200.0 * m, 2),
+                    "Despesas_Comerciais": round(900.0 * m, 2),
+                    "Despesas_Gerais_Admin": round(600.0 * m, 2),
+                    "EBIT": round(1800.0 * m, 2),
+                    "EBITDA": round(2400.0 * m, 2),
+                    "Resultado_Financeiro": round(-400.0 * m, 2),
+                    "EBT": round(1400.0 * m, 2),
+                    "Impostos_Lucro": round(450.0 * m, 2),
+                    "Lucro_Liquido": round(950.0 * m, 2)
+                }
         else:
             dre_exact = {
                 "4T24": {

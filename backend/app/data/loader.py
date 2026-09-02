@@ -408,15 +408,40 @@ def load_txt_dre(txt_path: Optional[str] = None) -> pl.DataFrame:
             break
 
     if resolved_path:
-        df_pd = pd.read_csv(resolved_path, sep=";", quotechar='"')
+        try:
+            if resolved_path.lower().endswith((".xlsx", ".xls")):
+                df_pd = pd.read_excel(resolved_path)
+            else:
+                try:
+                    df_pd = pd.read_csv(resolved_path, sep=";", quotechar='"')
+                    if df_pd.shape[1] <= 1:
+                        df_pd = pd.read_csv(resolved_path, sep=",")
+                except Exception:
+                    df_pd = pd.read_csv(resolved_path, sep=",")
+        except Exception as ex_read:
+            print(f"[Loader] Error reading {resolved_path}: {ex_read}")
+            return load_txt_dre(None)
+
         for col in df_pd.columns:
             if col != "data":
                 df_pd[col] = df_pd[col].astype(str).str.replace('"', '').str.replace(',', '.').str.strip()
                 df_pd[col] = pd.to_numeric(df_pd[col], errors='coerce').fillna(0.0)
 
-        dt = pd.to_datetime(df_pd["data"])
-        df_pd["ano"] = dt.dt.year
-        df_pd["trimestre"] = dt.dt.quarter
+        if "data" in df_pd.columns:
+            try:
+                dt = pd.to_datetime(df_pd["data"])
+                df_pd["ano"] = dt.dt.year
+                df_pd["trimestre"] = dt.dt.quarter
+            except Exception:
+                if "ano" not in df_pd.columns:
+                    df_pd["ano"] = 2025
+                if "trimestre" not in df_pd.columns:
+                    df_pd["trimestre"] = 4
+        else:
+            if "ano" not in df_pd.columns:
+                df_pd["ano"] = 2025
+            if "trimestre" not in df_pd.columns:
+                df_pd["trimestre"] = 4
 
         # Canonical normalization for unified columns:
         if "receita_titulos_valores_mobiliarios" not in df_pd.columns:

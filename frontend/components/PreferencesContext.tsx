@@ -320,6 +320,18 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
       if (res.ok) {
         const data = await res.json();
         if (data && data.name) {
+          // If client has custom upload, protect it against default Braskem overwrites
+          if (typeof window !== "undefined") {
+            const savedStr = localStorage.getItem("hypercube_active_company");
+            if (savedStr) {
+              try {
+                const parsed = JSON.parse(savedStr);
+                if (parsed?.id === "empresa_cliente" && data.id === "cvm_004820") {
+                  return parsed;
+                }
+              } catch {}
+            }
+          }
           setActiveCompanyState(data);
           if (typeof window !== "undefined") {
             localStorage.setItem("hypercube_active_company", JSON.stringify(data));
@@ -389,26 +401,23 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
     const currentBase = apiBaseUrlRef.current;
     const candidates: string[] = [];
 
-    // Prioritize candidates:
-    // 1. Next.js proxy route (relative path "") - bypasses external firewall/CORS restrictions
-    candidates.push("");
-
-    // 2. Currently configured base
-    if (currentBase) {
-      candidates.push(currentBase);
-    }
-
-    // 3. Local loopback addresses ONLY when running on localhost
+    // 1. Loopback addresses first if running locally
     if (typeof window !== "undefined") {
       const hostname = window.location.hostname;
       const isLoopback = hostname === "localhost" || hostname === "127.0.0.1";
       if (isLoopback) {
-        const protocol = window.location.protocol || "http:";
-        candidates.push(`${protocol}//${hostname}:8000`);
         candidates.push("http://127.0.0.1:8000");
         candidates.push("http://localhost:8000");
       }
     }
+
+    // 2. Currently configured base
+    if (currentBase && currentBase !== "") {
+      candidates.push(currentBase);
+    }
+
+    // 3. Fallback: Next.js internal API route (relative path "")
+    candidates.push("");
 
     const uniqueCandidates = candidates.filter((v, i, a) => a.indexOf(v) === i);
 

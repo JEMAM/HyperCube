@@ -109,7 +109,7 @@ const BoardGovernanceCovenants = dynamic(() => import("@/components/BoardGoverna
 });
 
 function DashboardContent() {
-  const { theme, language, t, apiBaseUrl, backendOnline, checkBackendHealth, activeCompany, refreshActiveCompany, activeConnection, refreshActiveConnection, disconnectConnection } = usePreferences();
+  const { theme, language, t, apiBaseUrl, backendOnline, checkBackendHealth, activeCompany, setActiveCompany, refreshActiveCompany, activeConnection, refreshActiveConnection, disconnectConnection } = usePreferences();
   const { user, isAuthenticated, logout } = useAuth();
   const isDark = theme === "dark";
   const [viewMode, setViewMode] = useState<"LANDING" | "OVERVIEW" | "CONNECTIONS" | "PLANNING" | "DRIVERS" | "FORECAST" | "GOVERNANCE" | "THREE_STATEMENT" | "DRE" | "DFC" | "BP" | "DRA" | "DMPL" | "DVA" | "NE" | "DAG" | "CUBE" | "VALUATION" | "ECONOMY" | "CVM" | "GUIDE">("LANDING");
@@ -202,8 +202,12 @@ function DashboardContent() {
           fetch(kpiEndpoint),
         ]);
         if (annRes.ok && kpiRes.ok) {
-          annuals = await annRes.json();
-          kpiData = await kpiRes.json();
+          const annJson = await annRes.json();
+          const kpiJson = await kpiRes.json();
+          if (Array.isArray(annJson) && annJson.length > 0) {
+            annuals = annJson;
+            kpiData = kpiJson;
+          }
         }
       } catch {
         // Fallback to relative path (Vercel Edge Next.js API)
@@ -215,24 +219,37 @@ function DashboardContent() {
             fetch(relKpi),
           ]);
           if (annRes2.ok && kpiRes2.ok) {
-            annuals = await annRes2.json();
-            kpiData = await kpiRes2.json();
+            const annJson2 = await annRes2.json();
+            const kpiJson2 = await kpiRes2.json();
+            if (Array.isArray(annJson2) && annJson2.length > 0) {
+              annuals = annJson2;
+              kpiData = kpiJson2;
+            }
           }
         } catch {}
       }
 
-      if (annuals && kpiData) {
+      if (Array.isArray(annuals) && annuals.length > 0 && kpiData) {
         setAnnualData(annuals);
         setKpis(kpiData);
         setError(null);
       } else {
-        // Fallback canonical dataset (BRASKEM S.A. CVM data)
+        const prs = activeCompany?.periods || ["2024", "2025", "Budget 2026"];
         if (viewMode === "DFC") {
-          setAnnualData([
-            { ano: 2023, fco: 10500.0, fci: -6200.0, fcf: -3900.0, variacao_liquida: 400.0, saldo_final: 3555.8, yoy_growth_pct: 0.0 },
-            { ano: 2024, fco: 11850.2, fci: -7140.0, fcf: -4213.1, variacao_liquida: 497.1, saldo_final: 4052.9, yoy_growth_pct: 12.86 },
-            { ano: 2025, fco: 12900.0, fci: -7600.0, fcf: -4500.0, variacao_liquida: 800.0, saldo_final: 4852.9, yoy_growth_pct: 8.86 }
-          ]);
+          const genAnnuals = prs.map((pr, idx) => {
+            const yr = parseInt(pr.replace(/\D/g, "")) || (2024 + idx);
+            const m = 1 + idx * 0.08;
+            return {
+              ano: yr,
+              fco: Math.round(10500.0 * m),
+              fci: Math.round(-6200.0 * m),
+              fcf: Math.round(-3900.0 * m),
+              variacao_liquida: Math.round(400.0 * m),
+              saldo_final: Math.round(3555.8 * m),
+              yoy_growth_pct: idx === 0 ? 0.0 : 8.5
+            };
+          });
+          setAnnualData(genAnnuals);
           setKpis({
             Total_FCO: 11850.2,
             Total_FCI: -7140.0,
@@ -241,11 +258,20 @@ function DashboardContent() {
             Saldo_Final_Atual: 4052.9
           });
         } else {
-          setAnnualData([
-            { ano: 2023, produto_intermediacao: 13800.0, resultado_intermediacao: 5520.0, resultado_antes_tributacao: 2898.0, lucro_liquido: 1960.0, lucro_liquido_prev_year: 0.0, yoy_growth_pct: 0.0 },
-            { ano: 2024, produto_intermediacao: 14560.0, resultado_intermediacao: 5824.0, resultado_antes_tributacao: 3057.6, lucro_liquido: 2074.8, lucro_liquido_prev_year: 1960.0, yoy_growth_pct: 5.86 },
-            { ano: 2025, produto_intermediacao: 15430.0, resultado_intermediacao: 6172.0, resultado_antes_tributacao: 3240.3, lucro_liquido: 2198.5, lucro_liquido_prev_year: 2074.8, yoy_growth_pct: 5.96 }
-          ]);
+          const genAnnuals = prs.map((pr, idx) => {
+            const yr = parseInt(pr.replace(/\D/g, "")) || (2024 + idx);
+            const m = 1 + idx * 0.08;
+            return {
+              ano: yr,
+              produto_intermediacao: Math.round(14560.0 * m),
+              resultado_intermediacao: Math.round(5824.0 * m),
+              resultado_antes_tributacao: Math.round(3057.6 * m),
+              lucro_liquido: Math.round(2074.8 * m),
+              lucro_liquido_prev_year: Math.round(1960.0 * m),
+              yoy_growth_pct: idx === 0 ? 0.0 : 5.86
+            };
+          });
+          setAnnualData(genAnnuals);
           setKpis({
             Total_Produto_Intermediacao: 14560.0,
             Total_Resultado_Intermediacao: 5824.0,
@@ -256,7 +282,7 @@ function DashboardContent() {
         setError(null);
       }
     } catch (err: any) {
-      console.warn("API fetchData fallback (using canonical demo state):", err?.message);
+      console.warn("API fetchData fallback (using dynamic activeCompany state):", err?.message);
       setError(null);
     }
   };
@@ -844,7 +870,10 @@ function DashboardContent() {
                     onUploadProgress={(progress) => {
                       setPipelineProgress(progress);
                     }}
-                    onUploadSuccess={(type) => {
+                    onUploadSuccess={(type, companyInfo) => {
+                      if (companyInfo) {
+                        setActiveCompany(companyInfo);
+                      }
                       refreshActiveCompany();
                       fetchData();
                       setRefreshKey((k) => k + 1);
