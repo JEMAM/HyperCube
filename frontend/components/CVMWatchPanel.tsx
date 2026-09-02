@@ -121,7 +121,13 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
         (c.cnpj || "").includes(term)
       );
     }
-    return list;
+    // Deduplicate by cod_cvm
+    const seen = new Set<number>();
+    return list.filter((c) => {
+      if (!c || !c.cod_cvm || seen.has(c.cod_cvm)) return false;
+      seen.add(c.cod_cvm);
+      return true;
+    });
   }, [allCompanies, selectedSector, searchTerm]);
 
   // Synchronize company selection: if selectedCodCvm does not belong to the newly filtered list, pick the first one
@@ -193,10 +199,19 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
   const loadCompaniesFromApi = async () => {
     try {
       const data = await fetchWithFallback(`/api/cvm/companies`);
-      if (Array.isArray(data) && data.length > 0) {
-        setAllCompanies(data);
-      } else if (data && Array.isArray(data.companies) && data.companies.length > 0) {
-        setAllCompanies(data.companies);
+      const rawList = Array.isArray(data)
+        ? data
+        : (data && Array.isArray(data.companies) ? data.companies : null);
+      if (rawList && rawList.length > 0) {
+        const seen = new Set<number>();
+        const unique = rawList.filter((c: any) => {
+          if (!c || !c.cod_cvm || seen.has(c.cod_cvm)) return false;
+          seen.add(c.cod_cvm);
+          return true;
+        });
+        if (unique.length > 0) {
+          setAllCompanies(unique);
+        }
       }
     } catch {
       // Fallback is already initialized in state
@@ -570,8 +585,8 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
                   isDark ? "bg-slate-800 border-slate-700 text-slate-100" : "bg-slate-50 border-slate-300 text-slate-900"
                 }`}
               >
-                {filteredCompanies.map((c) => (
-                  <option key={c.cod_cvm} value={c.cod_cvm}>
+                {filteredCompanies.map((c, idx) => (
+                  <option key={`cvm_${c.cod_cvm}_${c.codigo_cvm_str || idx}`} value={c.cod_cvm}>
                     {c.nome_pregao} — {c.denom_social} (CVM {c.codigo_cvm_str})
                   </option>
                 ))}

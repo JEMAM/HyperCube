@@ -234,20 +234,25 @@ class CVMDatabase:
         query += " ORDER BY nome_pregao ASC, denom_social ASC"
         res = self.conn.execute(query, params).fetchall()
         
-        return [
-            {
-                "cod_cvm": r[0],
-                "cnpj": r[1],
-                "denom_social": r[2],
-                "nome_pregao": r[3] if r[3] and r[3].strip() not in ("", "--") else r[2],
-                "categoria": r[4],
-                "situacao": r[5],
-                "setor": normalize_sector(r[6]),
-                "uf": r[7],
-                "codigo_cvm_str": r[8] or str(r[0]).zfill(6)
+        companies_map = {}
+        for r in res:
+            if not r or len(r) == 0:
+                continue
+            cod = r[0] if len(r) > 0 else 0
+            if not cod or cod in companies_map:
+                continue
+            companies_map[cod] = {
+                "cod_cvm": cod,
+                "cnpj": r[1] if len(r) > 1 and r[1] is not None else "",
+                "denom_social": r[2] if len(r) > 2 and r[2] is not None else f"Companhia {cod}",
+                "nome_pregao": (r[3] if len(r) > 3 and r[3] and r[3].strip() not in ("", "--") else (r[2] if len(r) > 2 and r[2] else f"Companhia {cod}")),
+                "categoria": r[4] if len(r) > 4 and r[4] is not None else "Categoria A",
+                "situacao": r[5] if len(r) > 5 and r[5] is not None else "ATIVO",
+                "setor": normalize_sector(r[6]) if len(r) > 6 and r[6] else "Outros",
+                "uf": r[7] if len(r) > 7 and r[7] is not None else "",
+                "codigo_cvm_str": (r[8] if len(r) > 8 and r[8] else str(cod).zfill(6))
             }
-            for r in res
-        ]
+        return list(companies_map.values())
 
     def get_company_by_code(self, cod_cvm: int) -> Optional[Dict[str, Any]]:
         """Returns single company details by CVM code."""
@@ -256,18 +261,18 @@ class CVMDatabase:
             FROM cvm_companies 
             WHERE cod_cvm = ?
         """, [cod_cvm]).fetchone()
-        if not res:
+        if not res or len(res) == 0:
             return None
         return {
-            "cod_cvm": res[0],
-            "cnpj": res[1],
-            "denom_social": res[2],
-            "nome_pregao": res[3],
-            "categoria": res[4],
-            "situacao": res[5],
-            "setor": res[6],
-            "uf": res[7],
-            "codigo_cvm_str": res[8]
+            "cod_cvm": res[0] if len(res) > 0 else cod_cvm,
+            "cnpj": res[1] if len(res) > 1 and res[1] is not None else "",
+            "denom_social": res[2] if len(res) > 2 and res[2] is not None else f"Companhia {cod_cvm}",
+            "nome_pregao": res[3] if len(res) > 3 and res[3] is not None else "",
+            "categoria": res[4] if len(res) > 4 and res[4] is not None else "Categoria A",
+            "situacao": res[5] if len(res) > 5 and res[5] is not None else "ATIVO",
+            "setor": res[6] if len(res) > 6 and res[6] is not None else "",
+            "uf": res[7] if len(res) > 7 and res[7] is not None else "",
+            "codigo_cvm_str": res[8] if len(res) > 8 and res[8] is not None else str(cod_cvm).zfill(6)
         }
 
     def get_company_filings(self, cod_cvm: int) -> List[Dict[str, Any]]:

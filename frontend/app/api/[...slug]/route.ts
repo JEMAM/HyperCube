@@ -585,7 +585,13 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
         c.cnpj.includes(term)
       );
     }
-    return NextResponse.json(list);
+    const seen = new Set<number>();
+    const dedupedList = list.filter(c => {
+      if (!c || !c.cod_cvm || seen.has(c.cod_cvm)) return false;
+      seen.add(c.cod_cvm);
+      return true;
+    });
+    return NextResponse.json(dedupedList);
   }
 
   if (path.startsWith("cvm/companies/") && path.endsWith("/financials")) {

@@ -94,7 +94,13 @@ export const CVM_SECTORS: string[] = [
   "Têxtil e Vestuário"
 ];
 
-export const CVM_COMPANIES: CVMCompany[] = (cvmCompaniesJson as CVMCompany[]);
+const rawCompanies = cvmCompaniesJson as CVMCompany[];
+const seenCodes = new Set<number>();
+export const CVM_COMPANIES: CVMCompany[] = rawCompanies.filter(c => {
+  if (!c || !c.cod_cvm || seenCodes.has(c.cod_cvm)) return false;
+  seenCodes.add(c.cod_cvm);
+  return true;
+});
 
 export function generateCvmAnalysis(cod_cvm: number): CVMAnalysisResponse {
   const company = CVM_COMPANIES.find(c => c.cod_cvm === cod_cvm) || {
