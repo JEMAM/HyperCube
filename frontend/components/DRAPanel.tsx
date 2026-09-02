@@ -37,11 +37,15 @@ export default function DRAPanel({ onNavigate }: DRAPanelProps) {
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
-        setDraData(data);
-        if (data.periods && data.periods.length > 0) {
-          if (!data.periods.includes(selectedPeriod)) {
-            setSelectedPeriod(data.periods[data.periods.length - 1]);
+        if (data && data.has_data !== false && Array.isArray(data.rows) && data.rows.length > 0) {
+          setDraData(data);
+          if (Array.isArray(data.periods) && data.periods.length > 0) {
+            if (!data.periods.includes(selectedPeriod)) {
+              setSelectedPeriod(data.periods[data.periods.length - 1]);
+            }
           }
+        } else {
+          setDraData({ has_data: false });
         }
       } else {
         setDraData({ has_data: false });

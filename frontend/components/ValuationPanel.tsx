@@ -207,11 +207,19 @@ export default function ValuationPanel({ activeCompany, onNavigate }: ValuationP
   // Multi-target robust fetch helper
   const fetchWithFallback = async (path: string, options?: RequestInit): Promise<any> => {
     const cleanPath = path.startsWith("/") ? path : `/${path}`;
-    const candidates = [
-      `${apiBaseUrl || "http://localhost:8000"}${cleanPath}`,
-      `http://127.0.0.1:8000${cleanPath}`,
-      `http://localhost:8000${cleanPath}`,
-    ].filter((v, i, a) => a.indexOf(v) === i);
+    const isBrowser = typeof window !== "undefined";
+    const isLoopback = isBrowser && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
+    const candidates: string[] = [];
+    if (apiBaseUrl) {
+      candidates.push(`${apiBaseUrl.replace(/\/$/, "")}${cleanPath}`);
+    }
+    candidates.push(cleanPath);
+
+    if (isLoopback) {
+      candidates.push(`http://127.0.0.1:8000${cleanPath}`);
+      candidates.push(`http://localhost:8000${cleanPath}`);
+    }
 
     for (const url of candidates) {
       try {

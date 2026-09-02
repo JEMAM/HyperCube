@@ -35,7 +35,11 @@ export default function DMPLPanel({ onNavigate }: DMPLPanelProps) {
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
-        setDmplData(data);
+        if (data && data.has_data !== false && Array.isArray(data.rows) && data.rows.length > 0) {
+          setDmplData(data);
+        } else {
+          setDmplData({ has_data: false });
+        }
       } else {
         setDmplData({ has_data: false });
       }

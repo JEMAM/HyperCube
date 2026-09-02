@@ -37,7 +37,11 @@ export default function DVAPanel({ onNavigate }: DVAPanelProps) {
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
-        setDvaData(data);
+        if (data && data.has_data !== false && Array.isArray(data.geracao) && data.geracao.length > 0) {
+          setDvaData(data);
+        } else {
+          setDvaData({ has_data: false });
+        }
       } else {
         setDvaData({ has_data: false });
       }

@@ -129,6 +129,20 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
     return NextResponse.json((canonicalData as any).dfc_timeseries);
   }
 
+  // Statements (DRA, DMPL, DVA, NE)
+  if (path === "statements/dra") {
+    return NextResponse.json((canonicalData as any).statement_dra);
+  }
+  if (path === "statements/dmpl") {
+    return NextResponse.json((canonicalData as any).statement_dmpl);
+  }
+  if (path === "statements/dva") {
+    return NextResponse.json((canonicalData as any).statement_dva);
+  }
+  if (path === "statements/ne") {
+    return NextResponse.json((canonicalData as any).statement_ne);
+  }
+
   // 9. CVM companies list
   if (path === "cvm/companies") {
     return NextResponse.json({
@@ -214,6 +228,11 @@ export async function POST(req: NextRequest, context: { params: Promise<{ slug: 
   // Multidim query
   if (path === "multidim/query") {
     return NextResponse.json((canonicalData as any).multidim_query);
+  }
+
+  // Valuation calculation
+  if (path === "valuation/calculate") {
+    return NextResponse.json((canonicalData as any).valuation_calculate);
   }
 
   // What-If Simulation for DRE / DFC

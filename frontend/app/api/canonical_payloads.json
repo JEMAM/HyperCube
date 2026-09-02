@@ -4519,5 +4519,1245 @@
         }
       ]
     }
+  },
+  "statement_dra": {
+    "has_data": true,
+    "statement": "DRA",
+    "statement_full_name": "Demonstração do Resultado Abrangente",
+    "legal_basis": "CPC 26 (R1) / IAS 1 e Resolução CVM nº 80/2022",
+    "company": {
+      "id": "cvm_4820",
+      "name": "BRASKEM",
+      "ticker": "BRASKEM",
+      "sector": "Comércio / Indústria / Serviços",
+      "is_active_session": true,
+      "has_upload": true,
+      "cod_cvm": null
+    },
+    "periods": [
+      "2023",
+      "2024",
+      "2025",
+      "Budget 2026"
+    ],
+    "rows": [
+      {
+        "code": "1",
+        "name": "Lucro Líquido Consolidado do Período",
+        "level": 0,
+        "is_header": false,
+        "is_total": true,
+        "values": {
+          "2023": 1250.0,
+          "2024": 1420.0,
+          "2025": 1680.0,
+          "Budget 2026": 1950.0
+        }
+      },
+      {
+        "code": "2",
+        "name": "Outros Resultados Abrangentes (ORA)",
+        "level": 0,
+        "is_header": true,
+        "is_total": false,
+        "values": {}
+      },
+      {
+        "code": "2.01",
+        "name": "Variações Cambiais de Investimentos no Exterior (Hedge Líquido)",
+        "level": 1,
+        "is_header": false,
+        "is_total": false,
+        "values": {
+          "2023": -180.0,
+          "2024": 95.0,
+          "2025": -65.0,
+          "Budget 2026": 40.0
+        }
+      },
+      {
+        "code": "2.02",
+        "name": "Ajuste de Avaliação Patrimonial (Instrumentos Financeiros / Hedge de Fluxo de Caixa)",
+        "level": 1,
+        "is_header": false,
+        "is_total": false,
+        "values": {
+          "2023": 45.0,
+          "2024": -30.0,
+          "2025": 52.0,
+          "Budget 2026": 35.0
+        }
+      },
+      {
+        "code": "2.03",
+        "name": "Ganhos / (Perdas) Atuariais em Planos de Benefício a Empregados",
+        "level": 1,
+        "is_header": false,
+        "is_total": false,
+        "values": {
+          "2023": -12.0,
+          "2024": 8.0,
+          "2025": -5.0,
+          "Budget 2026": 0.0
+        }
+      },
+      {
+        "code": "2.04",
+        "name": "Efeitos Tributários sobre Outros Resultados Abrangentes",
+        "level": 1,
+        "is_header": false,
+        "is_total": false,
+        "values": {
+          "2023": 49.98,
+          "2024": -24.82,
+          "2025": 6.12,
+          "Budget 2026": -25.5
+        }
+      },
+      {
+        "code": "3",
+        "name": "Total dos Outros Resultados Abrangentes Líquidos",
+        "level": 0,
+        "is_header": false,
+        "is_total": true,
+        "values": {
+          "2023": -97.02,
+          "2024": 48.18,
+          "2025": -11.88,
+          "Budget 2026": 49.5
+        }
+      },
+      {
+        "code": "4",
+        "name": "RESULTADO ABRANGENTE TOTAL DO PERÍODO (1 + 3)",
+        "level": 0,
+        "is_header": false,
+        "is_total": true,
+        "values": {
+          "2023": 1152.98,
+          "2024": 1468.18,
+          "2025": 1668.12,
+          "Budget 2026": 1999.5
+        }
+      },
+      {
+        "code": "4.01",
+        "name": "  -> Atribuível aos Acionistas Controladores",
+        "level": 1,
+        "is_header": false,
+        "is_total": false,
+        "values": {
+          "2023": 1083.8,
+          "2024": 1394.77,
+          "2025": 1584.71,
+          "Budget 2026": 1919.52
+        }
+      },
+      {
+        "code": "4.02",
+        "name": "  -> Atribuível aos Acionistas Não Controladores",
+        "level": 1,
+        "is_header": false,
+        "is_total": false,
+        "values": {
+          "2023": 69.18,
+          "2024": 73.41,
+          "2025": 83.41,
+          "Budget 2026": 79.98
+        }
+      }
+    ],
+    "kpis": {
+      "total_abrangente": 1668.12,
+      "lucro_liquido": 1680.0,
+      "ora_liquido": -11.88,
+      "impacto_ora_pct": -0.71,
+      "controladores_pct": 95.0,
+      "periodo_referencia": "2025"
+    }
+  },
+  "statement_dmpl": {
+    "has_data": true,
+    "statement": "DMPL",
+    "statement_full_name": "Demonstração das Mutações do Patrimônio Líquido",
+    "legal_basis": "Lei nº 6.404/76 (Art. 186) e CPC 26 (R1)",
+    "company": {
+      "id": "cvm_4820",
+      "name": "BRASKEM",
+      "ticker": "BRASKEM",
+      "sector": "Comércio / Indústria / Serviços",
+      "is_active_session": true,
+      "has_upload": true,
+      "cod_cvm": null
+    },
+    "period": "2025",
+    "columns": [
+      {
+        "id": "capital_social",
+        "label": "Capital Social"
+      },
+      {
+        "id": "reserva_capital",
+        "label": "Reservas de Capital"
+      },
+      {
+        "id": "reserva_lucros",
+        "label": "Reservas de Lucros"
+      },
+      {
+        "id": "outros_abrangentes",
+        "label": "Outros Res. Abrangentes"
+      },
+      {
+        "id": "lucros_acumulados",
+        "label": "Lucros Acumulados"
+      },
+      {
+        "id": "pl_controladora",
+        "label": "PL Controladora"
+      },
+      {
+        "id": "nao_controladores",
+        "label": "Não Controladores"
+      },
+      {
+        "id": "pl_total",
+        "label": "PL Consolidado Total"
+      }
+    ],
+    "rows": [
+      {
+        "event": "Saldos em 31/12/2024",
+        "is_bold": true,
+        "values": {
+          "capital_social": 4500.0,
+          "reserva_capital": 320.0,
+          "reserva_lucros": 2100.0,
+          "outros_abrangentes": -90.0,
+          "lucros_acumulados": 0.0,
+          "pl_controladora": 6830.0,
+          "nao_controladores": 180.0,
+          "pl_total": 7010.0
+        }
+      },
+      {
+        "event": "Aumento de Capital Social por Subscrição",
+        "is_bold": false,
+        "values": {
+          "capital_social": 400.0,
+          "reserva_capital": 0.0,
+          "reserva_lucros": 0.0,
+          "outros_abrangentes": 0.0,
+          "lucros_acumulados": 0.0,
+          "pl_controladora": 400.0,
+          "nao_controladores": 0.0,
+          "pl_total": 400.0
+        }
+      },
+      {
+        "event": "Lucro Líquido do Exercício",
+        "is_bold": false,
+        "values": {
+          "capital_social": 0.0,
+          "reserva_capital": 0.0,
+          "reserva_lucros": 0.0,
+          "outros_abrangentes": 0.0,
+          "lucros_acumulados": 1680.0,
+          "pl_controladora": 1680.0,
+          "nao_controladores": 67.2,
+          "pl_total": 1747.2
+        }
+      },
+      {
+        "event": "Outros Resultados Abrangentes do Exercício",
+        "is_bold": false,
+        "values": {
+          "capital_social": 0.0,
+          "reserva_capital": 0.0,
+          "reserva_lucros": 0.0,
+          "outros_abrangentes": -11.88,
+          "lucros_acumulados": 0.0,
+          "pl_controladora": -11.88,
+          "nao_controladores": 0.0,
+          "pl_total": -11.88
+        }
+      },
+      {
+        "event": "Constituição de Reserva Legal (5%)",
+        "is_bold": false,
+        "values": {
+          "capital_social": 0.0,
+          "reserva_capital": 0.0,
+          "reserva_lucros": 84.0,
+          "outros_abrangentes": 0.0,
+          "lucros_acumulados": -84.0,
+          "pl_controladora": 0.0,
+          "nao_controladores": 0.0,
+          "pl_total": 0.0
+        }
+      },
+      {
+        "event": "Destinação do Lucro: Retenção para Investimentos",
+        "is_bold": false,
+        "values": {
+          "capital_social": 0.0,
+          "reserva_capital": 0.0,
+          "reserva_lucros": 1008.0,
+          "outros_abrangentes": 0.0,
+          "lucros_acumulados": -1008.0,
+          "pl_controladora": 0.0,
+          "nao_controladores": 0.0,
+          "pl_total": 0.0
+        }
+      },
+      {
+        "event": "Dividendos e JCP Obrigatórios Declarados",
+        "is_bold": false,
+        "values": {
+          "capital_social": 0.0,
+          "reserva_capital": 0.0,
+          "reserva_lucros": 0.0,
+          "outros_abrangentes": 0.0,
+          "lucros_acumulados": -588.0,
+          "pl_controladora": -588.0,
+          "nao_controladores": -17.64,
+          "pl_total": -605.64
+        }
+      },
+      {
+        "event": "Saldos em 31/12/2025",
+        "is_bold": true,
+        "values": {
+          "capital_social": 4900.0,
+          "reserva_capital": 320.0,
+          "reserva_lucros": 3192.0,
+          "outros_abrangentes": -101.88,
+          "lucros_acumulados": 0.0,
+          "pl_controladora": 8310.12,
+          "nao_controladores": 229.56,
+          "pl_total": 8539.68
+        }
+      }
+    ],
+    "kpis": {
+      "pl_inicial": 7010.0,
+      "pl_final": 8539.68,
+      "variacao_pl_nominal": 1529.68,
+      "variacao_pl_pct": 21.82,
+      "dividendos_distribuidos": 588.0,
+      "payout_efetivo_pct": 35.0,
+      "periodo": "Exercício 2025"
+    }
+  },
+  "statement_dva": {
+    "has_data": true,
+    "statement": "DVA",
+    "statement_full_name": "Demonstração do Valor Adicionado",
+    "legal_basis": "CPC 09 e Art. 176, inciso V da Lei nº 6.404/76 (Obrigatória para Companhias Abertas)",
+    "company": {
+      "id": "cvm_4820",
+      "name": "BRASKEM",
+      "ticker": "BRASKEM",
+      "sector": "Comércio / Indústria / Serviços",
+      "is_active_session": true,
+      "has_upload": true,
+      "cod_cvm": null
+    },
+    "periods": [
+      "2023",
+      "2024",
+      "2025",
+      "Budget 2026"
+    ],
+    "geracao": [
+      {
+        "code": "1",
+        "name": "RECEITAS",
+        "is_total": true,
+        "values": {
+          "2023": 14200.0,
+          "2024": 16500.0,
+          "2025": 19800.0,
+          "Budget 2026": 22500.0
+        }
+      },
+      {
+        "code": "1.1",
+        "name": "Vendas de Mercadorias, Produtos e Serviços",
+        "is_total": false,
+        "values": {
+          "2023": 13900.0,
+          "2024": 16150.0,
+          "2025": 19400.0,
+          "Budget 2026": 22100.0
+        }
+      },
+      {
+        "code": "1.2",
+        "name": "Outras Receitas Operacionais",
+        "is_total": false,
+        "values": {
+          "2023": 350.0,
+          "2024": 410.0,
+          "2025": 460.0,
+          "Budget 2026": 480.0
+        }
+      },
+      {
+        "code": "1.3",
+        "name": "Provisão para Créditos de Liquidação Duvidosa (Constituição / Reversão)",
+        "is_total": false,
+        "values": {
+          "2023": -50.0,
+          "2024": -60.0,
+          "2025": -60.0,
+          "Budget 2026": -80.0
+        }
+      },
+      {
+        "code": "2",
+        "name": "INSUMOS ADQUIRIDOS DE TERCEIROS",
+        "is_total": true,
+        "values": {
+          "2023": -7200.0,
+          "2024": -8300.0,
+          "2025": -9900.0,
+          "Budget 2026": -11200.0
+        }
+      },
+      {
+        "code": "2.1",
+        "name": "Custos dos Produtos, Mercadorias e Serviços Vendidos",
+        "is_total": false,
+        "values": {
+          "2023": -5400.0,
+          "2024": -6200.0,
+          "2025": -7400.0,
+          "Budget 2026": -8400.0
+        }
+      },
+      {
+        "code": "2.2",
+        "name": "Materiais, Energia, Serviços de Terceiros e Outros",
+        "is_total": false,
+        "values": {
+          "2023": -1800.0,
+          "2024": -2100.0,
+          "2025": -2500.0,
+          "Budget 2026": -2800.0
+        }
+      },
+      {
+        "code": "3",
+        "name": "VALOR ADICIONADO BRUTO (1 - 2)",
+        "is_total": true,
+        "values": {
+          "2023": 7000.0,
+          "2024": 8200.0,
+          "2025": 9900.0,
+          "Budget 2026": 11300.0
+        }
+      },
+      {
+        "code": "4",
+        "name": "RETENÇÕES (Depreciação, Amortização e Exaustão)",
+        "is_total": true,
+        "values": {
+          "2023": -950.0,
+          "2024": -1100.0,
+          "2025": -1300.0,
+          "Budget 2026": -1450.0
+        }
+      },
+      {
+        "code": "5",
+        "name": "VALOR ADICIONADO LÍQUIDO PRODUZIDO PELA ENTIDADE (3 - 4)",
+        "is_total": true,
+        "values": {
+          "2023": 6050.0,
+          "2024": 7100.0,
+          "2025": 8600.0,
+          "Budget 2026": 9850.0
+        }
+      },
+      {
+        "code": "6",
+        "name": "VALOR ADICIONADO RECEBIDO EM TRANSFERÊNCIA",
+        "is_total": true,
+        "values": {
+          "2023": 420.0,
+          "2024": 480.0,
+          "2025": 580.0,
+          "Budget 2026": 650.0
+        }
+      },
+      {
+        "code": "6.1",
+        "name": "Resultado de Equivalência Patrimonial",
+        "is_total": false,
+        "values": {
+          "2023": 120.0,
+          "2024": 140.0,
+          "2025": 180.0,
+          "Budget 2026": 200.0
+        }
+      },
+      {
+        "code": "6.2",
+        "name": "Receitas Financeiras",
+        "is_total": false,
+        "values": {
+          "2023": 300.0,
+          "2024": 340.0,
+          "2025": 400.0,
+          "Budget 2026": 450.0
+        }
+      },
+      {
+        "code": "7",
+        "name": "VALOR ADICIONADO TOTAL A DISTRIBUIR (5 + 6)",
+        "is_total": true,
+        "values": {
+          "2023": 6470.0,
+          "2024": 7580.0,
+          "2025": 9180.0,
+          "Budget 2026": 10500.0
+        }
+      }
+    ],
+    "distribuicao": [
+      {
+        "code": "8.1",
+        "name": "Pessoal (Remuneração, Benefícios e FGTS)",
+        "category": "Pessoal",
+        "values": {
+          "2023": 1941.0,
+          "2024": 2274.0,
+          "2025": 2754.0,
+          "Budget 2026": 3150.0
+        },
+        "percent_2025": 30.0
+      },
+      {
+        "code": "8.2",
+        "name": "Impostos, Taxas e Contribuições (Federais, Estaduais e Municipais)",
+        "category": "Governo / Tributos",
+        "values": {
+          "2023": 2070.4,
+          "2024": 2425.6,
+          "2025": 2937.6,
+          "Budget 2026": 3360.0
+        },
+        "percent_2025": 32.0
+      },
+      {
+        "code": "8.3",
+        "name": "Remuneração de Capitais de Terceiros (Juros, Aluguéis e Despesas Financ.)",
+        "category": "Financiadores",
+        "values": {
+          "2023": 1208.6,
+          "2024": 1460.0,
+          "2025": 1808.4,
+          "Budget 2026": 2040.0
+        },
+        "percent_2025": 19.7
+      },
+      {
+        "code": "8.4",
+        "name": "Remuneração de Capitais Próprios (Lucro Líquido / Dividendos / Retenções)",
+        "category": "Acionistas / PL",
+        "values": {
+          "2023": 1250.0,
+          "2024": 1420.4,
+          "2025": 1679.6,
+          "Budget 2026": 1950.0
+        },
+        "percent_2025": 18.3
+      },
+      {
+        "code": "8",
+        "name": "TOTAL DO VALOR ADICIONADO DISTRIBUÍDO",
+        "category": "Total",
+        "is_total": true,
+        "values": {
+          "2023": 6470.0,
+          "2024": 7580.0,
+          "2025": 9180.0,
+          "Budget 2026": 10500.0
+        },
+        "percent_2025": 100.0
+      }
+    ],
+    "kpis": {
+      "total_adicionado": 9180.0,
+      "pessoal_pct": 30.0,
+      "governo_pct": 32.0,
+      "financiadores_pct": 19.7,
+      "acionistas_pct": 18.3,
+      "periodo": "2025"
+    }
+  },
+  "statement_ne": {
+    "has_data": true,
+    "statement": "NE",
+    "statement_full_name": "Notas Explicativas às Demonstrações Financeiras",
+    "legal_basis": "CPC 26 (R1), Art. 176, §§ 4º e 5º da Lei nº 6.404/76 e Resolução CVM nº 80/2022",
+    "company": {
+      "id": "cvm_4820",
+      "name": "BRASKEM",
+      "ticker": "BRASKEM",
+      "sector": "Comércio / Indústria / Serviços",
+      "is_active_session": true,
+      "has_upload": true,
+      "cod_cvm": null
+    },
+    "total_notes": 10,
+    "notes": [
+      {
+        "number": 1,
+        "title": "Informações Gerais e Contexto Operacional",
+        "summary": "Constituição jurídica, sede social, objeto e governança corporativa.",
+        "content": "A BRASKEM ('Companhia' ou 'BRASKEM') é uma sociedade anônima de capital aberto com registro perante a CVM, listada na B3 S.A. – Brasil, Bolsa, Balcão. Suas operações concentram-se no setor de Comércio / Indústria / Serviços, abrangendo atividades industriais, comerciais e logísticas em âmbito nacional e no exterior.",
+        "tags": [
+          "Governança",
+          "B3",
+          "Sede",
+          "Objeto Social"
+        ]
+      },
+      {
+        "number": 2,
+        "title": "Base de Preparação e Principais Políticas Contábeis",
+        "summary": "Conformidade integral com pronunciamentos CPC e normas IFRS / CVM.",
+        "content": "As demonstrações financeiras foram elaboradas em conformidade com as normas contábeis brasileiras emitidas pelo Comitê de Pronunciamentos Contábeis (CPC) e ratificadas pela CVM, plenamente convergentes com as Normas Internacionais de Relato Financeiro (IFRS) emitidas pelo IASB. As contas utilizam o princípio da competência e do custo histórico como base de mensuração, exceto por instrumentos financeiros mensurados a valor justo.",
+        "tags": [
+          "CPC",
+          "IFRS",
+          "IASB",
+          "Competência",
+          "Valor Justo"
+        ]
+      },
+      {
+        "number": 3,
+        "title": "Caixa, Equivalentes de Caixa e Aplicações Financeiras",
+        "summary": "Disponibilidades com liquidez imediata e risco insignificante de mudança de valor.",
+        "content": "Incluem numerários em caixa, depósitos bancários à vista e aplicações de curto prazo (CDBs, Operações Compromissadas e Títulos Públicos) com vencimento original igual ou inferior a 90 dias, com remuneração indexada à taxa CDI (98% a 104% do CDI).",
+        "tags": [
+          "Liquidez",
+          "CDI",
+          "Tesouraria",
+          "Aplicações"
+        ]
+      },
+      {
+        "number": 4,
+        "title": "Contas a Receber de Clientes e Risco de Crédito (PCLD / IFRS 9)",
+        "summary": "Metodologia de perdas esperadas e escalonamento por faixas de atraso (aging).",
+        "content": "A provisão para perdas esperadas com clientes (PCLD) é mensurada ao longo da vida útil do recebível, empregando matriz de perdas baseada no histórico de inadimplência e projeções macroeconômicas (matriz forward-looking do CPC 48 / IFRS 9). Não há concentração superior a 10% da carteira em um único cliente.",
+        "tags": [
+          "CPC 48",
+          "IFRS 9",
+          "Aging List",
+          "PCLD",
+          "Inadimplência"
+        ]
+      },
+      {
+        "number": 5,
+        "title": "Estoques e Provisões para Ajuste ao Valor Realizável Líquido",
+        "summary": "Critério de avaliação pelo menor valor entre custo médio e valor realizável.",
+        "content": "Os estoques são avaliados ao custo médio ponderado de aquisição ou produção, deduzidos de provisões para perdas por obsolescência, itens de baixo giro e perdas operacionais quando o valor realizável líquido for inferior ao custo contábil.",
+        "tags": [
+          "Custo Médio",
+          "Obsolescência",
+          "Valor Realizável"
+        ]
+      },
+      {
+        "number": 6,
+        "title": "Imobilizado, Intangível e Teste de Recuperabilidade (Impairment / CPC 01)",
+        "summary": "Vidas úteis estimadas, métodos de depreciação e teste anual de redução ao valor recuperável.",
+        "content": "Os itens do imobilizado são depreciados pelo método linear com base na vida útil econômica estimada (edificações: 25 a 40 anos; máquinas e equipamentos: 10 a 20 anos). O ágio por expectativa de rentabilidade futura (goodwill) é submetido ao teste anual de impairment (CPC 01) adotando-se fluxo de caixa descontado (DCF), sem registro de necessidade de perdas no exercício.",
+        "tags": [
+          "Impairment",
+          "CPC 01",
+          "Depreciação",
+          "Goodwill",
+          "DCF"
+        ]
+      },
+      {
+        "number": 7,
+        "title": "Empréstimos, Financiamentos, Debêntures e Covenants Financeiros",
+        "summary": "Estrutura da dívida bruta, cronograma de amortização e índices contratuais.",
+        "content": "As captações estão contratadas em moeda nacional (indexadas ao CDI e IPCA) e moeda estrangeira (dólar norte-americano com hedge cambial). A Companhia cumpre integralmente os covenants contratuais estabelecidos nas emissões de debêntures (Dívida Líquida / EBITDA máximo de 3,5x e Cobertura de Juros mínima de 2,0x).",
+        "tags": [
+          "Dívida",
+          "Debêntures",
+          "Covenants",
+          "CDI",
+          "IPCA"
+        ]
+      },
+      {
+        "number": 8,
+        "title": "Provisões para Contingências Tributárias, Trabalhistas e Cíveis",
+        "summary": "Classificação jurídica das causas entre provável, possível e remota.",
+        "content": "A Companhia é parte em litígios decorrentes do curso normal dos negócios. Com base na opinião de seus consultores jurídicos externos, foram provisionados montantes correspondentes aos processos cuja probabilidade de desembolso futuro foi classificada como PROVÁVEL. As contingências classificadas como POSSÍVEIS totalizam montantes divulgados sem impacto no passivo circulante.",
+        "tags": [
+          "Contingências",
+          "CPC 25",
+          "Litígios",
+          "Provisões Fiscais"
+        ]
+      },
+      {
+        "number": 9,
+        "title": "Transações com Partes Relacionadas e Remuneração da Administração",
+        "summary": "Condições estritamente comutativas de mercado e remuneração dos administradores.",
+        "content": "As transações com partes relacionadas (controladora, coligadas e consorciadas) realizam-se em condições rigorosamente comutativas e equitativas de mercado. A remuneração global da Diretoria Estatutária e do Conselho de Administração foi aprovada em Assembleia Geral Ordinária (AGO) conforme a Lei 6.404/76.",
+        "tags": [
+          "CPC 05",
+          "Partes Relacionadas",
+          "Remuneração",
+          "AGO"
+        ]
+      },
+      {
+        "number": 10,
+        "title": "Gestão de Riscos de Mercado, Crédito e Liquidez",
+        "summary": "Análise de sensibilidade a variações de câmbio, taxa Selic e stress test.",
+        "content": "A política de gestão de riscos da Companhia veda operações especulativas com instrumentos financeiros derivativos. Apresenta-se quadro de análise de sensibilidade para três cenários (Provável, Deterioração de 25% e Deterioração de 50%) em conformidade com a Instrução CVM correspondente.",
+        "tags": [
+          "Sensibilidade",
+          "Stress Test",
+          "Hedge",
+          "Risco Financeiro"
+        ]
+      }
+    ]
+  },
+  "valuation_calculate": {
+    "company": {
+      "name": "BRASKEM S.A.",
+      "ticker": "BRASKEM",
+      "sector": "Petroquímicos e Borracha",
+      "annual_revenue": 14557.88,
+      "ebit": 3057.15,
+      "ebitda": 3639.47,
+      "net_income": 2074.5
+    },
+    "parameters": {
+      "wacc": 12.19,
+      "wacc_decimal": 0.1219,
+      "ke": 14.82,
+      "kd_pre_tax": 12.5,
+      "kd_after_tax": 8.25,
+      "rf_rate": 6.5,
+      "mrp": 5.5,
+      "beta": 1.15,
+      "tax_rate": 34.0,
+      "debt_ratio": 40.0,
+      "equity_ratio": 60.0,
+      "perpetual_growth_g": 3.5,
+      "ebit_margin": 21.0,
+      "revenue_growth": 6.0,
+      "capex_ratio": 5.0,
+      "nwc_ratio": 1.5,
+      "exit_multiple": 4.8,
+      "peer_pe": 6.2,
+      "pvp_multiple": 1.35
+    },
+    "methodologies_parameters": [
+      {
+        "methodology": "Custo de Capital (CAPM / WACC)",
+        "parameter_name": "Taxa Livre de Risco (Risk-Free Rate)",
+        "symbol": "Rf",
+        "value": "6.50% a.a.",
+        "raw_value": 0.065,
+        "formula": "Ke = Rf + Beta × ERP + CountryRisk",
+        "impact": "Inverso Alto: Eleva o custo de oportunidade e comprime o valor presente de todos os fluxos.",
+        "sensitivity": "Para cada +1.0% de Rf, o WACC sobe ~0.65% e o Preço Justo cai ~5% a 7%."
+      },
+      {
+        "methodology": "Custo de Capital (CAPM / WACC)",
+        "parameter_name": "Beta do Ativo (Risco Sistemático)",
+        "symbol": "β",
+        "value": "1.15x",
+        "raw_value": 1.15,
+        "formula": "Ke = Rf + Beta × (Rm - Rf) + Alpha",
+        "impact": "Inverso Médio: Mede a volatilidade e sensibilidade das ações frente ao índice de mercado (Ibovespa).",
+        "sensitivity": "Beta > 1.0 amplifica o risco do setor; cada +0.2x no Beta eleva Ke em +1.1% a.a."
+      },
+      {
+        "methodology": "Custo de Capital (CAPM / WACC)",
+        "parameter_name": "Prêmio de Risco de Mercado (ERP)",
+        "symbol": "ERP (Rm - Rf)",
+        "value": "5.50% a.a.",
+        "raw_value": 0.055,
+        "formula": "ERP = E(Rm) - Rf",
+        "impact": "Inverso Médio: Retorno adicional exigido pelo investidor para tomar risco em renda variável corporativa.",
+        "sensitivity": "Cada +1.0% de ERP eleva Ke em +1.1% e pressiona o WACC em +0.7%."
+      },
+      {
+        "methodology": "Custo de Capital (CAPM / WACC)",
+        "parameter_name": "Custo da Dívida Pré-Impostos",
+        "symbol": "Kd",
+        "value": "12.50% a.a.",
+        "raw_value": 0.125,
+        "formula": "Kd_líquido = Kd × (1 - T)",
+        "impact": "Inverso Moderado: Custo médio dos financiamentos bancários e debêntures.",
+        "sensitivity": "Mitigado pelo benefício fiscal de 34% de IRPJ/CSLL (Tax Shield)."
+      },
+      {
+        "methodology": "Custo de Capital (CAPM / WACC)",
+        "parameter_name": "Alavancagem / Dívida na Estrutura",
+        "symbol": "D / V",
+        "value": "40.0%",
+        "raw_value": 0.4,
+        "formula": "WACC = (E/V × Ke) + (D/V × Kd × (1 - T))",
+        "impact": "Curvilíneo (Trade-Off): Inicialmente reduz o WACC via benefício fiscal, mas eleva o risco de falência se for excessiva.",
+        "sensitivity": "Altera o peso relativo entre capital próprio e capital de terceiros."
+      },
+      {
+        "methodology": "Custo de Capital (CAPM / WACC)",
+        "parameter_name": "WACC (Custo Médio Ponderado)",
+        "symbol": "WACC",
+        "value": "12.19% a.a.",
+        "raw_value": 0.12194999999999998,
+        "formula": "WACC = (We × Ke) + (Wd × Kd × (1 - T))",
+        "impact": "Inverso Crítico: Taxa de corte para desconto de fluxos livres da firma (FCFF).",
+        "sensitivity": "Cada +1% no WACC reduz o Preço Justo em aproximadamente 8% a 12%."
+      },
+      {
+        "methodology": "Fluxo de Caixa Descontado (DCF / FCFF)",
+        "parameter_name": "Margem EBIT Operacional",
+        "symbol": "Margem EBIT",
+        "value": "21.00%",
+        "raw_value": 0.21,
+        "formula": "EBIT = Receita Líquida × Margem EBIT",
+        "impact": "Direto Crítico: Capacidade de conversão de faturamento em lucro operacional.",
+        "sensitivity": "Cada +1.0 p.p. na margem EBIT eleva o NOPAT e o Valor Justo em ~6% a 9%."
+      },
+      {
+        "methodology": "Fluxo de Caixa Descontado (DCF / FCFF)",
+        "parameter_name": "Taxa de Crescimento Inicial (Anos 1-5)",
+        "symbol": "CAGR Rev",
+        "value": "6.00% a.a.",
+        "raw_value": 0.06,
+        "formula": "Rev(t) = Rev(0) × (1 + g_proj)^t",
+        "impact": "Direto Alto: Expansão projetada das vendas durante o horizonte explícito.",
+        "sensitivity": "Cada +2.0% de expansão de vendas expande a geração de FCFF acumulada em ~7%."
+      },
+      {
+        "methodology": "Fluxo de Caixa Descontado (DCF / FCFF)",
+        "parameter_name": "Intensidade de CAPEX",
+        "symbol": "CAPEX / Rev",
+        "value": "5.00%",
+        "raw_value": 0.05,
+        "formula": "CAPEX = Receita × %CAPEX",
+        "impact": "Inverso Moderado: Necessidade de reinvestimento em imobilizado e tecnologia para sustentar operações.",
+        "sensitivity": "Maior eficiência de CAPEX (menor % com mesma expansão) eleva diretamente o FCFF."
+      },
+      {
+        "methodology": "Fluxo de Caixa Descontado (DCF / FCFF)",
+        "parameter_name": "Variação de Capital de Giro (ΔNWC)",
+        "symbol": "ΔNWC / Rev",
+        "value": "1.50%",
+        "raw_value": 0.015,
+        "formula": "ΔNWC = Receita × %NWC",
+        "impact": "Inverso Moderado: Consumo de caixa operacional para financiar contas a receber e estoques.",
+        "sensitivity": "Ciclos financeiros mais eficientes (PMR menor, PMP maior) liberam caixa imediato."
+      },
+      {
+        "methodology": "Valor Terminal (Gordon Growth)",
+        "parameter_name": "Crescimento Perpétuo de Longo Prazo",
+        "symbol": "g (Perpetuidade)",
+        "value": "3.50% a.a.",
+        "raw_value": 0.035,
+        "formula": "TV = [FCFF(5) × (1 + g)] / (WACC - g)",
+        "impact": "Direto Crítico: Crescimento sustentável da economia e expansão da firma após o ano 5.",
+        "sensitivity": "Cada +0.5% em g aumenta o Preço Justo em ~7% a 10% devido à alavancagem da perpetuidade."
+      },
+      {
+        "methodology": "Múltiplos de Mercado (Relative Valuation)",
+        "parameter_name": "Múltiplo EV / EBITDA de Saída",
+        "symbol": "EV / EBITDA",
+        "value": "4.80x",
+        "raw_value": 4.8,
+        "formula": "EV = EBITDA(5) × Multiplo",
+        "impact": "Direto Alto: Múltiplo de negociação comparável do setor para cálculo do Valor Terminal e Múltiplos.",
+        "sensitivity": "Cada +1.0x no múltiplo EV/EBITDA eleva o valor por múltiplos em ~15% a 20%."
+      },
+      {
+        "methodology": "Múltiplos de Mercado (Relative Valuation)",
+        "parameter_name": "Múltiplo P / L dos Pares (Preço/Lucro)",
+        "symbol": "P / L (P/E)",
+        "value": "6.20x",
+        "raw_value": 6.2,
+        "formula": "Equity Value = Lucro Líquido × P/L",
+        "impact": "Direto Alto: Relação entre preço de mercado e lucratividade líquida acumulada.",
+        "sensitivity": "Múltiplo histórico do setor calibrado com empresas comparáveis da B3."
+      }
+    ],
+    "dcf_summary": {
+      "enterprise_value": 20689.68,
+      "equity_value": 18506.0,
+      "net_debt": 2183.68,
+      "pv_explicit_fcff": 6959.11,
+      "pv_terminal_value": 13730.57,
+      "terminal_value_weight_pct": 66.4,
+      "fair_share_price": 31.78,
+      "market_reference_price": 26.06,
+      "upside_potential_pct": 21.9,
+      "valuation_range": {
+        "min": 22.31,
+        "max": 36.55
+      }
+    },
+    "projections": [
+      {
+        "year": "Ano 1",
+        "receita": 15358.56,
+        "ebit": 3225.3,
+        "nopat": 2128.7,
+        "da": 691.14,
+        "capex": -767.93,
+        "delta_nwc": -230.38,
+        "fcff": 1821.53,
+        "discount_factor": 0.8913,
+        "pv_fcff": 1623.54
+      },
+      {
+        "year": "Ano 2",
+        "receita": 16050.06,
+        "ebit": 3370.51,
+        "nopat": 2224.54,
+        "da": 722.25,
+        "capex": -802.5,
+        "delta_nwc": -240.75,
+        "fcff": 1903.54,
+        "discount_factor": 0.7944,
+        "pv_fcff": 1512.22
+      },
+      {
+        "year": "Ano 3",
+        "receita": 16612.96,
+        "ebit": 3488.72,
+        "nopat": 2302.56,
+        "da": 747.58,
+        "capex": -830.65,
+        "delta_nwc": -249.19,
+        "fcff": 1970.3,
+        "discount_factor": 0.7081,
+        "pv_fcff": 1395.12
+      },
+      {
+        "year": "Ano 4",
+        "receita": 17030.66,
+        "ebit": 3576.44,
+        "nopat": 2360.45,
+        "da": 766.38,
+        "capex": -851.53,
+        "delta_nwc": -255.46,
+        "fcff": 2019.84,
+        "discount_factor": 0.6311,
+        "pv_fcff": 1274.74
+      },
+      {
+        "year": "Ano 5",
+        "receita": 17290.19,
+        "ebit": 3630.94,
+        "nopat": 2396.42,
+        "da": 778.06,
+        "capex": -864.51,
+        "delta_nwc": -259.35,
+        "fcff": 2050.62,
+        "discount_factor": 0.5625,
+        "pv_fcff": 1153.5
+      }
+    ],
+    "sensitivity_matrix": [
+      {
+        "wacc": 10.19,
+        "values": [
+          {
+            "g": 2.5,
+            "share_price": 37.7,
+            "diff_pct": 18.6,
+            "is_base": false
+          },
+          {
+            "g": 3.0,
+            "share_price": 39.85,
+            "diff_pct": 25.4,
+            "is_base": false
+          },
+          {
+            "g": 3.5,
+            "share_price": 42.33,
+            "diff_pct": 33.2,
+            "is_base": false
+          },
+          {
+            "g": 4.0,
+            "share_price": 45.21,
+            "diff_pct": 42.3,
+            "is_base": false
+          },
+          {
+            "g": 4.5,
+            "share_price": 48.6,
+            "diff_pct": 52.9,
+            "is_base": false
+          }
+        ]
+      },
+      {
+        "wacc": 11.19,
+        "values": [
+          {
+            "g": 2.5,
+            "share_price": 32.93,
+            "diff_pct": 3.6,
+            "is_base": false
+          },
+          {
+            "g": 3.0,
+            "share_price": 34.55,
+            "diff_pct": 8.7,
+            "is_base": false
+          },
+          {
+            "g": 3.5,
+            "share_price": 36.37,
+            "diff_pct": 14.4,
+            "is_base": false
+          },
+          {
+            "g": 4.0,
+            "share_price": 38.45,
+            "diff_pct": 21.0,
+            "is_base": false
+          },
+          {
+            "g": 4.5,
+            "share_price": 40.84,
+            "diff_pct": 28.5,
+            "is_base": false
+          }
+        ]
+      },
+      {
+        "wacc": 12.19,
+        "values": [
+          {
+            "g": 2.5,
+            "share_price": 29.14,
+            "diff_pct": -8.3,
+            "is_base": false
+          },
+          {
+            "g": 3.0,
+            "share_price": 30.39,
+            "diff_pct": -4.4,
+            "is_base": false
+          },
+          {
+            "g": 3.5,
+            "share_price": 31.78,
+            "diff_pct": 0.0,
+            "is_base": true
+          },
+          {
+            "g": 4.0,
+            "share_price": 33.34,
+            "diff_pct": 4.9,
+            "is_base": false
+          },
+          {
+            "g": 4.5,
+            "share_price": 35.1,
+            "diff_pct": 10.4,
+            "is_base": false
+          }
+        ]
+      },
+      {
+        "wacc": 13.19,
+        "values": [
+          {
+            "g": 2.5,
+            "share_price": 26.07,
+            "diff_pct": -18.0,
+            "is_base": false
+          },
+          {
+            "g": 3.0,
+            "share_price": 27.05,
+            "diff_pct": -14.9,
+            "is_base": false
+          },
+          {
+            "g": 3.5,
+            "share_price": 28.13,
+            "diff_pct": -11.5,
+            "is_base": false
+          },
+          {
+            "g": 4.0,
+            "share_price": 29.34,
+            "diff_pct": -7.7,
+            "is_base": false
+          },
+          {
+            "g": 4.5,
+            "share_price": 30.68,
+            "diff_pct": -3.5,
+            "is_base": false
+          }
+        ]
+      },
+      {
+        "wacc": 14.19,
+        "values": [
+          {
+            "g": 2.5,
+            "share_price": 23.51,
+            "diff_pct": -26.0,
+            "is_base": false
+          },
+          {
+            "g": 3.0,
+            "share_price": 24.31,
+            "diff_pct": -23.5,
+            "is_base": false
+          },
+          {
+            "g": 3.5,
+            "share_price": 25.17,
+            "diff_pct": -20.8,
+            "is_base": false
+          },
+          {
+            "g": 4.0,
+            "share_price": 26.12,
+            "diff_pct": -17.8,
+            "is_base": false
+          },
+          {
+            "g": 4.5,
+            "share_price": 27.17,
+            "diff_pct": -14.5,
+            "is_base": false
+          }
+        ]
+      }
+    ],
+    "football_field": [
+      {
+        "method": "DCF (Gordon Growth)",
+        "low": 27.97,
+        "mid": 31.78,
+        "high": 36.55,
+        "ev_mid": 20689.7
+      },
+      {
+        "method": "DCF (Exit Multiple)",
+        "low": 25.78,
+        "mid": 28.64,
+        "high": 32.08,
+        "ev_mid": 18863.7
+      },
+      {
+        "method": "Múltiplos (EV/EBITDA)",
+        "low": 22.31,
+        "mid": 26.25,
+        "high": 31.5,
+        "ev_mid": 17469.5
+      },
+      {
+        "method": "Múltiplos (P/L Pares)",
+        "low": 17.67,
+        "mid": 22.09,
+        "high": 27.61,
+        "ev_mid": 15045.6
+      },
+      {
+        "method": "Patrimonial Ajustado",
+        "low": 7.88,
+        "mid": 12.94,
+        "high": 14.88,
+        "ev_mid": 9717.4
+      }
+    ],
+    "calculation_steps": [
+      {
+        "step": 1,
+        "title": "Custo de Capital Próprio (CAPM)",
+        "formula": "Ke = Rf + Beta × (Rm - Rf) + Country Risk",
+        "description": "Calculado com taxa livre de risco Rf = 6.5%, Beta desalavancado do setor = 1.15, Prêmio de Risco de Mercado (Rm - Rf) = 5.5% e Prêmio de Risco País de 2,0%.",
+        "result": "14.82% a.a."
+      },
+      {
+        "step": 2,
+        "title": "Custo Médio Ponderado de Capital (WACC)",
+        "formula": "WACC = (E/V × Ke) + (D/V × Kd × (1 - T))",
+        "description": "Estrutura de capital com 60% Capital Próprio (Ke = 14.82%) e 40% Capital de Terceiros (Kd pré-taxa = 12.5%, benefício fiscal IR 34% -> Kd líquido = 8.25%).",
+        "result": "12.19% a.a."
+      },
+      {
+        "step": 3,
+        "title": "Fluxo de Caixa Livre da Firma (FCFF)",
+        "formula": "FCFF = EBIT × (1 - T) + D&A - CAPEX - ΔNWC",
+        "description": "Projetado ano a ano durante o horizonte de 5 anos considerando expansão operacional, reposição de ativos e capital de giro. A soma do Valor Presente dos 5 fluxos descontados ao WACC totaliza R$ 6959.11 Milhões.",
+        "result": "R$ 6959.11 Mi (Valor Presente Explícito)"
+      },
+      {
+        "step": 4,
+        "title": "Valor Residual / Perpetuidade (Gordon Growth)",
+        "formula": "Terminal Value = [FCFF(n) × (1 + g)] / (WACC - g)",
+        "description": "Projeção perpétua a partir do 5º ano com taxa de crescimento no longo prazo g = 3.50%. Valor terminal na data 5: R$ 24409.34 Mi. Trazido a valor presente com fator de desconto de 5 anos [(1+WACC)^5]: R$ 13730.57 Mi.",
+        "result": "R$ 13730.57 Mi (PV Perpetuidade)"
+      },
+      {
+        "step": 5,
+        "title": "Ponte Enterprise Value para Equity Value",
+        "formula": "Equity Value = Enterprise Value (EV) - Dívida Líquida",
+        "description": "Enterprise Value consolidado (R$ 20689.68 Mi) deduzido da dívida líquida da companhia (R$ 2183.68 Mi), resultando no valor de mercado patrimonial justo.",
+        "result": "R$ 18506.00 Mi (Equity Value)"
+      },
+      {
+        "step": 6,
+        "title": "Preço Justo por Ação (Fair Value)",
+        "formula": "Preço por Ação = Equity Value / Número de Ações",
+        "description": "Divisão do Equity Value justo pela base acionária estimada (582.3 Mi ações), comparado com o preço de referência de mercado (R$ 26.06).",
+        "result": "R$ 31.78 (Upside de +21.9%)"
+      }
+    ],
+    "multiples": {
+      "ev_ebitda": {
+        "multiple": 4.8,
+        "implied_ev": 17469.46
+      },
+      "pe": {
+        "multiple": 6.2,
+        "implied_equity": 12861.89
+      },
+      "ev_sales": {
+        "multiple": 1.06,
+        "implied_ev": 15373.12
+      },
+      "pvp": {
+        "multiple": 1.35,
+        "implied_equity": 8843.91
+      }
+    },
+    "asset_based": {
+      "book_value": 6551.05,
+      "adjusted_book_value": 7533.7,
+      "liquidation_value": 4585.73
+    }
   }
 }

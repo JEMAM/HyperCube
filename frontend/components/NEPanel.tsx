@@ -45,7 +45,11 @@ export default function NEPanel({ onNavigate }: NEPanelProps) {
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
-        setNeData(data);
+        if (data && data.has_data !== false && Array.isArray(data.notes) && data.notes.length > 0) {
+          setNeData(data);
+        } else {
+          setNeData({ has_data: false });
+        }
       } else {
         setNeData({ has_data: false });
       }
