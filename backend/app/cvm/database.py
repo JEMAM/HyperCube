@@ -352,11 +352,11 @@ class CVMDatabase:
                 "last_error": None
             }
         return {
-            "last_run": str(res[0]) if res[0] else None,
-            "status": res[1],
-            "filings_detected": res[2],
-            "filings_loaded": res[3],
-            "last_error": res[4]
+            "last_run": str(res[0]) if len(res) > 0 and res[0] else None,
+            "status": res[1] if len(res) > 1 else "ACTIVE",
+            "filings_detected": res[2] if len(res) > 2 else 0,
+            "filings_loaded": res[3] if len(res) > 3 else 0,
+            "last_error": res[4] if len(res) > 4 else None
         }
 
 # Global singleton

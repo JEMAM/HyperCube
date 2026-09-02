@@ -591,23 +591,27 @@ def get_kpis():
     analytics = DuckDBAnalytics(_engine.get_dataframe())
     return analytics.summary_kpis()
 
+def _is_annual_mode(periodicity: Any = None, company_periodicity: Any = None, periods_def: Any = None) -> bool:
+    if isinstance(periodicity, str) and periodicity.strip():
+        return periodicity.strip().upper() == "ANUAL"
+    if isinstance(company_periodicity, str) and company_periodicity.strip():
+        return company_periodicity.strip().upper() == "ANUAL"
+    if periods_def and any(p for p in periods_def if p != "Budget 2026"):
+        return not any("T" in str(p) for p in periods_def if p != "Budget 2026")
+    return True
+
 @router.get("/dre/timeseries")
 def get_dre_timeseries(periodicity: Optional[str] = Query(None)):
     df = _engine.get_dataframe().to_pandas()
     company = get_active_company_info()
     periods_def = company.get("periods", [])
     
-    if periodicity:
-        is_annual = periodicity.upper() == "ANUAL"
-    elif company.get("periodicity"):
-        is_annual = company.get("periodicity").upper() == "ANUAL"
-    else:
-        is_annual = not any("T" in str(p) for p in periods_def if p != "Budget 2026")
+    is_annual = _is_annual_mode(periodicity, company.get("periodicity"), periods_def)
         
     records = []
     
     if is_annual:
-        target_years = [str(p) for p in periods_def if p != "Budget 2026" and "T" not in str(p)]
+        target_years = [str(p) for p in periods_def if str(p).isdigit() and len(str(p)) == 4]
         if not target_years:
             all_years = sorted(list(set(str(int(r)) for r in df['ano'].dropna())))
             target_years = all_years[-4:]
@@ -729,17 +733,12 @@ def get_dfc_timeseries(periodicity: Optional[str] = Query(None)):
     company = get_active_company_info()
     periods_def = company.get("periods", [])
     
-    if periodicity:
-        is_annual = periodicity.upper() == "ANUAL"
-    elif company.get("periodicity"):
-        is_annual = company.get("periodicity").upper() == "ANUAL"
-    else:
-        is_annual = not any("T" in str(p) for p in periods_def if p != "Budget 2026")
+    is_annual = _is_annual_mode(periodicity, company.get("periodicity"), periods_def)
         
     records = []
     
     if is_annual:
-        target_years = [str(p) for p in periods_def if p != "Budget 2026" and "T" not in str(p)]
+        target_years = [str(p) for p in periods_def if str(p).isdigit() and len(str(p)) == 4]
         if not target_years:
             all_years = sorted(list(set(str(int(r)) for r in df['ano'].dropna())))
             target_years = all_years[-4:]
@@ -894,18 +893,13 @@ def get_dre_table(
     periods_def = company.get("periods", [])
     
     # Check if annual mode is active
-    if periodicity:
-        is_annual = periodicity.upper() == "ANUAL"
-    elif company.get("periodicity"):
-        is_annual = company.get("periodicity").upper() == "ANUAL"
-    else:
-        is_annual = not any("T" in str(p) for p in periods_def if p != "Budget 2026")
+    is_annual = _is_annual_mode(periodicity, company.get("periodicity"), periods_def)
 
     periods = []
     data_by_period = {}
     
     if is_annual:
-        target_years = [str(p) for p in periods_def if p != "Budget 2026" and "T" not in str(p)]
+        target_years = [str(p) for p in periods_def if str(p).isdigit() and len(str(p)) == 4]
         if not target_years:
             all_years = sorted(list(set(str(int(r)) for r in df['ano'].dropna())))
             target_years = all_years[-4:]
@@ -1056,7 +1050,7 @@ def get_dre_table(
         "company": company,
         "periods": periods,
         "rows": structured_rows,
-        "timeseries": get_dre_timeseries()
+        "timeseries": get_dre_timeseries(periodicity=periodicity if isinstance(periodicity, str) else None)
     }
 
 @router.get("/dfc/table")
@@ -1068,18 +1062,13 @@ def get_dfc_table(
     company = get_active_company_info()
     periods_def = company.get("periods", [])
     
-    if periodicity:
-        is_annual = periodicity.upper() == "ANUAL"
-    elif company.get("periodicity"):
-        is_annual = company.get("periodicity").upper() == "ANUAL"
-    else:
-        is_annual = not any("T" in str(p) for p in periods_def if p != "Budget 2026")
+    is_annual = _is_annual_mode(periodicity, company.get("periodicity"), periods_def)
         
     periods = []
     data_by_period = {}
     
     if is_annual:
-        target_years = [str(p) for p in periods_def if p != "Budget 2026" and "T" not in str(p)]
+        target_years = [str(p) for p in periods_def if str(p).isdigit() and len(str(p)) == 4]
         if not target_years:
             all_years = sorted(list(set(str(int(r)) for r in df['ano'].dropna())))
             target_years = all_years[-4:]
@@ -1283,7 +1272,7 @@ def get_dfc_table(
         "company": company,
         "periods": periods,
         "rows": structured_rows,
-        "timeseries": get_dfc_timeseries()
+        "timeseries": get_dfc_timeseries(periodicity=periodicity if isinstance(periodicity, str) else None)
     }
 
 @router.get("/olap/cube-data")
