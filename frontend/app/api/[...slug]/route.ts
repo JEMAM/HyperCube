@@ -139,19 +139,21 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
   if (path === "dre/table") {
     const url = new URL(req.url);
     const companyId = url.searchParams.get("company_id") || req.headers.get("x-company-id");
+    const periodicity = url.searchParams.get("periodicity");
     if (companyId) {
       sessionStore.ensureCompanyLoaded(companyId);
     }
-    return NextResponse.json(sessionStore.getDreTable());
+    return NextResponse.json(sessionStore.getDreTable(periodicity || undefined));
   }
 
   if (path === "dfc/table") {
     const url = new URL(req.url);
     const companyId = url.searchParams.get("company_id") || req.headers.get("x-company-id");
+    const periodicity = url.searchParams.get("periodicity");
     if (companyId) {
       sessionStore.ensureCompanyLoaded(companyId);
     }
-    return NextResponse.json(sessionStore.getDfcTable());
+    return NextResponse.json(sessionStore.getDfcTable(periodicity || undefined));
   }
 
   // 4.1 DAG Calculation Graph Endpoints

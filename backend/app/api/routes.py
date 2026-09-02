@@ -690,38 +690,107 @@ def get_dfc_timeseries():
     return records
 
 @router.get("/dre/table")
-def get_dre_table():
+def get_dre_table(
+    company_id: Optional[str] = Query(None),
+    periodicity: Optional[str] = Query(None)
+):
     df = _engine.get_dataframe().to_pandas()
     company = get_active_company_info()
     periods_def = company.get("periods", [])
     
+    # Check if annual mode is active
+    if periodicity:
+        is_annual = periodicity.upper() == "ANUAL"
+    elif company.get("periodicity"):
+        is_annual = company.get("periodicity").upper() == "ANUAL"
+    else:
+        is_annual = not any("T" in str(p) for p in periods_def if p != "Budget 2026")
+
     periods = []
     data_by_period = {}
-    for _, row in df.iterrows():
-        ano = int(row.get('ano', 2026))
-        trim = int(row.get('trimestre', 1))
-        if any("4T" in p for p in periods_def):
-            p_code = f"{trim}T{str(ano)[2:]}" if trim in [1,2,3,4] else str(ano)
-        elif str(ano) in periods_def:
-            p_code = str(ano)
-        else:
-            p_code = f"{trim}T{str(ano)[2:]}" if trim in [1,2,3,4] else str(ano)
+    
+    if is_annual:
+        target_years = [str(p) for p in periods_def if p != "Budget 2026" and "T" not in str(p)]
+        if not target_years:
+            all_years = sorted(list(set(str(int(r)) for r in df['ano'].dropna())))
+            target_years = all_years[-4:]
             
-        rec = float(row.get('receita_com_operacoes_de_credito_e_repasses', 0.0))
-        cpv = -abs(float(row.get('despesas_de_captacao', 0.0)))
-        bruto = float(row.get('produto_da_intermediacao_financeira', 0.0))
-        sga = -abs(float(row.get('despesas_pessoal_e_administrativas', 0.0)))
-        prc = -abs(float(row.get('provisao_para_risco_de_credito_prc', 0.0)))
-        ebit = float(row.get('resultado_da_intermediacao_financeira', 0.0))
-        ebitda = round(ebit + (rec * 0.05), 1)
-        fin = float(row.get('resultado_com_participacoes_societarias', 0.0))
-        ebt = float(row.get('resultado_antes_da_tributacao', 0.0))
-        ir = -abs(float(row.get('tributos_sobre_o_lucro', 0.0)))
-        ll = float(row.get('lucro_liquido', 0.0))
-        
-        if p_code not in data_by_period:
-            periods.append(p_code)
-            data_by_period[p_code] = {
+        for _, row in df.iterrows():
+            ano = str(int(row.get('ano', 2026)))
+            if ano not in target_years:
+                continue
+            p_code = ano
+            rec = float(row.get('receita_com_operacoes_de_credito_e_repasses', 0.0))
+            cpv = -abs(float(row.get('despesas_de_captacao', 0.0)))
+            bruto = float(row.get('produto_da_intermediacao_financeira', 0.0))
+            sga = -abs(float(row.get('despesas_pessoal_e_administrativas', 0.0)))
+            prc = -abs(float(row.get('provisao_para_risco_de_credito_prc', 0.0)))
+            ebit = float(row.get('resultado_da_intermediacao_financeira', 0.0))
+            ebitda = round(ebit + (rec * 0.05), 1)
+            fin = float(row.get('resultado_com_participacoes_societarias', 0.0))
+            ebt = float(row.get('resultado_antes_da_tributacao', 0.0))
+            ir = -abs(float(row.get('tributos_sobre_o_lucro', 0.0)))
+            ll = float(row.get('lucro_liquido', 0.0))
+            
+            if p_code not in data_by_period:
+                periods.append(p_code)
+                data_by_period[p_code] = {
+                    "rec": rec,
+                    "cpv": cpv,
+                    "bruto": bruto,
+                    "desp_comercial": round(sga * 0.35, 1),
+                    "desp_admin": round(sga * 0.65, 1),
+                    "sga": sga,
+                    "prc": prc,
+                    "ebitda": ebitda,
+                    "ebit": ebit,
+                    "fin": fin,
+                    "ebt": ebt,
+                    "ir": ir,
+                    "ll": ll,
+                }
+            else:
+                d = data_by_period[p_code]
+                d["rec"] += rec
+                d["cpv"] += cpv
+                d["bruto"] += bruto
+                d["desp_comercial"] += round(sga * 0.35, 1)
+                d["desp_admin"] += round(sga * 0.65, 1)
+                d["sga"] += sga
+                d["prc"] += prc
+                d["ebitda"] += ebitda
+                d["ebit"] += ebit
+                d["fin"] += fin
+                d["ebt"] += ebt
+                d["ir"] += ir
+                d["ll"] += ll
+
+        if "Budget 2026" in periods_def and periods:
+            last_p = periods[-1]
+            last_d = data_by_period[last_p]
+            periods.append("Budget 2026")
+            data_by_period["Budget 2026"] = {
+                k: round(v * 1.08, 1) for k, v in last_d.items()
+            }
+    else:
+        target_qtrs = [str(p) for p in periods_def if p != "Budget 2026" and "T" in str(p)]
+        all_q_data = []
+        for _, row in df.iterrows():
+            ano = int(row.get('ano', 2026))
+            trim = int(row.get('trimestre', 1))
+            p_code = f"{trim}T{str(ano)[2:]}" if trim in [1,2,3,4] else str(ano)
+            rec = float(row.get('receita_com_operacoes_de_credito_e_repasses', 0.0))
+            cpv = -abs(float(row.get('despesas_de_captacao', 0.0)))
+            bruto = float(row.get('produto_da_intermediacao_financeira', 0.0))
+            sga = -abs(float(row.get('despesas_pessoal_e_administrativas', 0.0)))
+            prc = -abs(float(row.get('provisao_para_risco_de_credito_prc', 0.0)))
+            ebit = float(row.get('resultado_da_intermediacao_financeira', 0.0))
+            ebitda = round(ebit + (rec * 0.05), 1)
+            fin = float(row.get('resultado_com_participacoes_societarias', 0.0))
+            ebt = float(row.get('resultado_antes_da_tributacao', 0.0))
+            ir = -abs(float(row.get('tributos_sobre_o_lucro', 0.0)))
+            ll = float(row.get('lucro_liquido', 0.0))
+            all_q_data.append((p_code, {
                 "rec": rec,
                 "cpv": cpv,
                 "bruto": bruto,
@@ -735,22 +804,13 @@ def get_dre_table():
                 "ebt": ebt,
                 "ir": ir,
                 "ll": ll,
-            }
-        else:
-            d = data_by_period[p_code]
-            d["rec"] += rec
-            d["cpv"] += cpv
-            d["bruto"] += bruto
-            d["desp_comercial"] += round(sga * 0.35, 1)
-            d["desp_admin"] += round(sga * 0.65, 1)
-            d["sga"] += sga
-            d["prc"] += prc
-            d["ebitda"] += ebitda
-            d["ebit"] += ebit
-            d["fin"] += fin
-            d["ebt"] += ebt
-            d["ir"] += ir
-            d["ll"] += ll
+            }))
+            
+        chosen = [item for item in all_q_data if item[0] in target_qtrs] if target_qtrs else all_q_data[-6:]
+        for p_code, d_vals in chosen:
+            if p_code not in data_by_period:
+                periods.append(p_code)
+                data_by_period[p_code] = d_vals
 
     base_p = periods[0] if periods else None
 
@@ -805,48 +865,142 @@ def get_dre_table():
     }
 
 @router.get("/dfc/table")
-def get_dfc_table():
+def get_dfc_table(
+    company_id: Optional[str] = Query(None),
+    periodicity: Optional[str] = Query(None)
+):
     df = _dfc_engine.get_dataframe().to_pandas()
     company = get_active_company_info()
     periods_def = company.get("periods", [])
     
+    if periodicity:
+        is_annual = periodicity.upper() == "ANUAL"
+    elif company.get("periodicity"):
+        is_annual = company.get("periodicity").upper() == "ANUAL"
+    else:
+        is_annual = not any("T" in str(p) for p in periods_def if p != "Budget 2026")
+        
     periods = []
     data_by_period = {}
-    for _, row in df.iterrows():
-        ano = int(row.get('ano', 2026))
-        trim = int(row.get('trimestre', 1))
-        if any("4T" in p for p in periods_def):
-            p_code = f"{trim}T{str(ano)[2:]}" if trim in [1,2,3,4] else str(ano)
-        elif str(ano) in periods_def:
-            p_code = str(ano)
-        else:
-            p_code = f"{trim}T{str(ano)[2:]}" if trim in [1,2,3,4] else str(ano)
+    
+    if is_annual:
+        target_years = [str(p) for p in periods_def if p != "Budget 2026" and "T" not in str(p)]
+        if not target_years:
+            all_years = sorted(list(set(str(int(r)) for r in df['ano'].dropna())))
+            target_years = all_years[-4:]
             
-        rec = float(row.get('receita_vendas', row.get('recebimento_vendas', 0.0)))
-        forn = -abs(float(row.get('pagamento_fornecedores', 0.0)))
-        sal = -abs(float(row.get('pagamento_salarios', 0.0)))
-        desp = -abs(float(row.get('pagamento_despesas_operacionais', 0.0)))
-        imp = -abs(float(row.get('pagamento_impostos', 0.0)))
-        fco = float(row.get('fco_caixa_liquido', 0.0))
-        
-        imob = -abs(float(row.get('aquisicao_ativos_imobilizados', 0.0)))
-        imov = -abs(float(row.get('compra_imoveis_veiculos', 0.0)))
-        venda = float(row.get('venda_ativos_equipamentos', 0.0))
-        fci = float(row.get('fci_caixa_liquido', 0.0))
-        
-        aporte = float(row.get('aporte_capital', 0.0))
-        capt = float(row.get('captacao_emprestimos', 0.0))
-        amort = -abs(float(row.get('amortizacao_dividas', 0.0)))
-        div = -abs(float(row.get('pagamento_dividendos_jcp', 0.0)))
-        fcf = float(row.get('fcf_caixa_liquido', 0.0))
-        
-        var_caixa = float(row.get('variacao_liquida_caixa', 0.0))
-        saldo_ini = float(row.get('saldo_inicial_caixa', 0.0))
-        saldo_fim = float(row.get('saldo_final_caixa', 0.0))
-        
-        if p_code not in data_by_period:
-            periods.append(p_code)
-            data_by_period[p_code] = {
+        for _, row in df.iterrows():
+            ano = str(int(row.get('ano', 2026)))
+            if ano not in target_years:
+                continue
+            p_code = ano
+            rec = float(row.get('receita_vendas', row.get('recebimento_vendas', 0.0)))
+            forn = -abs(float(row.get('pagamento_fornecedores', 0.0)))
+            sal = -abs(float(row.get('pagamento_salarios', 0.0)))
+            desp = -abs(float(row.get('pagamento_despesas_operacionais', 0.0)))
+            imp = -abs(float(row.get('pagamento_impostos', 0.0)))
+            fco = float(row.get('fco_caixa_liquido', 0.0))
+            
+            imob = -abs(float(row.get('aquisicao_ativos_imobilizados', 0.0)))
+            imov = -abs(float(row.get('compra_imoveis_veiculos', 0.0)))
+            venda = float(row.get('venda_ativos_equipamentos', 0.0))
+            fci = float(row.get('fci_caixa_liquido', 0.0))
+            
+            aporte = float(row.get('aporte_capital', 0.0))
+            capt = float(row.get('captacao_emprestimos', 0.0))
+            amort = -abs(float(row.get('amortizacao_dividas', 0.0)))
+            div = -abs(float(row.get('pagamento_dividendos_jcp', 0.0)))
+            fcf = float(row.get('fcf_caixa_liquido', 0.0))
+            
+            var_caixa = float(row.get('variacao_liquida_caixa', 0.0))
+            saldo_ini = float(row.get('saldo_inicial_caixa', 0.0))
+            saldo_fim = float(row.get('saldo_final_caixa', 0.0))
+            
+            if p_code not in data_by_period:
+                periods.append(p_code)
+                data_by_period[p_code] = {
+                    "fco_header": fco,
+                    "rec": rec,
+                    "forn": forn,
+                    "sal": sal,
+                    "desp": desp,
+                    "imp": imp,
+                    "fco": fco,
+                    "fci_header": fci,
+                    "imob": imob,
+                    "imov": imov,
+                    "venda": venda,
+                    "fci": fci,
+                    "fcf_header": fcf,
+                    "aporte": aporte,
+                    "capt": capt,
+                    "amort": amort,
+                    "div": div,
+                    "fcf": fcf,
+                    "var_caixa": var_caixa,
+                    "saldo_ini": saldo_ini,
+                    "saldo_fim": saldo_fim,
+                }
+            else:
+                d = data_by_period[p_code]
+                d["fco_header"] += fco
+                d["rec"] += rec
+                d["forn"] += forn
+                d["sal"] += sal
+                d["desp"] += desp
+                d["imp"] += imp
+                d["fco"] += fco
+                d["fci_header"] += fci
+                d["imob"] += imob
+                d["imov"] += imov
+                d["venda"] += venda
+                d["fci"] += fci
+                d["fcf_header"] += fcf
+                d["aporte"] += aporte
+                d["capt"] += capt
+                d["amort"] += amort
+                d["div"] += div
+                d["fcf"] += fcf
+                d["var_caixa"] += var_caixa
+                d["saldo_fim"] = saldo_fim
+                
+        if "Budget 2026" in periods_def and periods:
+            last_p = periods[-1]
+            last_d = data_by_period[last_p]
+            periods.append("Budget 2026")
+            data_by_period["Budget 2026"] = {
+                k: round(v * 1.06, 1) for k, v in last_d.items()
+            }
+    else:
+        target_qtrs = [str(p) for p in periods_def if p != "Budget 2026" and "T" in str(p)]
+        all_q_data = []
+        for _, row in df.iterrows():
+            ano = int(row.get('ano', 2026))
+            trim = int(row.get('trimestre', 1))
+            p_code = f"{trim}T{str(ano)[2:]}" if trim in [1,2,3,4] else str(ano)
+            rec = float(row.get('receita_vendas', row.get('recebimento_vendas', 0.0)))
+            forn = -abs(float(row.get('pagamento_fornecedores', 0.0)))
+            sal = -abs(float(row.get('pagamento_salarios', 0.0)))
+            desp = -abs(float(row.get('pagamento_despesas_operacionais', 0.0)))
+            imp = -abs(float(row.get('pagamento_impostos', 0.0)))
+            fco = float(row.get('fco_caixa_liquido', 0.0))
+            
+            imob = -abs(float(row.get('aquisicao_ativos_imobilizados', 0.0)))
+            imov = -abs(float(row.get('compra_imoveis_veiculos', 0.0)))
+            venda = float(row.get('venda_ativos_equipamentos', 0.0))
+            fci = float(row.get('fci_caixa_liquido', 0.0))
+            
+            aporte = float(row.get('aporte_capital', 0.0))
+            capt = float(row.get('captacao_emprestimos', 0.0))
+            amort = -abs(float(row.get('amortizacao_dividas', 0.0)))
+            div = -abs(float(row.get('pagamento_dividendos_jcp', 0.0)))
+            fcf = float(row.get('fcf_caixa_liquido', 0.0))
+            
+            var_caixa = float(row.get('variacao_liquida_caixa', 0.0))
+            saldo_ini = float(row.get('saldo_inicial_caixa', 0.0))
+            saldo_fim = float(row.get('saldo_final_caixa', 0.0))
+            
+            all_q_data.append((p_code, {
                 "fco_header": fco,
                 "rec": rec,
                 "forn": forn,
@@ -868,29 +1022,13 @@ def get_dfc_table():
                 "var_caixa": var_caixa,
                 "saldo_ini": saldo_ini,
                 "saldo_fim": saldo_fim,
-            }
-        else:
-            d = data_by_period[p_code]
-            d["fco_header"] += fco
-            d["rec"] += rec
-            d["forn"] += forn
-            d["sal"] += sal
-            d["desp"] += desp
-            d["imp"] += imp
-            d["fco"] += fco
-            d["fci_header"] += fci
-            d["imob"] += imob
-            d["imov"] += imov
-            d["venda"] += venda
-            d["fci"] += fci
-            d["fcf_header"] += fcf
-            d["aporte"] += aporte
-            d["capt"] += capt
-            d["amort"] += amort
-            d["div"] += div
-            d["fcf"] += fcf
-            d["var_caixa"] += var_caixa
-            d["saldo_fim"] = saldo_fim
+            }))
+            
+        chosen = [item for item in all_q_data if item[0] in target_qtrs] if target_qtrs else all_q_data[-6:]
+        for p_code, d_vals in chosen:
+            if p_code not in data_by_period:
+                periods.append(p_code)
+                data_by_period[p_code] = d_vals
 
     base_p = periods[0] if periods else None
 

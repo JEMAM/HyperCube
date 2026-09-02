@@ -11,6 +11,7 @@ export interface ActiveCompany {
   ticker: string;
   currency: string;
   periods: string[];
+  periodicity?: "ANUAL" | "TRIMESTRAL";
   description: string;
 }
 

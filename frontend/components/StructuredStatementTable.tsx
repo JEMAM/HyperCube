@@ -34,6 +34,20 @@ export default function StructuredStatementTable({
 
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedPeriodicity, setSelectedPeriodicity] = useState<"ANUAL" | "TRIMESTRAL">(
+    (activeCompany?.periodicity as "ANUAL" | "TRIMESTRAL") || 
+    (activeCompany?.periods?.some((p: string) => p.includes("T")) ? "TRIMESTRAL" : "ANUAL")
+  );
+
+  useEffect(() => {
+    if (activeCompany?.periodicity) {
+      setSelectedPeriodicity(activeCompany.periodicity as "ANUAL" | "TRIMESTRAL");
+    } else if (activeCompany?.periods && activeCompany.periods.length > 0) {
+      const isTrim = activeCompany.periods.some((p: string) => p.includes("T"));
+      setSelectedPeriodicity(isTrim ? "TRIMESTRAL" : "ANUAL");
+    }
+  }, [activeCompany?.periodicity, activeCompany?.periods, activeCompany?.id]);
+
   const [tableData, setTableData] = useState<{
     company?: any;
     periods: string[];
@@ -48,10 +62,12 @@ export default function StructuredStatementTable({
     const fetchTable = async () => {
       setLoading(true);
       try {
-        const param = activeCompany?.id && activeCompany.id !== "aguardando_upload" 
-          ? `?company_id=${encodeURIComponent(activeCompany.id)}` 
-          : "";
-        const endpoint = `${apiBaseUrl}/api/${statementType.toLowerCase()}/table${param}`;
+        const params = new URLSearchParams();
+        if (activeCompany?.id && activeCompany.id !== "aguardando_upload") {
+          params.set("company_id", activeCompany.id);
+        }
+        params.set("periodicity", selectedPeriodicity);
+        const endpoint = `${apiBaseUrl}/api/${statementType.toLowerCase()}/table?${params.toString()}`;
         const res = await fetch(endpoint);
         if (res.ok) {
           const data = await res.json();
@@ -75,7 +91,7 @@ export default function StructuredStatementTable({
     return () => {
       isMounted = false;
     };
-  }, [apiBaseUrl, statementType, activeCompany?.id]);
+  }, [apiBaseUrl, statementType, activeCompany?.id, selectedPeriodicity]);
 
   const company = tableData.company || activeCompany || {
     name: "Aguardando Upload / CVM Watch",
@@ -171,6 +187,32 @@ export default function StructuredStatementTable({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Periodicity Selector (Anual DFP vs Trimestral ITR) */}
+          <div className={`flex items-center p-0.5 rounded-xl border text-[11px] font-bold ${
+            isDark ? "bg-[#091124] border-slate-700" : "bg-slate-200/80 border-slate-300"
+          }`}>
+            <button
+              onClick={() => setSelectedPeriodicity("ANUAL")}
+              className={`px-2.5 py-1 rounded-lg transition ${
+                selectedPeriodicity === "ANUAL"
+                  ? "bg-[#ff5722] text-white shadow-sm"
+                  : isDark ? "text-slate-400 hover:text-white" : "text-slate-700 hover:text-slate-900"
+              }`}
+            >
+              📅 {isEn ? "Annual (DFP)" : "Anual (DFP)"}
+            </button>
+            <button
+              onClick={() => setSelectedPeriodicity("TRIMESTRAL")}
+              className={`px-2.5 py-1 rounded-lg transition ${
+                selectedPeriodicity === "TRIMESTRAL"
+                  ? "bg-sky-600 text-white shadow-sm"
+                  : isDark ? "text-slate-400 hover:text-white" : "text-slate-700 hover:text-slate-900"
+              }`}
+            >
+              📊 {isEn ? "Quarterly (ITR)" : "Trimestral (ITR)"}
+            </button>
+          </div>
+
           {/* Currency Pill */}
           <span className={`text-xs font-mono font-bold px-3 py-1.5 rounded-xl border shadow-sm ${
             statementType === "DFC"

@@ -166,7 +166,7 @@ class SessionStore {
   }
 
   // DRE Table
-  public getDreTable() {
+  public getDreTable(periodicity?: string) {
     const comp = this.activeCompany;
     if (!this.hasCustomUpload) {
       return {
@@ -175,7 +175,14 @@ class SessionStore {
         rows: []
       };
     }
-    const p = comp.periods;
+    let p = comp.periods;
+    if (periodicity) {
+      if (periodicity.toUpperCase() === "ANUAL") {
+        p = ["2022", "2023", "2024", "2025", "Budget 2026"];
+      } else if (periodicity.toUpperCase() === "TRIMESTRAL") {
+        p = ["1T24", "2T24", "3T24", "4T24", "1T25", "2T25"];
+      }
+    }
     const compName = (comp.name + " " + (comp.ticker || "")).toLowerCase();
     const isBanking = comp.id.includes("banco") || compName.includes("banco") || compName.includes("bank") || compName.includes("daycoval") || compName.includes("abc") || comp.id.includes("20796") || comp.id.includes("20958");
 
@@ -227,7 +234,7 @@ class SessionStore {
   }
 
   // DFC Table
-  public getDfcTable() {
+  public getDfcTable(periodicity?: string) {
     const comp = this.activeCompany;
     if (!this.hasCustomUpload) {
       return {
@@ -236,7 +243,14 @@ class SessionStore {
         rows: []
       };
     }
-    const p = comp.periods;
+    let p = comp.periods;
+    if (periodicity) {
+      if (periodicity.toUpperCase() === "ANUAL") {
+        p = ["2022", "2023", "2024", "2025", "Budget 2026"];
+      } else if (periodicity.toUpperCase() === "TRIMESTRAL") {
+        p = ["1T24", "2T24", "3T24", "4T24", "1T25", "2T25"];
+      }
+    }
     const compName = (comp.name + " " + (comp.ticker || "")).toLowerCase();
     const isBanking = comp.id.includes("banco") || compName.includes("banco") || compName.includes("bank") || compName.includes("daycoval") || compName.includes("abc") || comp.id.includes("20796") || comp.id.includes("20958");
 

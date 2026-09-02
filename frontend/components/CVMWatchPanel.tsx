@@ -370,6 +370,7 @@ function matchSector(sec1: string, sec2: string): boolean {
           ticker: comp.nome_pregao,
           currency: "R$",
           periods: calculatedPeriods,
+          periodicity: periodicity,
           description: `Companhia aberta listada na CVM (${comp.denom_social}) - ${periodicity === "ANUAL" ? "Demonstrações Anuais (DFP)" : "Informações Trimestrais (ITR)"} carregada via CVM Watch & Análise.`
         };
         if (setActiveCompany) {
