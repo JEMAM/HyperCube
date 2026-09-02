@@ -45,7 +45,10 @@ def get_company_financial_analysis(cod_cvm: int):
     return analysis
 
 @router.post("/companies/{cod_cvm}/load-cube")
-def load_company_into_cube(cod_cvm: int):
+def load_company_into_cube(
+    cod_cvm: int,
+    periodicity: Optional[str] = Query("ANUAL", description="ANUAL (DFP) or TRIMESTRAL (ITR)")
+):
     """
     Injects the company's financial data into the reactive MultiDimCube engine,
     enabling full OLAP slices, DAG dependency calculation, and What-If simulation.
@@ -57,14 +60,22 @@ def load_company_into_cube(cod_cvm: int):
     from backend.app.data.loader import set_active_company_info
     analysis = cvm_analyzer.get_company_analysis(cod_cvm)
     comp = analysis.get("company", {}) if analysis else {}
-    periods = [ts["quarter"] for ts in analysis.get("time_series", [])[-4:]] if analysis else ["P-1", "P-0"]
+    
+    is_trimestral = periodicity and periodicity.upper() == "TRIMESTRAL"
+    if is_trimestral:
+        periods = ["1T24", "2T24", "3T24", "4T24", "1T25", "2T25"]
+        desc_type = "Informações Trimestrais (ITR)"
+    else:
+        periods = ["2022", "2023", "2024", "2025", "Budget 2026"]
+        desc_type = "Demonstrações Anuais Consolidadas (DFP)"
+
     new_active_info = {
         "id": f"cvm_{cod_cvm}",
         "name": global_cube.active_company_name,
         "ticker": comp.get("nome_pregao") or ("BRKM5" if cod_cvm == 4820 else f"CVM:{cod_cvm}"),
         "currency": "R$ Milhões",
-        "periods": periods + ["Budget 2026"],
-        "description": f"Companhia aberta listada na CVM ({global_cube.active_company_name}) carregada via CVM Watch & Análise."
+        "periods": periods,
+        "description": f"Companhia aberta listada na CVM ({global_cube.active_company_name}) - {desc_type} carregada via CVM Watch & Análise."
     }
     set_active_company_info(new_active_info)
 

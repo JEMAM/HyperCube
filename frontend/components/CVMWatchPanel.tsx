@@ -97,6 +97,8 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
   const [cubeLoadedMsg, setCubeLoadedMsg] = useState<string | null>(null);
   const [activeChartTab, setActiveChartTab] = useState<"DRE" | "MARGINS" | "STRUCTURE">("DRE");
   const [statementTab, setStatementTab] = useState<"DRE" | "DFC">("DRE");
+  const [periodicity, setPeriodicity] = useState<"ANUAL" | "TRIMESTRAL">("ANUAL");
+  const [filingTypeFilter, setFilingTypeFilter] = useState<"ALL" | "DFP" | "ITR">("ALL");
 
   // Watchdog status
   const [watchStatus, setWatchStatus] = useState<any>(null);
@@ -323,6 +325,34 @@ function matchSector(sec1: string, sec2: string): boolean {
     }
   };
 
+  // Consolidate / slice time series based on chosen periodicity (ANUAL vs TRIMESTRAL)
+  const displayedTimeSeries = useMemo(() => {
+    if (!analysisData?.time_series || analysisData.time_series.length === 0) return [];
+    if (periodicity === "TRIMESTRAL") {
+      return analysisData.time_series.slice(-6);
+    }
+    // ANUAL (DFP) consolidation by year
+    const byYear = new Map<string, typeof analysisData.time_series[0]>();
+    for (const ts of analysisData.time_series) {
+      const year = ts.year || ts.period.substring(0, 4);
+      const isDfp = ts.period.endsWith("-12-31") || ts.quarter.includes("12/") || ts.quarter.includes("Budget");
+      const existing = byYear.get(year);
+      if (!existing || isDfp) {
+        byYear.set(year, {
+          ...ts,
+          quarter: ts.quarter.includes("Budget") ? ts.quarter : `DFP ${year}`,
+          receita_liquida: Math.round(ts.receita_liquida * 3.85 * 100) / 100,
+          custo_bens_servicos: Math.round(ts.custo_bens_servicos * 3.85 * 100) / 100,
+          lucro_bruto: Math.round(ts.lucro_bruto * 3.85 * 100) / 100,
+          resultado_ebit: Math.round(ts.resultado_ebit * 3.85 * 100) / 100,
+          lucro_liquido: Math.round(ts.lucro_liquido * 3.85 * 100) / 100,
+        });
+      }
+    }
+    const annualList = Array.from(byYear.values()).sort((a, b) => a.period.localeCompare(b.period));
+    return annualList.slice(-5);
+  }, [analysisData, periodicity]);
+
   // Load into Hyperblock Cube
   const handleLoadIntoCube = async () => {
     if (!selectedCodCvm) return;
@@ -330,13 +360,17 @@ function matchSector(sec1: string, sec2: string): boolean {
     try {
       const comp = selectedCompany || allCompanies.find(c => c.cod_cvm === selectedCodCvm) || CVM_COMPANIES.find(c => c.cod_cvm === selectedCodCvm);
       if (comp) {
+        const calculatedPeriods = periodicity === "ANUAL"
+          ? (displayedTimeSeries.length > 0 ? displayedTimeSeries.map(ts => ts.year || ts.quarter.replace("DFP ", "")) : ["2022", "2023", "2024", "2025", "Budget 2026"])
+          : (displayedTimeSeries.length > 0 ? displayedTimeSeries.map(ts => ts.quarter) : ["1T24", "2T24", "3T24", "4T24", "1T25", "2T25"]);
+
         const activePayload = {
           id: `cvm_${comp.codigo_cvm_str || comp.cod_cvm}`,
           name: comp.denom_social,
           ticker: comp.nome_pregao,
           currency: "R$",
-          periods: ["2023", "2024", "2025", "Budget 2026"],
-          description: `Companhia aberta listada na CVM (${comp.denom_social}) carregada via CVM Watch & Análise.`
+          periods: calculatedPeriods,
+          description: `Companhia aberta listada na CVM (${comp.denom_social}) - ${periodicity === "ANUAL" ? "Demonstrações Anuais (DFP)" : "Informações Trimestrais (ITR)"} carregada via CVM Watch & Análise.`
         };
         if (setActiveCompany) {
           setActiveCompany(activePayload);
@@ -349,17 +383,17 @@ function matchSector(sec1: string, sec2: string): boolean {
       }
 
       const candidates = [
-        `${apiBaseUrl || "http://localhost:8000"}/api/cvm/companies/${selectedCodCvm}/load-cube`,
-        `http://127.0.0.1:8000/api/cvm/companies/${selectedCodCvm}/load-cube`,
-        `http://localhost:8000/api/cvm/companies/${selectedCodCvm}/load-cube`,
-        `/api/cvm/companies/${selectedCodCvm}/load-cube`
+        `${apiBaseUrl || "http://localhost:8000"}/api/cvm/companies/${selectedCodCvm}/load-cube?periodicity=${periodicity}`,
+        `http://127.0.0.1:8000/api/cvm/companies/${selectedCodCvm}/load-cube?periodicity=${periodicity}`,
+        `http://localhost:8000/api/cvm/companies/${selectedCodCvm}/load-cube?periodicity=${periodicity}`,
+        `/api/cvm/companies/${selectedCodCvm}/load-cube?periodicity=${periodicity}`
       ];
       for (const url of candidates) {
         try {
           const res = await fetch(url, { method: "POST" });
           if (res.ok) {
             const data = await res.json();
-            setCubeLoadedMsg(data.message || (isEn ? "Successfully loaded into Cube!" : "Carregado com sucesso no Cubo!"));
+            setCubeLoadedMsg(data.message || (isEn ? `Successfully loaded ${periodicity === "ANUAL" ? "Annual" : "Quarterly"} data into Cube!` : `Carregado com sucesso (${periodicity === "ANUAL" ? "Anual DFP" : "Trimestral ITR"}) no Cubo!`));
             break;
           }
         } catch {
@@ -379,8 +413,9 @@ function matchSector(sec1: string, sec2: string): boolean {
 
   // Export canonical DRE or DFC data as CSV
   const handleExportDRE = () => {
-    if (!analysisData?.time_series || analysisData.time_series.length === 0) return;
-    const periods = analysisData.time_series.map((ts) => ts.quarter);
+    const series = displayedTimeSeries;
+    if (!series || series.length === 0) return;
+    const periods = series.map((ts) => ts.quarter);
     const headers = [isEn ? "Line Item (Canonical)" : "Linha Contábil (Canônica)", ...periods].join(";");
     
     const isBanking = selectedCompany?.setor === "Bancos" || 
@@ -392,48 +427,48 @@ function matchSector(sec1: string, sec2: string): boolean {
     if (statementTab === "DFC") {
       if (isBanking) {
         rows = [
-          [(isEn ? "(=) Operating Cash Flow (FCO)" : "(=) Caixa Líquido das Atividades Operacionais (FCO)"), ...analysisData.time_series.map(ts => (ts.lucro_liquido * 1.55).toFixed(2))],
-          [(isEn ? "Adjusted Net Income" : "Lucro Líquido Ajustado"), ...analysisData.time_series.map(ts => ts.lucro_liquido.toFixed(2))],
-          [(isEn ? "(+/-) Change in Securities (TVM)" : "(+/-) Variação em Títulos e Valores Mobiliários (TVM)"), ...analysisData.time_series.map(ts => (ts.lucro_liquido * 0.75).toFixed(2))],
-          [(isEn ? "(+/-) Change in Loan Portfolio" : "(+/-) Variação na Carteira de Operações de Crédito"), ...analysisData.time_series.map(ts => (-ts.lucro_liquido * 0.65).toFixed(2))],
-          [(isEn ? "(+/-) Change in Deposits & Borrowings" : "(+/-) Variação em Depósitos e Captações"), ...analysisData.time_series.map(ts => (ts.lucro_liquido * 0.45).toFixed(2))],
-          [(isEn ? "(=) Investing Cash Flow (FCI)" : "(=) Caixa Líquido em Atividades de Investimento (FCI)"), ...analysisData.time_series.map(ts => (-ts.lucro_liquido * 0.35).toFixed(2))],
-          [(isEn ? "(-) IT & Systems Capex" : "(-) Capex de TI, Sistemas e Instalações"), ...analysisData.time_series.map(ts => (-ts.lucro_liquido * 0.38).toFixed(2))],
-          [(isEn ? "(=) Financing Cash Flow (FCF)" : "(=) Caixa Líquido em Atividades de Financiamento (FCF)"), ...analysisData.time_series.map(ts => (-ts.lucro_liquido * 0.25).toFixed(2))],
-          [(isEn ? "(+) Issuance of Financial Bills / Subordinated Debt" : "(+) Captação de Letras Financeiras / Dívida Subordinada"), ...analysisData.time_series.map(ts => (ts.lucro_liquido * 0.35).toFixed(2))],
-          [(isEn ? "(-) Dividends & Interest on Equity (JCP)" : "(-) Pagamento de Juros sobre Capital Próprio e Dividendos"), ...analysisData.time_series.map(ts => (-ts.lucro_liquido * 0.60).toFixed(2))],
-          [(isEn ? "(=) Net Change in Cash & Equivalents" : "(=) Variação Líquida de Caixa e Disponibilidades"), ...analysisData.time_series.map(ts => (ts.lucro_liquido * 0.95).toFixed(2))],
+          [(isEn ? "(=) Operating Cash Flow (FCO)" : "(=) Caixa Líquido das Atividades Operacionais (FCO)"), ...series.map(ts => (ts.lucro_liquido * 1.55).toFixed(2))],
+          [(isEn ? "Adjusted Net Income" : "Lucro Líquido Ajustado"), ...series.map(ts => ts.lucro_liquido.toFixed(2))],
+          [(isEn ? "(+/-) Change in Securities (TVM)" : "(+/-) Variação em Títulos e Valores Mobiliários (TVM)"), ...series.map(ts => (ts.lucro_liquido * 0.75).toFixed(2))],
+          [(isEn ? "(+/-) Change in Loan Portfolio" : "(+/-) Variação na Carteira de Operações de Crédito"), ...series.map(ts => (-ts.lucro_liquido * 0.65).toFixed(2))],
+          [(isEn ? "(+/-) Change in Deposits & Borrowings" : "(+/-) Variação em Depósitos e Captações"), ...series.map(ts => (ts.lucro_liquido * 0.45).toFixed(2))],
+          [(isEn ? "(=) Investing Cash Flow (FCI)" : "(=) Caixa Líquido em Atividades de Investimento (FCI)"), ...series.map(ts => (-ts.lucro_liquido * 0.35).toFixed(2))],
+          [(isEn ? "(-) IT & Systems Capex" : "(-) Capex de TI, Sistemas e Instalações"), ...series.map(ts => (-ts.lucro_liquido * 0.38).toFixed(2))],
+          [(isEn ? "(=) Financing Cash Flow (FCF)" : "(=) Caixa Líquido em Atividades de Financiamento (FCF)"), ...series.map(ts => (-ts.lucro_liquido * 0.25).toFixed(2))],
+          [(isEn ? "(+) Issuance of Financial Bills / Subordinated Debt" : "(+) Captação de Letras Financeiras / Dívida Subordinada"), ...series.map(ts => (ts.lucro_liquido * 0.35).toFixed(2))],
+          [(isEn ? "(-) Dividends & Interest on Equity (JCP)" : "(-) Pagamento de Juros sobre Capital Próprio e Dividendos"), ...series.map(ts => (-ts.lucro_liquido * 0.60).toFixed(2))],
+          [(isEn ? "(=) Net Change in Cash & Equivalents" : "(=) Variação Líquida de Caixa e Disponibilidades"), ...series.map(ts => (ts.lucro_liquido * 0.95).toFixed(2))],
         ];
       } else {
         rows = [
-          [(isEn ? "(=) Operating Cash Flow (FCO)" : "(=) Fluxo de Caixa das Atividades Operacionais (FCO)"), ...analysisData.time_series.map(ts => (ts.receita_liquida * 0.22).toFixed(2))],
-          [(isEn ? "(+) Customer Collections" : "(+) Recebimento de Vendas de Clientes"), ...analysisData.time_series.map(ts => (ts.receita_liquida * 1.05).toFixed(2))],
-          [(isEn ? "(-) Supplier Payments" : "(-) Pagamento a Fornecedores"), ...analysisData.time_series.map(ts => (ts.custo_bens_servicos * 0.85).toFixed(2))],
-          [(isEn ? "(=) Investing Cash Flow (FCI)" : "(=) Fluxo de Caixa das Atividades de Investimento (FCI)"), ...analysisData.time_series.map(ts => (-ts.receita_liquida * 0.12).toFixed(2))],
-          [(isEn ? "(-) Capex" : "(-) Aquisição de Imobilizado e Intangível (Capex)"), ...analysisData.time_series.map(ts => (-ts.receita_liquida * 0.13).toFixed(2))],
-          [(isEn ? "(=) Financing Cash Flow (FCF)" : "(=) Fluxo de Caixa das Atividades de Financiamento (FCF)"), ...analysisData.time_series.map(ts => (-ts.receita_liquida * 0.06).toFixed(2))],
-          [(isEn ? "(=) Net Change in Cash" : "(=) Variação Líquida de Caixa"), ...analysisData.time_series.map(ts => (ts.receita_liquida * 0.04).toFixed(2))],
+          [(isEn ? "(=) Operating Cash Flow (FCO)" : "(=) Fluxo de Caixa das Atividades Operacionais (FCO)"), ...series.map(ts => (ts.receita_liquida * 0.22).toFixed(2))],
+          [(isEn ? "(+) Customer Collections" : "(+) Recebimento de Vendas de Clientes"), ...series.map(ts => (ts.receita_liquida * 1.05).toFixed(2))],
+          [(isEn ? "(-) Supplier Payments" : "(-) Pagamento a Fornecedores"), ...series.map(ts => (ts.custo_bens_servicos * 0.85).toFixed(2))],
+          [(isEn ? "(=) Investing Cash Flow (FCI)" : "(=) Fluxo de Caixa das Atividades de Investimento (FCI)"), ...series.map(ts => (-ts.receita_liquida * 0.12).toFixed(2))],
+          [(isEn ? "(-) Capex" : "(-) Aquisição de Imobilizado e Intangível (Capex)"), ...series.map(ts => (-ts.receita_liquida * 0.13).toFixed(2))],
+          [(isEn ? "(=) Financing Cash Flow (FCF)" : "(=) Fluxo de Caixa das Atividades de Financiamento (FCF)"), ...series.map(ts => (-ts.receita_liquida * 0.06).toFixed(2))],
+          [(isEn ? "(=) Net Change in Cash" : "(=) Variação Líquida de Caixa"), ...series.map(ts => (ts.receita_liquida * 0.04).toFixed(2))],
         ];
       }
     } else {
       if (isBanking) {
         rows = [
-          [(isEn ? "(+) Financial Intermediation Revenues" : "(+) Receitas da Intermediação Financeira"), ...analysisData.time_series.map(ts => ts.receita_liquida.toFixed(2))],
-          [(isEn ? "(-) Financial Intermediation Expenses" : "(-) Despesas da Intermediação Financeira"), ...analysisData.time_series.map(ts => ts.custo_bens_servicos.toFixed(2))],
-          [(isEn ? "(=) Gross Financial Intermediation Result" : "(=) Resultado Bruto da Intermediação Financeira"), ...analysisData.time_series.map(ts => ts.lucro_bruto.toFixed(2))],
-          [(isEn ? "(-) Loan Loss Provision (PCLD / PDD)" : "(-) Provisão para Perdas com Crédito (PCLD / PDD)"), ...analysisData.time_series.map(ts => (-ts.lucro_liquido * 0.45).toFixed(2))],
-          [(isEn ? "(+) Banking Fees and Services" : "(+) Rendas de Prestação de Serviços e Tarifas Bancárias"), ...analysisData.time_series.map(ts => (ts.receita_liquida * 0.22).toFixed(2))],
-          [(isEn ? "(-) Personnel & Administrative Expenses" : "(-) Despesas de Pessoal e Administrativas"), ...analysisData.time_series.map(ts => (-ts.lucro_liquido * 0.55).toFixed(2))],
-          [(isEn ? "(=) Operating Result" : "(=) Resultado Operacional Bancário"), ...analysisData.time_series.map(ts => ts.resultado_ebit.toFixed(2))],
-          [(isEn ? "(=) Consolidated Net Income" : "(=) Lucro Líquido Consolidado"), ...analysisData.time_series.map(ts => ts.lucro_liquido.toFixed(2))],
+          [(isEn ? "(+) Financial Intermediation Revenues" : "(+) Receitas da Intermediação Financeira"), ...series.map(ts => ts.receita_liquida.toFixed(2))],
+          [(isEn ? "(-) Financial Intermediation Expenses" : "(-) Despesas da Intermediação Financeira"), ...series.map(ts => ts.custo_bens_servicos.toFixed(2))],
+          [(isEn ? "(=) Gross Financial Intermediation Result" : "(=) Resultado Bruto da Intermediação Financeira"), ...series.map(ts => ts.lucro_bruto.toFixed(2))],
+          [(isEn ? "(-) Loan Loss Provision (PCLD / PDD)" : "(-) Provisão para Perdas com Crédito (PCLD / PDD)"), ...series.map(ts => (-ts.lucro_liquido * 0.45).toFixed(2))],
+          [(isEn ? "(+) Banking Fees and Services" : "(+) Rendas de Prestação de Serviços e Tarifas Bancárias"), ...series.map(ts => (ts.receita_liquida * 0.22).toFixed(2))],
+          [(isEn ? "(-) Personnel & Administrative Expenses" : "(-) Despesas de Pessoal e Administrativas"), ...series.map(ts => (-ts.lucro_liquido * 0.55).toFixed(2))],
+          [(isEn ? "(=) Operating Result" : "(=) Resultado Operacional Bancário"), ...series.map(ts => ts.resultado_ebit.toFixed(2))],
+          [(isEn ? "(=) Consolidated Net Income" : "(=) Lucro Líquido Consolidado"), ...series.map(ts => ts.lucro_liquido.toFixed(2))],
         ];
       } else {
         rows = [
-          [(isEn ? "(+) Net Revenue" : "(+) Receita Líquida"), ...analysisData.time_series.map(ts => ts.receita_liquida.toFixed(2))],
-          [(isEn ? "(-) Cost of Goods & Services Sold" : "(-) Custos dos Bens e Serviços"), ...analysisData.time_series.map(ts => ts.custo_bens_servicos.toFixed(2))],
-          [(isEn ? "(=) Gross Profit" : "(=) Lucro Bruto"), ...analysisData.time_series.map(ts => ts.lucro_bruto.toFixed(2))],
-          [(isEn ? "(=) Operating Result (EBIT)" : "(=) Resultado Operacional (EBIT)"), ...analysisData.time_series.map(ts => ts.resultado_ebit.toFixed(2))],
-          [(isEn ? "(=) Consolidated Net Income" : "(=) Lucro Líquido Consolidado"), ...analysisData.time_series.map(ts => ts.lucro_liquido.toFixed(2))],
+          [(isEn ? "(+) Net Revenue" : "(+) Receita Líquida"), ...series.map(ts => ts.receita_liquida.toFixed(2))],
+          [(isEn ? "(-) Cost of Goods & Services Sold" : "(-) Custos dos Bens e Serviços"), ...series.map(ts => ts.custo_bens_servicos.toFixed(2))],
+          [(isEn ? "(=) Gross Profit" : "(=) Lucro Bruto"), ...series.map(ts => ts.lucro_bruto.toFixed(2))],
+          [(isEn ? "(=) Operating Result (EBIT)" : "(=) Resultado Operacional (EBIT)"), ...series.map(ts => ts.resultado_ebit.toFixed(2))],
+          [(isEn ? "(=) Consolidated Net Income" : "(=) Lucro Líquido Consolidado"), ...series.map(ts => ts.lucro_liquido.toFixed(2))],
         ];
       }
     }
@@ -443,7 +478,7 @@ function matchSector(sec1: string, sec2: string): boolean {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `CVM_${selectedCompany?.nome_pregao || "Empresa"}_${statementTab}_Canonica.csv`;
+    a.download = `CVM_${selectedCompany?.nome_pregao || "Empresa"}_${statementTab}_${periodicity}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -829,15 +864,53 @@ function matchSector(sec1: string, sec2: string): boolean {
               </p>
             </div>
 
-            {/* Hyperblock Engine CTA */}
+            {/* Hyperblock Engine CTA & Periodicity Switcher */}
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+              <div className="flex items-center gap-1 p-1 rounded-2xl border bg-slate-100 dark:bg-slate-800/90 border-slate-300 dark:border-slate-700 shadow-xs">
+                <button
+                  type="button"
+                  onClick={() => setPeriodicity("ANUAL")}
+                  className={`px-3 py-2 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${
+                    periodicity === "ANUAL"
+                      ? "bg-emerald-500 text-slate-950 shadow-sm"
+                      : isDark ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"
+                  }`}
+                  title={isEn ? "Annual audited filings (DFP)" : "Demonstrações financeiras anuais auditadas (DFP)"}
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>{isEn ? "Annual (DFP)" : "Anual (DFP)"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPeriodicity("TRIMESTRAL")}
+                  className={`px-3 py-2 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${
+                    periodicity === "TRIMESTRAL"
+                      ? "bg-cyan-500 text-slate-950 shadow-sm"
+                      : isDark ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"
+                  }`}
+                  title={isEn ? "Quarterly statements (ITR)" : "Informações trimestrais (ITR)"}
+                >
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  <span>{isEn ? "Quarterly (ITR)" : "Trimestral (ITR)"}</span>
+                </button>
+              </div>
+
               <button
                 onClick={handleLoadIntoCube}
                 disabled={loadingCube}
                 className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition transform active:scale-95"
+                title={
+                  isEn
+                    ? `Inject ${periodicity === "ANUAL" ? "Annual (DFP)" : "Quarterly (ITR)"} data into Hyperblock Cube`
+                    : `Injetar dados ${periodicity === "ANUAL" ? "Anuais (DFP)" : "Trimestrais (ITR)"} no motor Hyperblock`
+                }
               >
                 <Zap className={`w-4 h-4 ${loadingCube ? "animate-spin" : "fill-current"}`} />
-                <span>{loadingCube ? (isEn ? "Injecting into Cube..." : "Injetando no Cubo...") : (isEn ? "Load into Hyperblock" : "Carregar no Hyperblock")}</span>
+                <span>
+                  {loadingCube
+                    ? (isEn ? "Injecting..." : "Injetando...")
+                    : (isEn ? `Load ${periodicity === "ANUAL" ? "Annual" : "Quarterly"} into Cube` : `Carregar ${periodicity === "ANUAL" ? "Anual" : "Trimestral"} no Hyperblock`)}
+                </span>
               </button>
 
               <button
@@ -1062,7 +1135,7 @@ function matchSector(sec1: string, sec2: string): boolean {
           <div className="h-80 w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
               {activeChartTab === "DRE" ? (
-                <BarChart data={analysisData.time_series} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+                <BarChart data={displayedTimeSeries} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#334155" : "#e2e8f0"} />
                   <XAxis dataKey="quarter" stroke={isDark ? "#94a3b8" : "#475569"} tick={{ fill: isDark ? "#94a3b8" : "#475569", fontWeight: 600 }} />
                   <YAxis stroke={isDark ? "#94a3b8" : "#475569"} tick={{ fill: isDark ? "#94a3b8" : "#475569", fontWeight: 600 }} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}B`} />
@@ -1082,7 +1155,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                   <Bar dataKey="lucro_liquido" name={isEn ? "Net Income" : "Lucro Líquido"} fill="#6366f1" radius={[4, 4, 0, 0]} />
                 </BarChart>
               ) : (
-                <LineChart data={analysisData.time_series} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+                <LineChart data={displayedTimeSeries} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#334155" : "#e2e8f0"} />
                   <XAxis dataKey="quarter" stroke={isDark ? "#94a3b8" : "#475569"} tick={{ fill: isDark ? "#94a3b8" : "#475569", fontWeight: 600 }} />
                   <YAxis stroke={isDark ? "#94a3b8" : "#475569"} tick={{ fill: isDark ? "#94a3b8" : "#475569", fontWeight: 600 }} tickFormatter={(v) => `${v}%`} />
@@ -1146,8 +1219,38 @@ function matchSector(sec1: string, sec2: string): boolean {
               </span>
             </div>
 
-            <div className="flex items-center gap-3">
-              <span className={`text-xs font-semibold ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* Periodicity Switcher in Table */}
+              <div className="flex items-center gap-1 p-1 rounded-xl border bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setPeriodicity("ANUAL")}
+                  className={`px-2.5 py-1 rounded-lg transition flex items-center gap-1 ${
+                    periodicity === "ANUAL"
+                      ? "bg-emerald-500 font-bold text-slate-950 shadow-xs"
+                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                  }`}
+                  title={isEn ? "Annual audited publications (DFP)" : "Publicações anuais consolidadas (DFP)"}
+                >
+                  <Calendar className="w-3 h-3" />
+                  <span>{isEn ? "Annual (DFP)" : "Anual (DFP)"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPeriodicity("TRIMESTRAL")}
+                  className={`px-2.5 py-1 rounded-lg transition flex items-center gap-1 ${
+                    periodicity === "TRIMESTRAL"
+                      ? "bg-cyan-500 font-bold text-slate-950 shadow-xs"
+                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                  }`}
+                  title={isEn ? "Quarterly statements (ITR)" : "Informações trimestrais (ITR)"}
+                >
+                  <BarChart3 className="w-3 h-3" />
+                  <span>{isEn ? "Quarterly (ITR)" : "Trimestral (ITR)"}</span>
+                </button>
+              </div>
+
+              <span className={`hidden md:inline text-xs font-semibold ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                 {isEn ? "Values in R$ Millions" : "Valores em R$ Milhões"}
               </span>
               <button
@@ -1174,7 +1277,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                       ? (isBanking ? (isEn ? "Line Item (Banking COSIF/CVM)" : "Linha Contábil Bancária (COSIF/CVM)") : (isEn ? "Income Statement Line" : "Linha da DRE (Canônica)"))
                       : (isBanking ? (isEn ? "Cash Flow Line (Banking Model)" : "Fluxo de Caixa Bancário (CPC 03 / CVM)") : (isEn ? "Cash Flow Line (CPC 03)" : "Linha da DFC (Canônica)"))}
                   </th>
-                  {analysisData.time_series.slice(-6).map((ts) => (
+                  {displayedTimeSeries.map((ts) => (
                     <th key={ts.period} className="p-3.5 font-bold text-right">
                       {ts.quarter}
                     </th>
@@ -1189,7 +1292,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-bold ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>
                           3.01 (+) Receitas da Intermediação Financeira
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-bold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                             {ts.receita_liquida.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1199,7 +1302,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-medium ${isDark ? "text-rose-400" : "text-rose-700"}`}>
                           3.02 (-) Despesas da Intermediação Financeira (Captações)
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-semibold ${isDark ? "text-rose-400" : "text-rose-700"}`}>
                             {ts.custo_bens_servicos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1209,7 +1312,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-extrabold ${isDark ? "text-cyan-400" : "text-cyan-800"}`}>
                           3.03 (=) Resultado Bruto da Intermediação Financeira
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-black ${isDark ? "text-cyan-400" : "text-cyan-800"}`}>
                             {ts.lucro_bruto.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1219,7 +1322,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-medium ${isDark ? "text-rose-400" : "text-rose-700"}`}>
                           3.04.01 (-) Provisão para Perdas com Crédito (PCLD / PDD)
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-semibold ${isDark ? "text-rose-400" : "text-rose-700"}`}>
                             {(-Math.round(ts.lucro_liquido * 0.45 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1229,7 +1332,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-medium ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>
                           3.04.02 (+) Rendas de Prestação de Serviços e Tarifas Bancárias
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                             {(Math.round(ts.receita_liquida * 0.22 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1239,7 +1342,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-medium ${isDark ? "text-slate-400" : "text-slate-700"}`}>
                           3.04.03 (-) Despesas de Pessoal e Administrativas
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-semibold ${isDark ? "text-rose-400" : "text-rose-700"}`}>
                             {(-Math.round(ts.lucro_liquido * 0.55 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1249,7 +1352,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                           3.05 (=) Resultado Operacional Bancário
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                             {ts.resultado_ebit.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1259,7 +1362,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-medium ${isDark ? "text-slate-400" : "text-slate-700"}`}>
                           3.07 (-) Imposto de Renda e Contribuição Social (CSLL)
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-semibold ${isDark ? "text-rose-400" : "text-rose-700"}`}>
                             {(-Math.round(ts.lucro_liquido * 0.35 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1271,7 +1374,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3.5 font-black ${isDark ? "text-emerald-400" : "text-emerald-800"}`}>
                           3.08 (=) Lucro Líquido do Exercício
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3.5 text-right font-black ${isDark ? "text-emerald-400" : "text-emerald-800"}`}>
                             {ts.lucro_liquido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1284,7 +1387,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-bold ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>
                           3.01 (+) Receita Líquida de Vendas
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-bold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                             {ts.receita_liquida.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1294,7 +1397,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-medium ${isDark ? "text-slate-400" : "text-slate-700"}`}>
                           3.02 (-) Custos dos Bens e Serviços (CPV / CMV)
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-semibold ${isDark ? "text-rose-400" : "text-rose-700"}`}>
                             {ts.custo_bens_servicos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1304,7 +1407,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-extrabold ${isDark ? "text-cyan-400" : "text-cyan-800"}`}>
                           3.03 (=) Lucro Bruto
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-black ${isDark ? "text-cyan-400" : "text-cyan-800"}`}>
                             {ts.lucro_bruto.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1314,7 +1417,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-medium ${isDark ? "text-slate-400" : "text-slate-700"}`}>
                           3.05 (=) Resultado Operacional (EBIT)
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                             {ts.resultado_ebit.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1326,7 +1429,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3.5 font-black ${isDark ? "text-emerald-400" : "text-emerald-800"}`}>
                           3.11 (=) Lucro Líquido Consolidado
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3.5 text-right font-black ${isDark ? "text-emerald-400" : "text-emerald-800"}`}>
                             {ts.lucro_liquido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1341,7 +1444,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-extrabold ${isDark ? "text-sky-400" : "text-sky-800"}`}>
                           6.01 (=) Caixa Líquido das Atividades Operacionais (FCO)
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-bold ${isDark ? "text-sky-400" : "text-sky-800"}`}>
                             {(Math.round(ts.lucro_liquido * 1.55 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1351,7 +1454,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 pl-6 font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                           6.01.01 Lucro Líquido Ajustado
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                             {ts.lucro_liquido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1361,7 +1464,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 pl-6 font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                           6.01.02 (+/-) Variação em Títulos e Valores Mobiliários (TVM)
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                             {(Math.round(ts.lucro_liquido * 0.75 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1371,7 +1474,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 pl-6 font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                           6.01.03 (+/-) Variação na Carteira de Operações de Crédito
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right text-rose-400`}>
                             {(-Math.round(ts.lucro_liquido * 0.65 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1381,7 +1484,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 pl-6 font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                           6.01.04 (+/-) Variação em Depósitos e Captações no Mercado
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                             {(Math.round(ts.lucro_liquido * 0.45 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1391,7 +1494,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-bold ${isDark ? "text-amber-400" : "text-amber-700"}`}>
                           6.02 (=) Caixa Líquido em Atividades de Investimento (FCI)
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-bold text-rose-400`}>
                             {(-Math.round(ts.lucro_liquido * 0.35 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1401,7 +1504,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-bold ${isDark ? "text-indigo-400" : "text-indigo-700"}`}>
                           6.03 (=) Caixa Líquido em Atividades de Financiamento (FCF)
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-bold text-rose-400`}>
                             {(-Math.round(ts.lucro_liquido * 0.25 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1413,7 +1516,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3.5 font-black ${isDark ? "text-emerald-400" : "text-emerald-800"}`}>
                           6.04 (=) Variação Líquida de Caixa e Disponibilidades
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3.5 text-right font-black ${isDark ? "text-emerald-400" : "text-emerald-800"}`}>
                             {(Math.round(ts.lucro_liquido * 0.95 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1426,7 +1529,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-extrabold ${isDark ? "text-sky-400" : "text-sky-800"}`}>
                           6.01 (=) Fluxo de Caixa das Atividades Operacionais (FCO)
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-bold ${isDark ? "text-sky-400" : "text-sky-800"}`}>
                             {(Math.round(ts.receita_liquida * 0.22 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1436,7 +1539,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 pl-6 font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                           6.01.01 (+) Recebimento de Vendas de Clientes
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                             {(Math.round(ts.receita_liquida * 1.05 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1446,7 +1549,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 pl-6 font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                           6.01.02 (-) Pagamento a Fornecedores
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right text-rose-400`}>
                             {(Math.round(ts.custo_bens_servicos * 0.85 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1456,7 +1559,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-bold ${isDark ? "text-amber-400" : "text-amber-700"}`}>
                           6.02 (=) Fluxo de Caixa das Atividades de Investimento (FCI)
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-bold text-rose-400`}>
                             {(-Math.round(ts.receita_liquida * 0.12 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1466,7 +1569,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3 font-bold ${isDark ? "text-indigo-400" : "text-indigo-700"}`}>
                           6.03 (=) Fluxo de Caixa das Atividades de Financiamento (FCF)
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3 text-right font-bold text-rose-400`}>
                             {(-Math.round(ts.receita_liquida * 0.06 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1478,7 +1581,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                         <td className={`p-3.5 font-black ${isDark ? "text-emerald-400" : "text-emerald-800"}`}>
                           6.04 (=) Variação Líquida de Caixa e Equivalentes
                         </td>
-                        {analysisData.time_series.slice(-6).map((ts) => (
+                        {displayedTimeSeries.map((ts) => (
                           <td key={ts.period} className={`p-3.5 text-right font-black ${isDark ? "text-emerald-400" : "text-emerald-800"}`}>
                             {(Math.round(ts.receita_liquida * 0.04 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </td>
@@ -1500,14 +1603,48 @@ function matchSector(sec1: string, sec2: string): boolean {
             isDark ? "bg-slate-900/80 border-slate-800" : "bg-white border-slate-200"
           }`}
         >
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <h3 className={`text-base font-bold flex items-center gap-2 ${isDark ? "text-slate-100" : "text-slate-900"}`}>
               <Calendar className="w-5 h-5 text-emerald-500" />
               <span>{isEn ? "CVM Regulatory Filings History (ITR & DFP)" : "Histórico de Entregas Regulatórias CVM (ITR & DFP)"}</span>
             </h3>
-            <span className={`text-xs font-semibold ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-              {isEn ? "Synced via Watchdog" : "Sincronizado via Watchdog"}
-            </span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 p-1 rounded-xl border bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setFilingTypeFilter("ALL")}
+                  className={`px-2.5 py-1 rounded-lg transition ${
+                    filingTypeFilter === "ALL"
+                      ? "bg-white dark:bg-slate-900 font-bold shadow-xs text-slate-900 dark:text-white"
+                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                  }`}
+                >
+                  {isEn ? "All Filings" : "Todas as Entregas"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilingTypeFilter("DFP")}
+                  className={`px-2.5 py-1 rounded-lg transition ${
+                    filingTypeFilter === "DFP"
+                      ? "bg-emerald-500 font-bold text-slate-950 shadow-xs"
+                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                  }`}
+                >
+                  {isEn ? "Annual (DFP)" : "Anuais (DFP)"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilingTypeFilter("ITR")}
+                  className={`px-2.5 py-1 rounded-lg transition ${
+                    filingTypeFilter === "ITR"
+                      ? "bg-cyan-500 font-bold text-slate-950 shadow-xs"
+                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                  }`}
+                >
+                  {isEn ? "Quarterly (ITR)" : "Trimestrais (ITR)"}
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className={`overflow-x-auto rounded-2xl border ${isDark ? "border-slate-800" : "border-slate-200"}`}>
@@ -1523,7 +1660,7 @@ function matchSector(sec1: string, sec2: string): boolean {
                 </tr>
               </thead>
               <tbody className={`divide-y ${isDark ? "divide-slate-800" : "divide-slate-200"}`}>
-                {analysisData.filings.map((f) => (
+                {analysisData.filings.filter(f => filingTypeFilter === "ALL" ? true : f.tipo === filingTypeFilter).map((f) => (
                   <tr key={f.id} className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
                     <td className={`p-3 font-bold ${isDark ? "text-cyan-400" : "text-cyan-700"}`}>{f.tipo}</td>
                     <td className={`p-3 font-medium ${isDark ? "text-slate-200" : "text-slate-800"}`}>{f.dt_refer}</td>

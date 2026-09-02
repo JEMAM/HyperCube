@@ -733,6 +733,12 @@ export async function POST(req: NextRequest, context: { params: Promise<{ slug: 
     if (match) {
       codCvm = parseInt(match[1], 10);
     }
+    const url = new URL(req.url);
+    const periodicity = (url.searchParams.get("periodicity") || "ANUAL").toUpperCase();
+    const periods = periodicity === "TRIMESTRAL"
+      ? ["1T24", "2T24", "3T24", "4T24", "1T25", "2T25"]
+      : ["2022", "2023", "2024", "2025", "Budget 2026"];
+
     const comp = CVM_COMPANIES.find(c => c.cod_cvm === codCvm);
     if (comp) {
       sessionStore.setActiveCompany({
@@ -740,8 +746,8 @@ export async function POST(req: NextRequest, context: { params: Promise<{ slug: 
         name: comp.denom_social,
         ticker: comp.nome_pregao,
         currency: "R$",
-        periods: ["2023", "2024", "2025", "Budget 2026"],
-        description: `Companhia aberta listada na CVM (${comp.denom_social}) carregada via CVM Watch & Análise.`
+        periods: periods,
+        description: `Companhia aberta listada na CVM (${comp.denom_social}) - ${periodicity === "TRIMESTRAL" ? "Informações Trimestrais (ITR)" : "Demonstrações Anuais (DFP)"} carregada via CVM Watch & Análise.`
       });
     }
     const updated = sessionStore.getActiveCompany();
