@@ -308,23 +308,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
     return NextResponse.json((canonicalData as any).three_statement_model);
   }
 
-  // 12. CVM companies list
-  if (path === "cvm/companies") {
-    return NextResponse.json({
-      companies: DEMO_COMPANIES,
-      total: DEMO_COMPANIES.length
-    });
-  }
 
-  // 13. CVM Watchdog status
-  if (path === "cvm/watchdog/status") {
-    return NextResponse.json({
-      last_sync: "2026-09-01T12:00:00Z",
-      status: "active",
-      indexed_companies: 718,
-      source: "CVM Dados Abertos (ITR/DFP)"
-    });
-  }
 
   // 14. Macroeconomic indicators & BCB SGS / Focus API
   if (path === "economy/indicators" || path === "macro/indicators" || path === "macro/bcb") {

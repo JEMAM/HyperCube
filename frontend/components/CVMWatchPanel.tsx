@@ -192,6 +192,8 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
       const data = await fetchWithFallback(`/api/cvm/companies`);
       if (Array.isArray(data) && data.length > 0) {
         setAllCompanies(data);
+      } else if (data && Array.isArray(data.companies) && data.companies.length > 0) {
+        setAllCompanies(data.companies);
       }
     } catch {
       // Fallback is already initialized in state
