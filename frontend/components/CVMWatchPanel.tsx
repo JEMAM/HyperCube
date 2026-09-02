@@ -82,8 +82,8 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
         if (rawCode && !isNaN(rawCode)) return rawCode;
       }
       const match = CVM_COMPANIES.find(c => 
-        (activeCompany.ticker && c.nome_pregao.toUpperCase() === activeCompany.ticker.toUpperCase()) ||
-        (activeCompany.name && c.denom_social.toUpperCase() === activeCompany.name.toUpperCase())
+        (activeCompany.ticker && String(c.nome_pregao || "").toUpperCase() === String(activeCompany.ticker || "").toUpperCase()) ||
+        (activeCompany.name && String(c.denom_social || "").toUpperCase() === String(activeCompany.name || "").toUpperCase())
       );
       if (match) return match.cod_cvm;
     }
@@ -383,7 +383,10 @@ function matchSector(sec1: string, sec2: string): boolean {
     const periods = analysisData.time_series.map((ts) => ts.quarter);
     const headers = [isEn ? "Line Item (Canonical)" : "Linha Contábil (Canônica)", ...periods].join(";");
     
-    const isBanking = selectedCompany?.setor === "Bancos" || selectedCompany?.denom_social?.toUpperCase().includes("BANCO") || [1023, 19348, 20796, 20958, 906, 24600, 20567].includes(selectedCompany?.cod_cvm || 0);
+    const isBanking = selectedCompany?.setor === "Bancos" || 
+      String(selectedCompany?.denom_social || "").toUpperCase().includes("BANCO") || 
+      String(selectedCompany?.nome_pregao || "").toUpperCase().includes("BANCO") || 
+      [1023, 19348, 20796, 20958, 906, 24600, 20567].includes(selectedCompany?.cod_cvm || 0);
 
     let rows: string[][] = [];
     if (statementTab === "DFC") {
@@ -451,8 +454,9 @@ function matchSector(sec1: string, sec2: string): boolean {
     const comp = analysisData.company;
     const isBanking = Boolean(
       comp?.setor === "Bancos" ||
-      comp?.denom_social?.toUpperCase().includes("BANCO") ||
-      comp?.denom_social?.toUpperCase().includes("DAYCOVAL") ||
+      String(comp?.denom_social || "").toUpperCase().includes("BANCO") ||
+      String(comp?.denom_social || "").toUpperCase().includes("DAYCOVAL") ||
+      String(comp?.nome_pregao || "").toUpperCase().includes("BANCO") ||
       [1023, 19348, 20796, 20958, 906, 24600, 20567].includes(comp?.cod_cvm || 0)
     );
 
@@ -573,8 +577,9 @@ function matchSector(sec1: string, sec2: string): boolean {
 
   const isBanking = Boolean(
     selectedCompany?.setor === "Bancos" || 
-    selectedCompany?.denom_social?.toUpperCase().includes("BANCO") || 
-    selectedCompany?.denom_social?.toUpperCase().includes("DAYCOVAL") ||
+    String(selectedCompany?.denom_social || "").toUpperCase().includes("BANCO") || 
+    String(selectedCompany?.denom_social || "").toUpperCase().includes("DAYCOVAL") ||
+    String(selectedCompany?.nome_pregao || "").toUpperCase().includes("BANCO") ||
     [1023, 19348, 20796, 20958, 906, 24600, 20567].includes(selectedCompany?.cod_cvm || 0)
   );
 
