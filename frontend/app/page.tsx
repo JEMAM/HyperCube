@@ -356,21 +356,8 @@ function DashboardContent() {
   if (viewMode === "LANDING") {
     return (
       <div className={`min-h-screen ${isDark ? "bg-[#071526] text-slate-100" : "bg-slate-50 text-slate-900"} font-sans transition-colors duration-200`}>
-        <AuthModal
-          isOpen={showAuthModal}
-          initialMode={authModalMode}
-          onClose={() => setShowAuthModal(false)}
-          onSuccess={() => {
-            setViewMode("PLANNING");
-            fetchData();
-          }}
-        />
         <LandingPage
           onNavigate={(mode) => setViewMode(mode)}
-          onOpenAuth={(mode) => {
-            setAuthModalMode(mode || "login");
-            setShowAuthModal(true);
-          }}
         />
       </div>
     );
@@ -378,15 +365,6 @@ function DashboardContent() {
 
   return (
     <div className={`min-h-screen w-full flex flex-col ${isDark ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"} font-sans transition-colors duration-200`}>
-      {/* Auth Modal for internal workspace */}
-      <AuthModal
-        isOpen={showAuthModal}
-        initialMode={authModalMode}
-        onClose={() => setShowAuthModal(false)}
-        onSuccess={() => {
-          fetchData();
-        }}
-      />
       {/* Welcome & Setup Modal */}
       <WelcomeSetupModal
         isOpen={showSetupModal}
@@ -522,42 +500,18 @@ function DashboardContent() {
               </button>
               <ThemeLanguageToggle />
 
-              {/* User Profile & Auth Controls in Header */}
-              {isAuthenticated ? (
-                <div className="flex items-center gap-2 border-l border-slate-300 dark:border-slate-700 pl-2">
-                  <div 
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-bold"
-                    title={user?.email}
-                  >
-                    <span className="w-5 h-5 rounded-full bg-anaplan-coral text-white flex items-center justify-center text-[10px] font-black">
-                      {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
-                    </span>
-                    <span className="hidden xl:inline truncate max-w-[100px] text-slate-700 dark:text-slate-200">
-                      {user?.name}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      logout();
-                      setViewMode("LANDING");
-                    }}
-                    className="p-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition cursor-pointer"
-                    title={language === "en" ? "Sign Out" : "Sair do Aplicativo"}
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => {
-                    setAuthModalMode("login");
-                    setShowAuthModal(true);
-                  }}
-                  className="px-3 py-1.5 rounded-lg bg-anaplan-coral text-white text-xs font-bold hover:bg-orange-600 transition cursor-pointer"
-                >
-                  {language === "en" ? "Sign In" : "Entrar"}
-                </button>
-              )}
+              {/* Direct Navigation to Landing Page */}
+              <button
+                onClick={() => setViewMode("LANDING")}
+                className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                  isDark
+                    ? "bg-slate-800 border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700"
+                    : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100 shadow-2xs"
+                }`}
+                title={language === "en" ? "Home / Presentation" : "Página Inicial / Apresentação"}
+              >
+                <span>{language === "en" ? "Home" : "Início"}</span>
+              </button>
             </div>
           </div>
         </div>
