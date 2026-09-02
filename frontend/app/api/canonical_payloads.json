@@ -1,0 +1,4523 @@
+{
+  "forecast_rolling": {
+    "company_id": "klabin",
+    "company_name": "Klabin S.A.",
+    "ticker": "KLBN11",
+    "sector": "Papel & Celulose / Florestal",
+    "currency": "BRL",
+    "cut_off_quarter": "Q4_2025",
+    "quarters_count": 8,
+    "actuals_count": 4,
+    "forecast_count": 4,
+    "kpis": {
+      "annual_actual_revenue": 20697.0,
+      "annual_forecast_revenue": 22456.24,
+      "revenue_growth_pct": 8.5,
+      "annual_actual_ebitda": 4288.0,
+      "annual_forecast_ebitda": 4972.8,
+      "ebitda_growth_pct": 15.97,
+      "ending_cash": 4428.84,
+      "ending_leverage": 3.07
+    },
+    "timeline": [
+      {
+        "quarter_id": "Q1_2025",
+        "year": 2025,
+        "quarter_num": 1,
+        "label": "Q1 2025",
+        "period_type": "ACTUAL",
+        "is_actual": true,
+        "revenue": 4553.34,
+        "cogs": 2941.84,
+        "gross_profit": 1611.5,
+        "opex_sales": 341.44,
+        "opex_admin": 326.7,
+        "ebitda": 943.36,
+        "ebitda_margin_pct": 20.72,
+        "depreciation": 555.5,
+        "ebit": 387.86,
+        "financial_result": -477.25,
+        "ebt": -89.39,
+        "taxes": 0.0,
+        "net_income": -89.39,
+        "net_margin_pct": -1.96,
+        "capex": 857.34,
+        "fco": 807.4,
+        "fci": -952.6,
+        "fcf": -297.0,
+        "cash_delta": -442.2,
+        "cash_start": 6627.0,
+        "cash_end": 6184.8,
+        "debt_total": 21835.0,
+        "net_debt": 15650.2,
+        "leverage_ratio": 4.15,
+        "working_capital_ncg": 602.8
+      },
+      {
+        "quarter_id": "Q2_2025",
+        "year": 2025,
+        "quarter_num": 2,
+        "label": "Q2 2025",
+        "period_type": "ACTUAL",
+        "is_actual": true,
+        "revenue": 4967.28,
+        "cogs": 3209.28,
+        "gross_profit": 1758.0,
+        "opex_sales": 372.48,
+        "opex_admin": 356.4,
+        "ebitda": 1029.12,
+        "ebitda_margin_pct": 20.72,
+        "depreciation": 555.5,
+        "ebit": 473.62,
+        "financial_result": -477.25,
+        "ebt": -3.63,
+        "taxes": 0.0,
+        "net_income": -3.63,
+        "net_margin_pct": -0.07,
+        "capex": 935.28,
+        "fco": 880.8,
+        "fci": -1039.2,
+        "fcf": -324.0,
+        "cash_delta": -482.4,
+        "cash_start": 6184.8,
+        "cash_end": 5702.4,
+        "debt_total": 21835.0,
+        "net_debt": 16132.6,
+        "leverage_ratio": 3.92,
+        "working_capital_ncg": 657.6
+      },
+      {
+        "quarter_id": "Q3_2025",
+        "year": 2025,
+        "quarter_num": 3,
+        "label": "Q3 2025",
+        "period_type": "ACTUAL",
+        "is_actual": true,
+        "revenue": 5381.22,
+        "cogs": 3476.72,
+        "gross_profit": 1904.5,
+        "opex_sales": 403.52,
+        "opex_admin": 386.1,
+        "ebitda": 1114.88,
+        "ebitda_margin_pct": 20.72,
+        "depreciation": 555.5,
+        "ebit": 559.38,
+        "financial_result": -477.25,
+        "ebt": 82.13,
+        "taxes": 20.53,
+        "net_income": 61.6,
+        "net_margin_pct": 1.14,
+        "capex": 1013.22,
+        "fco": 954.2,
+        "fci": -1125.8,
+        "fcf": -351.0,
+        "cash_delta": -522.6,
+        "cash_start": 5702.4,
+        "cash_end": 5179.8,
+        "debt_total": 21835.0,
+        "net_debt": 16655.2,
+        "leverage_ratio": 3.73,
+        "working_capital_ncg": 712.4
+      },
+      {
+        "quarter_id": "Q4_2025",
+        "year": 2025,
+        "quarter_num": 4,
+        "label": "Q4 2025",
+        "period_type": "ACTUAL",
+        "is_actual": true,
+        "revenue": 5795.16,
+        "cogs": 3744.16,
+        "gross_profit": 2051.0,
+        "opex_sales": 434.56,
+        "opex_admin": 415.8,
+        "ebitda": 1200.64,
+        "ebitda_margin_pct": 20.72,
+        "depreciation": 555.5,
+        "ebit": 645.14,
+        "financial_result": -477.25,
+        "ebt": 167.89,
+        "taxes": 41.97,
+        "net_income": 125.92,
+        "net_margin_pct": 2.17,
+        "capex": 1091.16,
+        "fco": 1027.6,
+        "fci": -1212.4,
+        "fcf": -378.0,
+        "cash_delta": -562.8,
+        "cash_start": 5179.8,
+        "cash_end": 4617.0,
+        "debt_total": 21835.0,
+        "net_debt": 17218.0,
+        "leverage_ratio": 3.59,
+        "working_capital_ncg": 767.2
+      },
+      {
+        "quarter_id": "Q1_2026",
+        "year": 2026,
+        "quarter_num": 1,
+        "label": "Q1 2026",
+        "period_type": "FORECAST",
+        "is_actual": false,
+        "revenue": 4940.37,
+        "cogs": 3144.02,
+        "gross_profit": 1796.36,
+        "opex_sales": 361.75,
+        "opex_admin": 340.58,
+        "ebitda": 1094.02,
+        "ebitda_margin_pct": 22.14,
+        "depreciation": 643.7,
+        "ebit": 450.32,
+        "financial_result": -453.39,
+        "ebt": -3.07,
+        "taxes": 0.0,
+        "net_income": -3.07,
+        "net_margin_pct": -0.06,
+        "capex": -1102.5,
+        "fco": 962.73,
+        "fci": -1102.5,
+        "fcf": 0.0,
+        "cash_delta": -139.77,
+        "cash_start": 4617.0,
+        "cash_end": 4477.23,
+        "debt_total": 21548.97,
+        "net_debt": 17071.74,
+        "leverage_ratio": 3.9,
+        "working_capital_ncg": 889.27
+      },
+      {
+        "quarter_id": "Q2_2026",
+        "year": 2026,
+        "quarter_num": 2,
+        "label": "Q2 2026",
+        "period_type": "FORECAST",
+        "is_actual": false,
+        "revenue": 5389.5,
+        "cogs": 3429.84,
+        "gross_profit": 1959.66,
+        "opex_sales": 394.64,
+        "opex_admin": 371.55,
+        "ebitda": 1193.47,
+        "ebitda_margin_pct": 22.14,
+        "depreciation": 643.7,
+        "ebit": 549.77,
+        "financial_result": -453.39,
+        "ebt": 96.38,
+        "taxes": 24.1,
+        "net_income": 72.29,
+        "net_margin_pct": 1.34,
+        "capex": -1102.5,
+        "fco": 1050.26,
+        "fci": -1102.5,
+        "fcf": -25.3,
+        "cash_delta": -77.54,
+        "cash_start": 4477.23,
+        "cash_end": 4399.69,
+        "debt_total": 21548.97,
+        "net_debt": 17149.28,
+        "leverage_ratio": 3.59,
+        "working_capital_ncg": 970.11
+      },
+      {
+        "quarter_id": "Q3_2026",
+        "year": 2026,
+        "quarter_num": 3,
+        "label": "Q3 2026",
+        "period_type": "FORECAST",
+        "is_actual": false,
+        "revenue": 5838.62,
+        "cogs": 3715.66,
+        "gross_profit": 2122.97,
+        "opex_sales": 427.53,
+        "opex_admin": 402.51,
+        "ebitda": 1292.93,
+        "ebitda_margin_pct": 22.14,
+        "depreciation": 643.7,
+        "ebit": 649.23,
+        "financial_result": -453.39,
+        "ebt": 195.84,
+        "taxes": 48.96,
+        "net_income": 146.88,
+        "net_margin_pct": 2.52,
+        "capex": -1102.5,
+        "fco": 1137.78,
+        "fci": -1102.5,
+        "fcf": -51.41,
+        "cash_delta": -16.13,
+        "cash_start": 4399.69,
+        "cash_end": 4383.56,
+        "debt_total": 21548.97,
+        "net_debt": 17165.41,
+        "leverage_ratio": 3.32,
+        "working_capital_ncg": 1050.95
+      },
+      {
+        "quarter_id": "Q4_2026",
+        "year": 2026,
+        "quarter_num": 4,
+        "label": "Q4 2026",
+        "period_type": "FORECAST",
+        "is_actual": false,
+        "revenue": 6287.75,
+        "cogs": 4001.48,
+        "gross_profit": 2286.27,
+        "opex_sales": 460.42,
+        "opex_admin": 433.47,
+        "ebitda": 1392.38,
+        "ebitda_margin_pct": 22.14,
+        "depreciation": 643.7,
+        "ebit": 748.68,
+        "financial_result": -453.39,
+        "ebt": 295.3,
+        "taxes": 73.82,
+        "net_income": 221.47,
+        "net_margin_pct": 3.52,
+        "capex": -1102.5,
+        "fco": 1225.3,
+        "fci": -1102.5,
+        "fcf": -77.52,
+        "cash_delta": 45.28,
+        "cash_start": 4383.56,
+        "cash_end": 4428.84,
+        "debt_total": 21548.97,
+        "net_debt": 17120.13,
+        "leverage_ratio": 3.07,
+        "working_capital_ncg": 1131.79
+      }
+    ]
+  },
+  "three_statement_model": {
+    "company_id": "klabin",
+    "company_name": "Klabin S.A.",
+    "ticker": "KLBN11",
+    "currency": "R$",
+    "sector": "Papel & Celulose / Florestal",
+    "available_companies": [
+      {
+        "id": "vale",
+        "name": "Vale S.A.",
+        "ticker": "VALE3",
+        "sector": "Mineração & Metais Básicos"
+      },
+      {
+        "id": "petrobras",
+        "name": "Petróleo Brasileiro S.A. - Petrobras",
+        "ticker": "PETR4",
+        "sector": "Petróleo, Gás & Biocombustíveis"
+      },
+      {
+        "id": "klabin",
+        "name": "Klabin S.A.",
+        "ticker": "KLBN11",
+        "sector": "Papel & Celulose / Florestal"
+      },
+      {
+        "id": "weg",
+        "name": "WEG S.A.",
+        "ticker": "WEGE3",
+        "sector": "Bens de Capital & Motores Elétricos"
+      },
+      {
+        "id": "banco_do_brasil",
+        "name": "Banco do Brasil S.A.",
+        "ticker": "BBAS3",
+        "sector": "Intermediação Financeira & Bancos"
+      }
+    ],
+    "periods": [
+      "2024",
+      "2025",
+      "Budget_2026"
+    ],
+    "periods_data": {
+      "2024": {
+        "values": {
+          "receita_bruta": 21828.0,
+          "deducoes": 2183.0,
+          "receita_liquida": 19645.0,
+          "cpv": 12278.0,
+          "lucro_bruto": 7367.0,
+          "despesas_vendas": 1473.0,
+          "despesas_admin": 1244.0,
+          "ebitda": 6250.0,
+          "depreciacao_amortizacao": 2150.0,
+          "ebit": 4100.0,
+          "resultado_financeiro": -1830.0,
+          "ebt": 2270.0,
+          "impostos_lucro": 223.0,
+          "lucro_liquido": 2047.0,
+          "fco_lucro_liquido": 2047.0,
+          "fco_ajustes_da": 2150.0,
+          "fco_var_contas_receber": -180.0,
+          "fco_var_estoques": -240.0,
+          "fco_var_fornecedores": 190.0,
+          "fco_var_outros_giro": -50.0,
+          "fco_total": 3917.0,
+          "fci_capex": -3800.0,
+          "fci_outros_investimentos": -120.0,
+          "fci_total": -3920.0,
+          "fcf_amortizacao_divida": -750.0,
+          "fcf_dividendos_pagos": -820.0,
+          "fcf_total": -1570.0,
+          "dfc_variacao_liquida_caixa": -1573.0,
+          "caixa_inicial": 8200.0,
+          "caixa_equivalentes": 6627.0,
+          "aplicacoes_financeiras": 1840.0,
+          "contas_receber": 2580.0,
+          "estoques": 3150.0,
+          "outros_ativos_circulantes": 890.0,
+          "ativo_circulante": 15087.0,
+          "realizavel_longo_prazo": 2420.0,
+          "investimentos": 980.0,
+          "imobilizado_liquido": 36800.0,
+          "intangivel_liquido": 1850.0,
+          "ativo_nao_circulante": 42050.0,
+          "ativo_total": 57137.0,
+          "fornecedores": 2190.0,
+          "emprestimos_curto_prazo": 1850.0,
+          "obrigacoes_fiscais_sociais": 1420.0,
+          "outros_passivos_circulantes": 980.0,
+          "passivo_circulante": 6440.0,
+          "emprestimos_longo_prazo": 29800.0,
+          "provisoes_contingencias": 3450.0,
+          "outros_passivos_nao_circulantes": 2120.0,
+          "passivo_nao_circulante": 35370.0,
+          "passivo_exigivel_total": 41810.0,
+          "capital_social": 8500.0,
+          "reservas_capital_lucros": 4120.0,
+          "lucros_prejuizos_acumulados": 2707.0,
+          "patrimonio_liquido": 15327.0,
+          "passivo_total_pl": 57137.0,
+          "pmr_dias": 47.3,
+          "pme_dias": 92.4,
+          "pmp_dias": 64.2,
+          "capex": 3800.0,
+          "dividend_payout_pct": 40.1
+        },
+        "reconciliation": {
+          "ativo_total": 57137.0,
+          "passivo_total_pl": 57137.0,
+          "delta": 0.0,
+          "is_balanced": true
+        },
+        "fleuriet": {
+          "aco": 6620.0,
+          "pco": 4590.0,
+          "ncg": 2030.0,
+          "cdg": 8647.0,
+          "st": 6617.0,
+          "tipo": 2,
+          "classificacao": "Tipo 2 — Sólida / Equilibrada",
+          "badge": "Sólida",
+          "alerta_tesoura": false,
+          "descricao": "Estrutura patrimonial clássica e saudável: o Capital de Giro Próprio (CDG) cobre integralmente a Necessidade de Capital de Giro (NCG), mantendo Saldo de Tesouraria positivo.",
+          "grau_dependencia_bancaria_pct": 27.95,
+          "st_sobre_receita_pct": 33.68,
+          "ciclo_operacional_dias": 139.7,
+          "ciclo_financeiro_dias": 75.5
+        },
+        "dupont": {
+          "margem_liquida_pct": 10.42,
+          "giro_ativo": 0.344,
+          "alavancagem_financeira": 3.728,
+          "roe_pct": 13.36,
+          "roa_pct": 3.58
+        },
+        "bridge": [
+          {
+            "step": 1,
+            "category": "DRE",
+            "name": "Lucro Líquido",
+            "amount": 2047.0,
+            "type": "base"
+          },
+          {
+            "step": 2,
+            "category": "Ajuste",
+            "name": "(+) Depreciação e Amortização (Não-Caixa)",
+            "amount": 2150.0,
+            "type": "positive"
+          },
+          {
+            "step": 3,
+            "category": "Giro",
+            "name": "(+/-) Variação em Contas a Receber",
+            "amount": -180.0,
+            "type": "flow"
+          },
+          {
+            "step": 4,
+            "category": "Giro",
+            "name": "(+/-) Variação em Estoques",
+            "amount": -240.0,
+            "type": "flow"
+          },
+          {
+            "step": 5,
+            "category": "Giro",
+            "name": "(+/-) Variação em Fornecedores",
+            "amount": 190.0,
+            "type": "flow"
+          },
+          {
+            "step": 6,
+            "category": "DFC Subtotal",
+            "name": "(=) Fluxo de Caixa Operacional (FCO)",
+            "amount": 3917.0,
+            "type": "subtotal"
+          },
+          {
+            "step": 7,
+            "category": "Investimento",
+            "name": "(-) Investimentos em Capex (FCI)",
+            "amount": -3800.0,
+            "type": "negative"
+          },
+          {
+            "step": 8,
+            "category": "Financiamento",
+            "name": "(-) Dividendos & JCP Pagos",
+            "amount": -820.0,
+            "type": "negative"
+          },
+          {
+            "step": 9,
+            "category": "Financiamento",
+            "name": "(+/-) Amortização Líquida de Dívida",
+            "amount": -750.0,
+            "type": "flow"
+          },
+          {
+            "step": 10,
+            "category": "DFC Total",
+            "name": "(=) Variação Líquida de Caixa",
+            "amount": -1573.0,
+            "type": "summary"
+          },
+          {
+            "step": 11,
+            "category": "BP Saldo",
+            "name": "(+) Saldo Inicial de Caixa",
+            "amount": 8200.0,
+            "type": "base"
+          },
+          {
+            "step": 12,
+            "category": "BP Final",
+            "name": "(=) Caixa e Equivalentes Final (BP)",
+            "amount": 6627.0,
+            "type": "total"
+          }
+        ]
+      },
+      "2025": {
+        "values": {
+          "receita_bruta": 22997.0,
+          "deducoes": 2300.0,
+          "receita_liquida": 20697.0,
+          "cpv": 13372.0,
+          "lucro_bruto": 7325.0,
+          "despesas_vendas": 1552.0,
+          "despesas_admin": 1485.0,
+          "ebitda": 6510.0,
+          "depreciacao_amortizacao": 2222.0,
+          "ebit": 4288.0,
+          "resultado_financeiro": -1909.0,
+          "ebt": 2379.0,
+          "impostos_lucro": 701.0,
+          "lucro_liquido": 1678.0,
+          "fco_lucro_liquido": 1678.0,
+          "fco_ajustes_da": 2222.0,
+          "fco_var_contas_receber": -160.0,
+          "fco_var_estoques": -210.0,
+          "fco_var_fornecedores": 180.0,
+          "fco_var_outros_giro": -40.0,
+          "fco_total": 3670.0,
+          "fci_capex": -4200.0,
+          "fci_outros_investimentos": -130.0,
+          "fci_total": -4330.0,
+          "fcf_amortizacao_divida": -680.0,
+          "fcf_dividendos_pagos": -670.0,
+          "fcf_total": -1350.0,
+          "dfc_variacao_liquida_caixa": -2010.0,
+          "caixa_inicial": 6627.0,
+          "caixa_equivalentes": 4617.0,
+          "aplicacoes_financeiras": 1950.0,
+          "contas_receber": 2740.0,
+          "estoques": 3360.0,
+          "outros_ativos_circulantes": 930.0,
+          "ativo_circulante": 13597.0,
+          "realizavel_longo_prazo": 2510.0,
+          "investimentos": 1050.0,
+          "imobilizado_liquido": 38778.0,
+          "intangivel_liquido": 1920.0,
+          "ativo_nao_circulante": 44258.0,
+          "ativo_total": 57855.0,
+          "fornecedores": 2370.0,
+          "emprestimos_curto_prazo": 1720.0,
+          "obrigacoes_fiscais_sociais": 1510.0,
+          "outros_passivos_circulantes": 1020.0,
+          "passivo_circulante": 6620.0,
+          "emprestimos_longo_prazo": 31200.0,
+          "provisoes_contingencias": 3610.0,
+          "outros_passivos_nao_circulantes": 2240.0,
+          "passivo_nao_circulante": 37050.0,
+          "passivo_exigivel_total": 43670.0,
+          "capital_social": 8500.0,
+          "reservas_capital_lucros": 4670.0,
+          "lucros_prejuizos_acumulados": 1015.0,
+          "patrimonio_liquido": 14185.0,
+          "passivo_total_pl": 57855.0,
+          "pmr_dias": 47.7,
+          "pme_dias": 90.4,
+          "pmp_dias": 63.8,
+          "capex": 4200.0,
+          "dividend_payout_pct": 39.9
+        },
+        "reconciliation": {
+          "ativo_total": 57855.0,
+          "passivo_total_pl": 57855.0,
+          "delta": 0.0,
+          "is_balanced": true
+        },
+        "fleuriet": {
+          "aco": 7030.0,
+          "pco": 4900.0,
+          "ncg": 2130.0,
+          "cdg": 6977.0,
+          "st": 4847.0,
+          "tipo": 2,
+          "classificacao": "Tipo 2 — Sólida / Equilibrada",
+          "badge": "Sólida",
+          "alerta_tesoura": false,
+          "descricao": "Estrutura patrimonial clássica e saudável: o Capital de Giro Próprio (CDG) cobre integralmente a Necessidade de Capital de Giro (NCG), mantendo Saldo de Tesouraria positivo.",
+          "grau_dependencia_bancaria_pct": 24.47,
+          "st_sobre_receita_pct": 23.42,
+          "ciclo_operacional_dias": 138.1,
+          "ciclo_financeiro_dias": 74.3
+        },
+        "dupont": {
+          "margem_liquida_pct": 8.11,
+          "giro_ativo": 0.358,
+          "alavancagem_financeira": 4.079,
+          "roe_pct": 11.83,
+          "roa_pct": 2.9
+        },
+        "bridge": [
+          {
+            "step": 1,
+            "category": "DRE",
+            "name": "Lucro Líquido",
+            "amount": 1678.0,
+            "type": "base"
+          },
+          {
+            "step": 2,
+            "category": "Ajuste",
+            "name": "(+) Depreciação e Amortização (Não-Caixa)",
+            "amount": 2222.0,
+            "type": "positive"
+          },
+          {
+            "step": 3,
+            "category": "Giro",
+            "name": "(+/-) Variação em Contas a Receber",
+            "amount": -160.0,
+            "type": "flow"
+          },
+          {
+            "step": 4,
+            "category": "Giro",
+            "name": "(+/-) Variação em Estoques",
+            "amount": -210.0,
+            "type": "flow"
+          },
+          {
+            "step": 5,
+            "category": "Giro",
+            "name": "(+/-) Variação em Fornecedores",
+            "amount": 180.0,
+            "type": "flow"
+          },
+          {
+            "step": 6,
+            "category": "DFC Subtotal",
+            "name": "(=) Fluxo de Caixa Operacional (FCO)",
+            "amount": 3670.0,
+            "type": "subtotal"
+          },
+          {
+            "step": 7,
+            "category": "Investimento",
+            "name": "(-) Investimentos em Capex (FCI)",
+            "amount": -4200.0,
+            "type": "negative"
+          },
+          {
+            "step": 8,
+            "category": "Financiamento",
+            "name": "(-) Dividendos & JCP Pagos",
+            "amount": -670.0,
+            "type": "negative"
+          },
+          {
+            "step": 9,
+            "category": "Financiamento",
+            "name": "(+/-) Amortização Líquida de Dívida",
+            "amount": -680.0,
+            "type": "flow"
+          },
+          {
+            "step": 10,
+            "category": "DFC Total",
+            "name": "(=) Variação Líquida de Caixa",
+            "amount": -2010.0,
+            "type": "summary"
+          },
+          {
+            "step": 11,
+            "category": "BP Saldo",
+            "name": "(+) Saldo Inicial de Caixa",
+            "amount": 6627.0,
+            "type": "base"
+          },
+          {
+            "step": 12,
+            "category": "BP Final",
+            "name": "(=) Caixa e Equivalentes Final (BP)",
+            "amount": 4617.0,
+            "type": "total"
+          }
+        ]
+      },
+      "Budget_2026": {
+        "values": {
+          "receita_bruta": 24951.74,
+          "deducoes": 2495.5,
+          "receita_liquida": 22456.24,
+          "cpv": 14290.99,
+          "lucro_bruto": 8165.25,
+          "despesas_vendas": 1644.34,
+          "despesas_admin": 1548.11,
+          "ebitda": 4972.8,
+          "depreciacao_amortizacao": 2574.8,
+          "ebit": 2398.0,
+          "resultado_financeiro": -1813.55,
+          "ebt": 584.45,
+          "impostos_lucro": 116.89,
+          "lucro_liquido": 467.56,
+          "fco_lucro_liquido": 467.56,
+          "fco_ajustes_da": 2574.8,
+          "fco_var_contas_receber": -235.45,
+          "fco_var_estoques": -228.63,
+          "fco_var_fornecedores": 162.68,
+          "fco_var_outros_giro": -40.0,
+          "fco_total": 2700.96,
+          "fci_capex": -4410.0,
+          "fci_outros_investimentos": -250.0,
+          "fci_total": -4660.0,
+          "fcf_amortizacao_divida": -646.0,
+          "fcf_dividendos_pagos": -187.02,
+          "fcf_total": -833.02,
+          "dfc_variacao_liquida_caixa": -2792.06,
+          "caixa_inicial": 4617.0,
+          "caixa_equivalentes": 1824.94,
+          "aplicacoes_financeiras": 2047.5,
+          "contas_receber": 2975.45,
+          "estoques": 3588.63,
+          "outros_ativos_circulantes": 1009.05,
+          "ativo_circulante": 11445.57,
+          "realizavel_longo_prazo": 2510.0,
+          "investimentos": 1200.0,
+          "imobilizado_liquido": 40613.2,
+          "intangivel_liquido": 2020.0,
+          "ativo_nao_circulante": 46343.2,
+          "ativo_total": 57788.77,
+          "fornecedores": 2532.68,
+          "emprestimos_curto_prazo": 1634.0,
+          "obrigacoes_fiscais_sociais": 1638.35,
+          "outros_passivos_circulantes": 1106.7,
+          "passivo_circulante": 6911.73,
+          "emprestimos_longo_prazo": 30264.0,
+          "provisoes_contingencias": 3682.2,
+          "outros_passivos_nao_circulantes": 2240.0,
+          "passivo_nao_circulante": 36186.2,
+          "passivo_exigivel_total": 43097.93,
+          "capital_social": 8500.0,
+          "reservas_capital_lucros": 5470.0,
+          "lucros_prejuizos_acumulados": 720.84,
+          "patrimonio_liquido": 14690.84,
+          "passivo_total_pl": 57788.77,
+          "pmr_dias": 47.7,
+          "pme_dias": 90.4,
+          "pmp_dias": 63.8,
+          "capex": 4410.0,
+          "dividend_payout_pct": 40.0
+        },
+        "reconciliation": {
+          "ativo_total": 57788.77,
+          "passivo_total_pl": 57788.77,
+          "delta": 0.0,
+          "is_balanced": true
+        },
+        "fleuriet": {
+          "aco": 7573.13,
+          "pco": 5277.73,
+          "ncg": 2295.4,
+          "cdg": 4533.84,
+          "st": 2238.44,
+          "tipo": 2,
+          "classificacao": "Tipo 2 — Sólida / Equilibrada",
+          "badge": "Sólida",
+          "alerta_tesoura": false,
+          "descricao": "Estrutura patrimonial clássica e saudável: o Capital de Giro Próprio (CDG) cobre integralmente a Necessidade de Capital de Giro (NCG), mantendo Saldo de Tesouraria positivo.",
+          "grau_dependencia_bancaria_pct": 21.58,
+          "st_sobre_receita_pct": 9.97,
+          "ciclo_operacional_dias": 138.1,
+          "ciclo_financeiro_dias": 74.3
+        },
+        "dupont": {
+          "margem_liquida_pct": 2.08,
+          "giro_ativo": 0.389,
+          "alavancagem_financeira": 3.934,
+          "roe_pct": 3.18,
+          "roa_pct": 0.81
+        },
+        "bridge": [
+          {
+            "step": 1,
+            "category": "DRE",
+            "name": "Lucro Líquido",
+            "amount": 467.56,
+            "type": "base"
+          },
+          {
+            "step": 2,
+            "category": "Ajuste",
+            "name": "(+) Depreciação e Amortização (Não-Caixa)",
+            "amount": 2574.8,
+            "type": "positive"
+          },
+          {
+            "step": 3,
+            "category": "Giro",
+            "name": "(+/-) Variação em Contas a Receber",
+            "amount": -235.45,
+            "type": "flow"
+          },
+          {
+            "step": 4,
+            "category": "Giro",
+            "name": "(+/-) Variação em Estoques",
+            "amount": -228.63,
+            "type": "flow"
+          },
+          {
+            "step": 5,
+            "category": "Giro",
+            "name": "(+/-) Variação em Fornecedores",
+            "amount": 162.68,
+            "type": "flow"
+          },
+          {
+            "step": 6,
+            "category": "DFC Subtotal",
+            "name": "(=) Fluxo de Caixa Operacional (FCO)",
+            "amount": 2700.96,
+            "type": "subtotal"
+          },
+          {
+            "step": 7,
+            "category": "Investimento",
+            "name": "(-) Investimentos em Capex (FCI)",
+            "amount": -4410.0,
+            "type": "negative"
+          },
+          {
+            "step": 8,
+            "category": "Financiamento",
+            "name": "(-) Dividendos & JCP Pagos",
+            "amount": -187.02,
+            "type": "negative"
+          },
+          {
+            "step": 9,
+            "category": "Financiamento",
+            "name": "(+/-) Amortização Líquida de Dívida",
+            "amount": -646.0,
+            "type": "flow"
+          },
+          {
+            "step": 10,
+            "category": "DFC Total",
+            "name": "(=) Variação Líquida de Caixa",
+            "amount": -2792.06,
+            "type": "summary"
+          },
+          {
+            "step": 11,
+            "category": "BP Saldo",
+            "name": "(+) Saldo Inicial de Caixa",
+            "amount": 4617.0,
+            "type": "base"
+          },
+          {
+            "step": 12,
+            "category": "BP Final",
+            "name": "(=) Caixa e Equivalentes Final (BP)",
+            "amount": 1824.94,
+            "type": "total"
+          }
+        ]
+      }
+    },
+    "reconciliation_guarantee": "100.00% Zero Tolerance Multi-Statement Closed Loop"
+  },
+  "multidim_dimensions": {
+    "time": {
+      "id": "time",
+      "label": "Período Fiscal",
+      "members": [
+        {
+          "id": "2024_09_30",
+          "label": "Trimestre 09/2024 (2024_09_30)",
+          "parent": null,
+          "order": 1
+        },
+        {
+          "id": "2024_12_31",
+          "label": "Trimestre 12/2024 (2024_12_31)",
+          "parent": null,
+          "order": 2
+        },
+        {
+          "id": "2025_03_31",
+          "label": "Trimestre 03/2025 (2025_03_31)",
+          "parent": null,
+          "order": 3
+        },
+        {
+          "id": "2025_06_30",
+          "label": "Trimestre 06/2025 (2025_06_30)",
+          "parent": null,
+          "order": 4
+        },
+        {
+          "id": "2025_09_30",
+          "label": "Trimestre 09/2025 (2025_09_30)",
+          "parent": null,
+          "order": 5
+        },
+        {
+          "id": "2025_12_31",
+          "label": "Trimestre 12/2025 (2025_12_31)",
+          "parent": null,
+          "order": 6
+        },
+        {
+          "id": "2026_03_31",
+          "label": "Trimestre 03/2026 (2026_03_31)",
+          "parent": null,
+          "order": 7
+        },
+        {
+          "id": "2026_06_30",
+          "label": "Trimestre 06/2026 (2026_06_30)",
+          "parent": null,
+          "order": 8
+        },
+        {
+          "id": "Budget_2026",
+          "label": "Orçamento 2026 (Budget Projetado)",
+          "parent": null,
+          "order": 9
+        }
+      ]
+    },
+    "version": {
+      "id": "version",
+      "label": "Versão",
+      "members": [
+        {
+          "id": "Actuals",
+          "label": "Realizado (Actuals CVM)",
+          "parent": null,
+          "order": 1
+        },
+        {
+          "id": "Budget_2026",
+          "label": "Orçamento 2026 (Budget)",
+          "parent": null,
+          "order": 2
+        },
+        {
+          "id": "Forecast_Q1",
+          "label": "Forecast Q1",
+          "parent": null,
+          "order": 3
+        },
+        {
+          "id": "Stress_Test",
+          "label": "Stress Test (Cenário de Estresse)",
+          "parent": null,
+          "order": 4
+        }
+      ]
+    },
+    "scenario": {
+      "id": "scenario",
+      "label": "Cenário",
+      "members": [
+        {
+          "id": "Base",
+          "label": "Cenário Base (Oficial CVM)",
+          "parent": null,
+          "order": 1
+        },
+        {
+          "id": "Optimistic",
+          "label": "Otimista (+10% Volume)",
+          "parent": null,
+          "order": 2
+        },
+        {
+          "id": "Pessimistic",
+          "label": "Pessimista (-15% Demanda)",
+          "parent": null,
+          "order": 3
+        }
+      ]
+    },
+    "entity": {
+      "id": "entity",
+      "label": "Entidade / Unidade",
+      "members": [
+        {
+          "id": "Total_Company",
+          "label": "BRASKEM Consolidado",
+          "parent": null,
+          "order": 1
+        },
+        {
+          "id": "Operacao_Brasil",
+          "label": "Operações Brasil / Matriz",
+          "parent": "Total_Company",
+          "order": 2
+        },
+        {
+          "id": "Subsidiarias_Regionais",
+          "label": "Subsidiárias Regionais",
+          "parent": "Total_Company",
+          "order": 3
+        },
+        {
+          "id": "Internacional_Outros",
+          "label": "Operações Internacionais & Outras",
+          "parent": "Total_Company",
+          "order": 4
+        }
+      ]
+    },
+    "account": {
+      "id": "account",
+      "label": "Conta Contábil / Linha",
+      "members": [
+        {
+          "id": "Receita_Bruta",
+          "label": "(+) Receita Bruta / Intermediação",
+          "parent": null,
+          "order": 1
+        },
+        {
+          "id": "Deducoes_Receita",
+          "label": "(-) Deduções / Despesas Captação",
+          "parent": null,
+          "order": 2
+        },
+        {
+          "id": "Receita_Liquida",
+          "label": "(=) Receita Líquida",
+          "parent": null,
+          "order": 3
+        },
+        {
+          "id": "CMV",
+          "label": "(-) Custo dos Bens/Serviços / Provisão Crédito",
+          "parent": null,
+          "order": 4
+        },
+        {
+          "id": "Margem_Bruta",
+          "label": "(=) Resultado Bruto",
+          "parent": null,
+          "order": 5
+        },
+        {
+          "id": "Despesas_Logistica",
+          "label": "(-) Despesas Comerciais & Vendas",
+          "parent": null,
+          "order": 6
+        },
+        {
+          "id": "Despesas_Comerciais",
+          "label": "(-) Despesas Administrativas & Pessoal",
+          "parent": null,
+          "order": 7
+        },
+        {
+          "id": "Despesas_Gerais_Admin",
+          "label": "(-) Outras Despesas Operacionais",
+          "parent": null,
+          "order": 8
+        },
+        {
+          "id": "EBIT",
+          "label": "(=) EBIT / Resultado Operacional",
+          "parent": null,
+          "order": 9
+        },
+        {
+          "id": "EBITDA",
+          "label": "(=) EBITDA",
+          "parent": null,
+          "order": 10
+        },
+        {
+          "id": "Resultado_Financeiro",
+          "label": "(+/-) Resultado Financeiro Líquido",
+          "parent": null,
+          "order": 11
+        },
+        {
+          "id": "EBT",
+          "label": "(=) Resultado Antes dos Tributos (LAIR)",
+          "parent": null,
+          "order": 12
+        },
+        {
+          "id": "Impostos_Lucro",
+          "label": "(-) Imposto de Renda & CSLL",
+          "parent": null,
+          "order": 13
+        },
+        {
+          "id": "Lucro_Liquido",
+          "label": "(=) Lucro / Prejuízo Líquido",
+          "parent": null,
+          "order": 14
+        }
+      ]
+    },
+    "product": {
+      "id": "product",
+      "label": "Produto / Canal",
+      "members": [
+        {
+          "id": "Total_Products",
+          "label": "Portfólio Consolidado",
+          "parent": null,
+          "order": 1
+        },
+        {
+          "id": "Canal_Principal",
+          "label": "Linha / Canal Principal",
+          "parent": "Total_Products",
+          "order": 2
+        },
+        {
+          "id": "Canal_Digital",
+          "label": "Digital / B2B",
+          "parent": "Total_Products",
+          "order": 3
+        },
+        {
+          "id": "Servicos_Agregados",
+          "label": "Serviços & Outros",
+          "parent": "Total_Products",
+          "order": 4
+        }
+      ]
+    }
+  },
+  "bp_table": {
+    "company": {
+      "id": "cvm_4820",
+      "name": "BRASKEM",
+      "ticker": "BRASKEM",
+      "currency": "R$ Milhões",
+      "periods": [
+        "09/2025",
+        "12/2025",
+        "03/2026",
+        "06/2026",
+        "Budget 2026"
+      ],
+      "description": "Companhia aberta listada na CVM (BRASKEM) carregada via CVM Watch & Análise."
+    },
+    "periods": [
+      "2024",
+      "2025",
+      "Budget 2026"
+    ],
+    "rows": [
+      {
+        "id": "ativo_total",
+        "code": "1",
+        "name": "1. ATIVO TOTAL",
+        "is_header": true,
+        "level": 0,
+        "periods": {
+          "2024": {
+            "value": 29210.0,
+            "av_pct": 100.0,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 30780.0,
+            "av_pct": 100.0,
+            "ah_pct": 5.37
+          },
+          "Budget 2026": {
+            "value": 32820.0,
+            "av_pct": 100.0,
+            "ah_pct": 12.36
+          }
+        }
+      },
+      {
+        "id": "ativo_circulante",
+        "code": "1.1",
+        "name": "1.1 Ativo Circulante",
+        "is_header": true,
+        "level": 1,
+        "periods": {
+          "2024": {
+            "value": 15520.0,
+            "av_pct": 53.13,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 16570.0,
+            "av_pct": 53.83,
+            "ah_pct": 6.77
+          },
+          "Budget 2026": {
+            "value": 17940.0,
+            "av_pct": 54.66,
+            "ah_pct": 15.59
+          }
+        }
+      },
+      {
+        "id": "caixa_equivalentes",
+        "code": "1.1.1",
+        "name": "Caixa e Equivalentes de Caixa",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 2150.0,
+            "av_pct": 7.36,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 2410.0,
+            "av_pct": 7.83,
+            "ah_pct": 12.09
+          },
+          "Budget 2026": {
+            "value": 2800.0,
+            "av_pct": 8.53,
+            "ah_pct": 30.23
+          }
+        }
+      },
+      {
+        "id": "aplicacoes_financeiras",
+        "code": "1.1.2",
+        "name": "Aplicações Financeiras CP",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 850.0,
+            "av_pct": 2.91,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 920.0,
+            "av_pct": 2.99,
+            "ah_pct": 8.24
+          },
+          "Budget 2026": {
+            "value": 1100.0,
+            "av_pct": 3.35,
+            "ah_pct": 29.41
+          }
+        }
+      },
+      {
+        "id": "contas_receber",
+        "code": "1.1.3",
+        "name": "Contas a Receber de Clientes",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 6420.0,
+            "av_pct": 21.98,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 6850.0,
+            "av_pct": 22.25,
+            "ah_pct": 6.7
+          },
+          "Budget 2026": {
+            "value": 7320.0,
+            "av_pct": 22.3,
+            "ah_pct": 14.02
+          }
+        }
+      },
+      {
+        "id": "estoques",
+        "code": "1.1.4",
+        "name": "Estoques",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 5120.0,
+            "av_pct": 17.53,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 5350.0,
+            "av_pct": 17.38,
+            "ah_pct": 4.49
+          },
+          "Budget 2026": {
+            "value": 5600.0,
+            "av_pct": 17.06,
+            "ah_pct": 9.38
+          }
+        }
+      },
+      {
+        "id": "outros_ativos_circulantes",
+        "code": "1.1.5",
+        "name": "Outros Ativos Circulantes",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 980.0,
+            "av_pct": 3.36,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 1040.0,
+            "av_pct": 3.38,
+            "ah_pct": 6.12
+          },
+          "Budget 2026": {
+            "value": 1120.0,
+            "av_pct": 3.41,
+            "ah_pct": 14.29
+          }
+        }
+      },
+      {
+        "id": "ativo_nao_circulante",
+        "code": "1.2",
+        "name": "1.2 Ativo Não Circulante",
+        "is_header": true,
+        "level": 1,
+        "periods": {
+          "2024": {
+            "value": 13690.0,
+            "av_pct": 46.87,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 14210.0,
+            "av_pct": 46.17,
+            "ah_pct": 3.8
+          },
+          "Budget 2026": {
+            "value": 14880.0,
+            "av_pct": 45.34,
+            "ah_pct": 8.69
+          }
+        }
+      },
+      {
+        "id": "realizavel_longo_prazo",
+        "code": "1.2.1",
+        "name": "Realizável a Longo Prazo",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 1820.0,
+            "av_pct": 6.23,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 1940.0,
+            "av_pct": 6.3,
+            "ah_pct": 6.59
+          },
+          "Budget 2026": {
+            "value": 2080.0,
+            "av_pct": 6.34,
+            "ah_pct": 14.29
+          }
+        }
+      },
+      {
+        "id": "investimentos",
+        "code": "1.2.2",
+        "name": "Investimentos",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 1240.0,
+            "av_pct": 4.25,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 1310.0,
+            "av_pct": 4.26,
+            "ah_pct": 5.65
+          },
+          "Budget 2026": {
+            "value": 1390.0,
+            "av_pct": 4.24,
+            "ah_pct": 12.1
+          }
+        }
+      },
+      {
+        "id": "imobilizado_liquido",
+        "code": "1.2.3",
+        "name": "Imobilizado Líquido",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 8450.0,
+            "av_pct": 28.93,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 8720.0,
+            "av_pct": 28.33,
+            "ah_pct": 3.2
+          },
+          "Budget 2026": {
+            "value": 9100.0,
+            "av_pct": 27.73,
+            "ah_pct": 7.69
+          }
+        }
+      },
+      {
+        "id": "intangivel_liquido",
+        "code": "1.2.4",
+        "name": "Intangível Líquido",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 2180.0,
+            "av_pct": 7.46,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 2240.0,
+            "av_pct": 7.28,
+            "ah_pct": 2.75
+          },
+          "Budget 2026": {
+            "value": 2310.0,
+            "av_pct": 7.04,
+            "ah_pct": 5.96
+          }
+        }
+      },
+      {
+        "id": "passivo_total_pl",
+        "code": "2",
+        "name": "2. PASSIVO E PATRIMÔNIO LÍQUIDO",
+        "is_header": true,
+        "level": 0,
+        "periods": {
+          "2024": {
+            "value": 29210.0,
+            "av_pct": 100.0,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 30780.0,
+            "av_pct": 100.0,
+            "ah_pct": 5.37
+          },
+          "Budget 2026": {
+            "value": 32820.0,
+            "av_pct": 100.0,
+            "ah_pct": 12.36
+          }
+        }
+      },
+      {
+        "id": "passivo_circulante",
+        "code": "2.1",
+        "name": "2.1 Passivo Circulante",
+        "is_header": true,
+        "level": 1,
+        "periods": {
+          "2024": {
+            "value": 11330.0,
+            "av_pct": 38.79,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 11630.0,
+            "av_pct": 37.78,
+            "ah_pct": 2.65
+          },
+          "Budget 2026": {
+            "value": 11960.0,
+            "av_pct": 36.44,
+            "ah_pct": 5.56
+          }
+        }
+      },
+      {
+        "id": "fornecedores",
+        "code": "2.1.1",
+        "name": "Fornecedores Nacionais e Estrangeiros",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 5120.0,
+            "av_pct": 17.53,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 5420.0,
+            "av_pct": 17.61,
+            "ah_pct": 5.86
+          },
+          "Budget 2026": {
+            "value": 5750.0,
+            "av_pct": 17.52,
+            "ah_pct": 12.3
+          }
+        }
+      },
+      {
+        "id": "emprestimos_curto_prazo",
+        "code": "2.1.2",
+        "name": "Empréstimos e Financiamentos CP",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 3410.0,
+            "av_pct": 11.67,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 3250.0,
+            "av_pct": 10.56,
+            "ah_pct": -4.69
+          },
+          "Budget 2026": {
+            "value": 3050.0,
+            "av_pct": 9.29,
+            "ah_pct": -10.56
+          }
+        }
+      },
+      {
+        "id": "obrigacoes_fiscais_sociais",
+        "code": "2.1.3",
+        "name": "Obrigações Sociais e Fiscais",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 1820.0,
+            "av_pct": 6.23,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 1940.0,
+            "av_pct": 6.3,
+            "ah_pct": 6.59
+          },
+          "Budget 2026": {
+            "value": 2080.0,
+            "av_pct": 6.34,
+            "ah_pct": 14.29
+          }
+        }
+      },
+      {
+        "id": "outros_passivos_circulantes",
+        "code": "2.1.4",
+        "name": "Outros Passivos Circulantes",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 980.0,
+            "av_pct": 3.36,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 1020.0,
+            "av_pct": 3.31,
+            "ah_pct": 4.08
+          },
+          "Budget 2026": {
+            "value": 1080.0,
+            "av_pct": 3.29,
+            "ah_pct": 10.2
+          }
+        }
+      },
+      {
+        "id": "passivo_nao_circulante",
+        "code": "2.2",
+        "name": "2.2 Passivo Não Circulante (ELP)",
+        "is_header": true,
+        "level": 1,
+        "periods": {
+          "2024": {
+            "value": 11980.0,
+            "av_pct": 41.01,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 12450.0,
+            "av_pct": 40.45,
+            "ah_pct": 3.92
+          },
+          "Budget 2026": {
+            "value": 12960.0,
+            "av_pct": 39.49,
+            "ah_pct": 8.18
+          }
+        }
+      },
+      {
+        "id": "emprestimos_longo_prazo",
+        "code": "2.2.1",
+        "name": "Empréstimos e Financiamentos LP",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 7920.0,
+            "av_pct": 27.11,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 8150.0,
+            "av_pct": 26.48,
+            "ah_pct": 2.9
+          },
+          "Budget 2026": {
+            "value": 8420.0,
+            "av_pct": 25.66,
+            "ah_pct": 6.31
+          }
+        }
+      },
+      {
+        "id": "provisoes_contingencias",
+        "code": "2.2.2",
+        "name": "Provisões Cíveis, Fiscais e Trabalhistas",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 2450.0,
+            "av_pct": 8.39,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 2580.0,
+            "av_pct": 8.38,
+            "ah_pct": 5.31
+          },
+          "Budget 2026": {
+            "value": 2720.0,
+            "av_pct": 8.29,
+            "ah_pct": 11.02
+          }
+        }
+      },
+      {
+        "id": "outros_passivos_nao_circulantes",
+        "code": "2.2.3",
+        "name": "Outros Passivos Não Circulantes",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 1610.0,
+            "av_pct": 5.51,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 1720.0,
+            "av_pct": 5.59,
+            "ah_pct": 6.83
+          },
+          "Budget 2026": {
+            "value": 1820.0,
+            "av_pct": 5.55,
+            "ah_pct": 13.04
+          }
+        }
+      },
+      {
+        "id": "patrimonio_liquido",
+        "code": "2.3",
+        "name": "2.3 Patrimônio Líquido",
+        "is_header": true,
+        "level": 1,
+        "periods": {
+          "2024": {
+            "value": 5900.0,
+            "av_pct": 20.2,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 6700.0,
+            "av_pct": 21.77,
+            "ah_pct": 13.56
+          },
+          "Budget 2026": {
+            "value": 7900.0,
+            "av_pct": 24.07,
+            "ah_pct": 33.9
+          }
+        }
+      },
+      {
+        "id": "capital_social",
+        "code": "2.3.1",
+        "name": "Capital Social Realizado",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 4500.0,
+            "av_pct": 15.41,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 4500.0,
+            "av_pct": 14.62,
+            "ah_pct": 0.0
+          },
+          "Budget 2026": {
+            "value": 4500.0,
+            "av_pct": 13.71,
+            "ah_pct": 0.0
+          }
+        }
+      },
+      {
+        "id": "reservas_capital_lucros",
+        "code": "2.3.2",
+        "name": "Reservas de Capital e Lucros",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 1200.0,
+            "av_pct": 4.11,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 1200.0,
+            "av_pct": 3.9,
+            "ah_pct": 0.0
+          },
+          "Budget 2026": {
+            "value": 1350.0,
+            "av_pct": 4.11,
+            "ah_pct": 12.5
+          }
+        }
+      },
+      {
+        "id": "lucros_prejuizos_acumulados",
+        "code": "2.3.3",
+        "name": "Lucros ou Prejuízos Acumulados",
+        "is_header": false,
+        "level": 2,
+        "periods": {
+          "2024": {
+            "value": 200.0,
+            "av_pct": 0.68,
+            "ah_pct": 0.0
+          },
+          "2025": {
+            "value": 1000.0,
+            "av_pct": 3.25,
+            "ah_pct": 400.0
+          },
+          "Budget 2026": {
+            "value": 2050.0,
+            "av_pct": 6.25,
+            "ah_pct": 925.0
+          }
+        }
+      }
+    ]
+  },
+  "dre_timeseries": [
+    {
+      "period": "1T02",
+      "periodLabel": "1T02 (BRASKEM)",
+      "Receita_Liquida": 2083.0,
+      "CMV": 2129.0,
+      "Margem_Bruta": 562.0,
+      "Despesas_Logistica": 77.6,
+      "Despesas_Comerciais": 19.4,
+      "Despesas_Gerais_Admin": 197.0,
+      "EBIT": 365.0,
+      "EBITDA": 469.1,
+      "Resultado_Financeiro": 199.0,
+      "EBT": 406.0,
+      "Impostos_Lucro": -112.0,
+      "Lucro_Liquido": 294.0
+    },
+    {
+      "period": "2T02",
+      "periodLabel": "2T02 (BRASKEM)",
+      "Receita_Liquida": 4820.0,
+      "CMV": 4401.0,
+      "Margem_Bruta": 896.0,
+      "Despesas_Logistica": 156.8,
+      "Despesas_Comerciais": 39.2,
+      "Despesas_Gerais_Admin": 569.0,
+      "EBIT": 327.0,
+      "EBITDA": 568.0,
+      "Resultado_Financeiro": 838.0,
+      "EBT": 802.0,
+      "Impostos_Lucro": -226.0,
+      "Lucro_Liquido": 576.0
+    },
+    {
+      "period": "3T02",
+      "periodLabel": "3T02 (BRASKEM)",
+      "Receita_Liquida": 14126.0,
+      "CMV": 14164.0,
+      "Margem_Bruta": 2208.0,
+      "Despesas_Logistica": 240.8,
+      "Despesas_Comerciais": 60.2,
+      "Despesas_Gerais_Admin": 1283.0,
+      "EBIT": 925.0,
+      "EBITDA": 1631.3,
+      "Resultado_Financeiro": 1076.0,
+      "EBT": 1272.0,
+      "Impostos_Lucro": -646.0,
+      "Lucro_Liquido": 626.0
+    },
+    {
+      "period": "4T02",
+      "periodLabel": "4T02 (BRASKEM)",
+      "Receita_Liquida": 12289.0,
+      "CMV": 10089.0,
+      "Margem_Bruta": 4186.0,
+      "Despesas_Logistica": 364.0,
+      "Despesas_Comerciais": 91.0,
+      "Despesas_Gerais_Admin": 2641.0,
+      "EBIT": 1545.0,
+      "EBITDA": 2159.4,
+      "Resultado_Financeiro": 1394.0,
+      "EBT": 1969.0,
+      "Impostos_Lucro": -1390.0,
+      "Lucro_Liquido": 579.0
+    },
+    {
+      "period": "1T03",
+      "periodLabel": "1T03 (BRASKEM)",
+      "Receita_Liquida": 3352.0,
+      "CMV": 3257.0,
+      "Margem_Bruta": 747.0,
+      "Despesas_Logistica": 99.2,
+      "Despesas_Comerciais": 24.8,
+      "Despesas_Gerais_Admin": 930.0,
+      "EBIT": -183.0,
+      "EBITDA": -15.4,
+      "Resultado_Financeiro": 173.0,
+      "EBT": -143.0,
+      "Impostos_Lucro": -227.0,
+      "Lucro_Liquido": -370.0
+    },
+    {
+      "period": "2T03",
+      "periodLabel": "2T03 (BRASKEM)",
+      "Receita_Liquida": 6627.0,
+      "CMV": 6259.0,
+      "Margem_Bruta": 1535.0,
+      "Despesas_Logistica": 198.4,
+      "Despesas_Comerciais": 49.6,
+      "Despesas_Gerais_Admin": 3702.0,
+      "EBIT": -2167.0,
+      "EBITDA": -1835.7,
+      "Resultado_Financeiro": 274.0,
+      "EBT": -1883.0,
+      "Impostos_Lucro": -518.0,
+      "Lucro_Liquido": -2401.0
+    },
+    {
+      "period": "3T03",
+      "periodLabel": "3T03 (BRASKEM)",
+      "Receita_Liquida": 9974.0,
+      "CMV": 9463.0,
+      "Margem_Bruta": 2380.0,
+      "Despesas_Logistica": 307.2,
+      "Despesas_Comerciais": 76.8,
+      "Despesas_Gerais_Admin": 4069.0,
+      "EBIT": -1689.0,
+      "EBITDA": -1190.3,
+      "Resultado_Financeiro": 620.0,
+      "EBT": -1259.0,
+      "Impostos_Lucro": -687.0,
+      "Lucro_Liquido": -1946.0
+    },
+    {
+      "period": "4T03",
+      "periodLabel": "4T03 (BRASKEM)",
+      "Receita_Liquida": 13221.0,
+      "CMV": 12435.0,
+      "Margem_Bruta": 3411.0,
+      "Despesas_Logistica": 449.6,
+      "Despesas_Comerciais": 112.4,
+      "Despesas_Gerais_Admin": 1880.0,
+      "EBIT": 1531.0,
+      "EBITDA": 2192.1,
+      "Resultado_Financeiro": 1152.0,
+      "EBT": 1946.0,
+      "Impostos_Lucro": -867.0,
+      "Lucro_Liquido": 1079.0
+    },
+    {
+      "period": "1T04",
+      "periodLabel": "1T04 (BRASKEM)",
+      "Receita_Liquida": 3578.0,
+      "CMV": 3156.0,
+      "Margem_Bruta": 938.0,
+      "Despesas_Logistica": 116.0,
+      "Despesas_Comerciais": 29.0,
+      "Despesas_Gerais_Admin": 504.0,
+      "EBIT": 434.0,
+      "EBITDA": 612.9,
+      "Resultado_Financeiro": 416.0,
+      "EBT": 577.0,
+      "Impostos_Lucro": 522.0,
+      "Lucro_Liquido": 1099.0
+    },
+    {
+      "period": "2T04",
+      "periodLabel": "2T04 (BRASKEM)",
+      "Receita_Liquida": 6614.0,
+      "CMV": 6009.0,
+      "Margem_Bruta": 1869.0,
+      "Despesas_Logistica": 223.2,
+      "Despesas_Comerciais": 55.8,
+      "Despesas_Gerais_Admin": 695.0,
+      "EBIT": 1174.0,
+      "EBITDA": 1504.7,
+      "Resultado_Financeiro": 429.0,
+      "EBT": 1135.0,
+      "Impostos_Lucro": 272.0,
+      "Lucro_Liquido": 1407.0
+    },
+    {
+      "period": "3T04",
+      "periodLabel": "3T04 (BRASKEM)",
+      "Receita_Liquida": 10031.0,
+      "CMV": 9211.0,
+      "Margem_Bruta": 2891.0,
+      "Despesas_Logistica": 348.8,
+      "Despesas_Comerciais": 87.2,
+      "Despesas_Gerais_Admin": 672.0,
+      "EBIT": 2219.0,
+      "EBITDA": 2720.6,
+      "Resultado_Financeiro": 885.0,
+      "EBT": 2388.0,
+      "Impostos_Lucro": -137.0,
+      "Lucro_Liquido": 2251.0
+    },
+    {
+      "period": "4T04",
+      "periodLabel": "4T04 (BRASKEM)",
+      "Receita_Liquida": 13405.0,
+      "CMV": 12302.0,
+      "Margem_Bruta": 3468.0,
+      "Despesas_Logistica": 636.8,
+      "Despesas_Comerciais": 159.2,
+      "Despesas_Gerais_Admin": 1638.0,
+      "EBIT": 1830.0,
+      "EBITDA": 2500.2,
+      "Resultado_Financeiro": 1516.0,
+      "EBT": 1877.0,
+      "Impostos_Lucro": -316.0,
+      "Lucro_Liquido": 1561.0
+    },
+    {
+      "period": "1T05",
+      "periodLabel": "1T05 (BRASKEM)",
+      "Receita_Liquida": 3384.0,
+      "CMV": 2973.0,
+      "Margem_Bruta": 1903.0,
+      "Despesas_Logistica": 99.2,
+      "Despesas_Comerciais": 24.8,
+      "Despesas_Gerais_Admin": 25.0,
+      "EBIT": 1928.0,
+      "EBITDA": 2097.2,
+      "Resultado_Financeiro": 409.0,
+      "EBT": 2192.0,
+      "Impostos_Lucro": -782.0,
+      "Lucro_Liquido": 1410.0
+    },
+    {
+      "period": "2T05",
+      "periodLabel": "2T05 (BRASKEM)",
+      "Receita_Liquida": 6771.0,
+      "CMV": 6071.0,
+      "Margem_Bruta": 2281.0,
+      "Despesas_Logistica": 221.6,
+      "Despesas_Comerciais": 55.4,
+      "Despesas_Gerais_Admin": 200.0,
+      "EBIT": 2481.0,
+      "EBITDA": 2819.6,
+      "Resultado_Financeiro": 846.0,
+      "EBT": 2579.0,
+      "Impostos_Lucro": -748.0,
+      "Lucro_Liquido": 1831.0
+    },
+    {
+      "period": "3T05",
+      "periodLabel": "3T05 (BRASKEM)",
+      "Receita_Liquida": 10019.0,
+      "CMV": 9103.0,
+      "Margem_Bruta": 3126.0,
+      "Despesas_Logistica": 395.2,
+      "Despesas_Comerciais": 98.8,
+      "Despesas_Gerais_Admin": 186.0,
+      "EBIT": 3312.0,
+      "EBITDA": 3812.9,
+      "Resultado_Financeiro": 1226.0,
+      "EBT": 3440.0,
+      "Impostos_Lucro": -973.0,
+      "Lucro_Liquido": 2467.0
+    },
+    {
+      "period": "4T05",
+      "periodLabel": "4T05 (BRASKEM)",
+      "Receita_Liquida": 13842.0,
+      "CMV": 12320.0,
+      "Margem_Bruta": 4948.0,
+      "Despesas_Logistica": 560.8,
+      "Despesas_Comerciais": 140.2,
+      "Despesas_Gerais_Admin": 845.0,
+      "EBIT": 4103.0,
+      "EBITDA": 4795.1,
+      "Resultado_Financeiro": 2572.0,
+      "EBT": 4846.0,
+      "Impostos_Lucro": -1582.0,
+      "Lucro_Liquido": 3264.0
+    },
+    {
+      "period": "1T06",
+      "periodLabel": "1T06 (BRASKEM)",
+      "Receita_Liquida": 3225.0,
+      "CMV": 2873.0,
+      "Margem_Bruta": 1030.0,
+      "Despesas_Logistica": 125.6,
+      "Despesas_Comerciais": 31.4,
+      "Despesas_Gerais_Admin": 112.0,
+      "EBIT": 1142.0,
+      "EBITDA": 1303.2,
+      "Resultado_Financeiro": 981.0,
+      "EBT": 1974.0,
+      "Impostos_Lucro": -578.0,
+      "Lucro_Liquido": 1396.0
+    },
+    {
+      "period": "2T06",
+      "periodLabel": "2T06 (BRASKEM)",
+      "Receita_Liquida": 6339.0,
+      "CMV": 6248.0,
+      "Margem_Bruta": 1850.0,
+      "Despesas_Logistica": 252.8,
+      "Despesas_Comerciais": 63.2,
+      "Despesas_Gerais_Admin": 350.0,
+      "EBIT": 2200.0,
+      "EBITDA": 2516.9,
+      "Resultado_Financeiro": 2580.0,
+      "EBT": 4537.0,
+      "Impostos_Lucro": -1220.0,
+      "Lucro_Liquido": 3317.0
+    },
+    {
+      "period": "3T06",
+      "periodLabel": "3T06 (BRASKEM)",
+      "Receita_Liquida": 9635.0,
+      "CMV": 9025.0,
+      "Margem_Bruta": 3308.0,
+      "Despesas_Logistica": 388.0,
+      "Despesas_Comerciais": 97.0,
+      "Despesas_Gerais_Admin": 1096.0,
+      "EBIT": 4404.0,
+      "EBITDA": 4885.8,
+      "Resultado_Financeiro": 3143.0,
+      "EBT": 7387.0,
+      "Impostos_Lucro": -1671.0,
+      "Lucro_Liquido": 5716.0
+    },
+    {
+      "period": "4T06",
+      "periodLabel": "4T06 (BRASKEM)",
+      "Receita_Liquida": 12967.0,
+      "CMV": 11724.0,
+      "Margem_Bruta": 4844.0,
+      "Despesas_Logistica": 560.8,
+      "Despesas_Comerciais": 140.2,
+      "Despesas_Gerais_Admin": 1052.0,
+      "EBIT": 5896.0,
+      "EBITDA": 6544.4,
+      "Resultado_Financeiro": 3521.0,
+      "EBT": 8521.0,
+      "Impostos_Lucro": -2115.0,
+      "Lucro_Liquido": 6406.0
+    },
+    {
+      "period": "1T07",
+      "periodLabel": "1T07 (BRASKEM)",
+      "Receita_Liquida": 3163.0,
+      "CMV": 2570.0,
+      "Margem_Bruta": 1128.0,
+      "Despesas_Logistica": 124.0,
+      "Despesas_Comerciais": 31.0,
+      "Despesas_Gerais_Admin": 353.0,
+      "EBIT": 1481.0,
+      "EBITDA": 1639.2,
+      "Resultado_Financeiro": 1017.0,
+      "EBT": 2205.0,
+      "Impostos_Lucro": -657.0,
+      "Lucro_Liquido": 1548.0
+    },
+    {
+      "period": "2T07",
+      "periodLabel": "2T07 (BRASKEM)",
+      "Receita_Liquida": 7058.0,
+      "CMV": 5134.0,
+      "Margem_Bruta": 3116.0,
+      "Despesas_Logistica": 256.8,
+      "Despesas_Comerciais": 64.2,
+      "Despesas_Gerais_Admin": 1248.0,
+      "EBIT": 4364.0,
+      "EBITDA": 4716.9,
+      "Resultado_Financeiro": 2260.0,
+      "EBT": 5975.0,
+      "Impostos_Lucro": -1545.0,
+      "Lucro_Liquido": 4430.0
+    },
+    {
+      "period": "3T07",
+      "periodLabel": "3T07 (BRASKEM)",
+      "Receita_Liquida": 10238.0,
+      "CMV": 7921.0,
+      "Margem_Bruta": 3889.0,
+      "Despesas_Logistica": 395.2,
+      "Despesas_Comerciais": 98.8,
+      "Despesas_Gerais_Admin": 2826.0,
+      "EBIT": 6715.0,
+      "EBITDA": 7226.9,
+      "Resultado_Financeiro": 3582.0,
+      "EBT": 9311.0,
+      "Impostos_Lucro": -2027.0,
+      "Lucro_Liquido": 7284.0
+    },
+    {
+      "period": "4T07",
+      "periodLabel": "4T07 (BRASKEM)",
+      "Receita_Liquida": 13695.0,
+      "CMV": 10758.0,
+      "Margem_Bruta": 4782.0,
+      "Despesas_Logistica": 588.0,
+      "Despesas_Comerciais": 147.0,
+      "Despesas_Gerais_Admin": 1383.0,
+      "EBIT": 6165.0,
+      "EBITDA": 6849.8,
+      "Resultado_Financeiro": 6104.0,
+      "EBT": 10046.0,
+      "Impostos_Lucro": -2663.0,
+      "Lucro_Liquido": 7383.0
+    },
+    {
+      "period": "1T08",
+      "periodLabel": "1T08 (BRASKEM)",
+      "Receita_Liquida": 3404.0,
+      "CMV": 2916.0,
+      "Margem_Bruta": 817.0,
+      "Despesas_Logistica": 190.4,
+      "Despesas_Comerciais": 47.6,
+      "Despesas_Gerais_Admin": 54.0,
+      "EBIT": 871.0,
+      "EBITDA": 1041.2,
+      "Resultado_Financeiro": 311.0,
+      "EBT": 143.0,
+      "Impostos_Lucro": 6.0,
+      "Lucro_Liquido": 149.0
+    },
+    {
+      "period": "2T08",
+      "periodLabel": "2T08 (BRASKEM)",
+      "Receita_Liquida": 7208.0,
+      "CMV": 6081.0,
+      "Margem_Bruta": 2054.0,
+      "Despesas_Logistica": 370.4,
+      "Despesas_Comerciais": 92.6,
+      "Despesas_Gerais_Admin": 415.0,
+      "EBIT": 2469.0,
+      "EBITDA": 2829.4,
+      "Resultado_Financeiro": 4786.0,
+      "EBT": 5713.0,
+      "Impostos_Lucro": -1582.0,
+      "Lucro_Liquido": 4131.0
+    },
+    {
+      "period": "3T08",
+      "periodLabel": "3T08 (BRASKEM)",
+      "Receita_Liquida": 11083.0,
+      "CMV": 9163.0,
+      "Margem_Bruta": 3186.0,
+      "Despesas_Logistica": 508.0,
+      "Despesas_Comerciais": 127.0,
+      "Despesas_Gerais_Admin": 561.0,
+      "EBIT": 3747.0,
+      "EBITDA": 4301.1,
+      "Resultado_Financeiro": 5871.0,
+      "EBT": 7069.0,
+      "Impostos_Lucro": -1950.0,
+      "Lucro_Liquido": 5119.0
+    },
+    {
+      "period": "4T08",
+      "periodLabel": "4T08 (BRASKEM)",
+      "Receita_Liquida": 15273.0,
+      "CMV": 13226.0,
+      "Margem_Bruta": 3851.0,
+      "Despesas_Logistica": 744.0,
+      "Despesas_Comerciais": 186.0,
+      "Despesas_Gerais_Admin": 445.0,
+      "EBIT": 4296.0,
+      "EBITDA": 5059.6,
+      "Resultado_Financeiro": 6024.0,
+      "EBT": 7336.0,
+      "Impostos_Lucro": -1969.0,
+      "Lucro_Liquido": 5367.0
+    },
+    {
+      "period": "1T09",
+      "periodLabel": "1T09 (BRASKEM)",
+      "Receita_Liquida": 4442.0,
+      "CMV": 4076.0,
+      "Margem_Bruta": 1378.0,
+      "Despesas_Logistica": 196.8,
+      "Despesas_Comerciais": 49.2,
+      "Despesas_Gerais_Admin": 268.0,
+      "EBIT": 1110.0,
+      "EBITDA": 1332.1,
+      "Resultado_Financeiro": 148.0,
+      "EBT": 845.0,
+      "Impostos_Lucro": -428.0,
+      "Lucro_Liquido": 417.0
+    },
+    {
+      "period": "2T09",
+      "periodLabel": "2T09 (BRASKEM)",
+      "Receita_Liquida": 8784.0,
+      "CMV": 8114.0,
+      "Margem_Bruta": 2650.0,
+      "Despesas_Logistica": 392.0,
+      "Despesas_Comerciais": 98.0,
+      "Despesas_Gerais_Admin": 1059.0,
+      "EBIT": 1591.0,
+      "EBITDA": 2030.2,
+      "Resultado_Financeiro": 1324.0,
+      "EBT": 1556.0,
+      "Impostos_Lucro": -854.0,
+      "Lucro_Liquido": 702.0
+    },
+    {
+      "period": "3T09",
+      "periodLabel": "3T09 (BRASKEM)",
+      "Receita_Liquida": 13287.0,
+      "CMV": 12635.0,
+      "Margem_Bruta": 4397.0,
+      "Despesas_Logistica": 594.4,
+      "Despesas_Comerciais": 148.6,
+      "Despesas_Gerais_Admin": 191.0,
+      "EBIT": 4588.0,
+      "EBITDA": 5252.4,
+      "Resultado_Financeiro": 2486.0,
+      "EBT": 4484.0,
+      "Impostos_Lucro": -1421.0,
+      "Lucro_Liquido": 3063.0
+    },
+    {
+      "period": "4T09",
+      "periodLabel": "4T09 (BRASKEM)",
+      "Receita_Liquida": 18600.0,
+      "CMV": 17866.0,
+      "Margem_Bruta": 5821.0,
+      "Despesas_Logistica": 954.4,
+      "Despesas_Comerciais": 238.6,
+      "Despesas_Gerais_Admin": 6.0,
+      "EBIT": 5815.0,
+      "EBITDA": 6745.0,
+      "Resultado_Financeiro": 3990.0,
+      "EBT": 9058.0,
+      "Impostos_Lucro": -2237.0,
+      "Lucro_Liquido": 6821.0
+    },
+    {
+      "period": "1T10",
+      "periodLabel": "1T10 (BRASKEM)",
+      "Receita_Liquida": 5542.0,
+      "CMV": 5606.0,
+      "Margem_Bruta": 1087.0,
+      "Despesas_Logistica": 196.0,
+      "Despesas_Comerciais": 49.0,
+      "Despesas_Gerais_Admin": 100.0,
+      "EBIT": 987.0,
+      "EBITDA": 1264.1,
+      "Resultado_Financeiro": 1013.0,
+      "EBT": 1684.0,
+      "Impostos_Lucro": -768.0,
+      "Lucro_Liquido": 916.0
+    },
+    {
+      "period": "2T10",
+      "periodLabel": "2T10 (BRASKEM)",
+      "Receita_Liquida": 11390.0,
+      "CMV": 12382.0,
+      "Margem_Bruta": 3041.0,
+      "Despesas_Logistica": 441.6,
+      "Despesas_Comerciais": 110.4,
+      "Despesas_Gerais_Admin": 2101.0,
+      "EBIT": 5142.0,
+      "EBITDA": 5711.5,
+      "Resultado_Financeiro": 2252.0,
+      "EBT": 6548.0,
+      "Impostos_Lucro": -2284.0,
+      "Lucro_Liquido": 4264.0
+    },
+    {
+      "period": "3T10",
+      "periodLabel": "3T10 (BRASKEM)",
+      "Receita_Liquida": 17833.0,
+      "CMV": 18750.0,
+      "Margem_Bruta": 4559.0,
+      "Despesas_Logistica": 671.2,
+      "Despesas_Comerciais": 167.8,
+      "Despesas_Gerais_Admin": 1860.0,
+      "EBIT": 6419.0,
+      "EBITDA": 7310.6,
+      "Resultado_Financeiro": 3546.0,
+      "EBT": 8762.0,
+      "Impostos_Lucro": -3285.0,
+      "Lucro_Liquido": 5477.0
+    },
+    {
+      "period": "4T10",
+      "periodLabel": "4T10 (BRASKEM)",
+      "Receita_Liquida": 25332.0,
+      "CMV": 25946.0,
+      "Margem_Bruta": 7039.0,
+      "Despesas_Logistica": 1027.2,
+      "Despesas_Comerciais": 256.8,
+      "Despesas_Gerais_Admin": 2852.0,
+      "EBIT": 9891.0,
+      "EBITDA": 11157.6,
+      "Resultado_Financeiro": 6158.0,
+      "EBT": 14358.0,
+      "Impostos_Lucro": -4286.0,
+      "Lucro_Liquido": 10072.0
+    },
+    {
+      "period": "1T11",
+      "periodLabel": "1T11 (BRASKEM)",
+      "Receita_Liquida": 7104.0,
+      "CMV": 7033.0,
+      "Margem_Bruta": 1377.0,
+      "Despesas_Logistica": 225.6,
+      "Despesas_Comerciais": 56.4,
+      "Despesas_Gerais_Admin": 395.0,
+      "EBIT": 1772.0,
+      "EBITDA": 2127.2,
+      "Resultado_Financeiro": 1676.0,
+      "EBT": 2996.0,
+      "Impostos_Lucro": -807.0,
+      "Lucro_Liquido": 2189.0
+    },
+    {
+      "period": "2T11",
+      "periodLabel": "2T11 (BRASKEM)",
+      "Receita_Liquida": 14250.0,
+      "CMV": 14158.0,
+      "Margem_Bruta": 2753.0,
+      "Despesas_Logistica": 500.8,
+      "Despesas_Comerciais": 125.2,
+      "Despesas_Gerais_Admin": 853.0,
+      "EBIT": 3606.0,
+      "EBITDA": 4318.5,
+      "Resultado_Financeiro": 4562.0,
+      "EBT": 7233.0,
+      "Impostos_Lucro": -1954.0,
+      "Lucro_Liquido": 5279.0
+    },
+    {
+      "period": "3T11",
+      "periodLabel": "3T11 (BRASKEM)",
+      "Receita_Liquida": 21735.0,
+      "CMV": 21851.0,
+      "Margem_Bruta": 4305.0,
+      "Despesas_Logistica": 806.4,
+      "Despesas_Comerciais": 201.6,
+      "Despesas_Gerais_Admin": 1615.0,
+      "EBIT": 5920.0,
+      "EBITDA": 7006.8,
+      "Resultado_Financeiro": 5400.0,
+      "EBT": 9910.0,
+      "Impostos_Lucro": -2044.0,
+      "Lucro_Liquido": 7866.0
+    },
+    {
+      "period": "4T11",
+      "periodLabel": "4T11 (BRASKEM)",
+      "Receita_Liquida": 29907.0,
+      "CMV": 29603.0,
+      "Margem_Bruta": 6488.0,
+      "Despesas_Logistica": 1194.4,
+      "Despesas_Comerciais": 298.6,
+      "Despesas_Gerais_Admin": 717.0,
+      "EBIT": 7205.0,
+      "EBITDA": 8700.4,
+      "Resultado_Financeiro": 6962.0,
+      "EBT": 12064.0,
+      "Impostos_Lucro": -2896.0,
+      "Lucro_Liquido": 9168.0
+    },
+    {
+      "period": "1T12",
+      "periodLabel": "1T12 (BRASKEM)",
+      "Receita_Liquida": 8069.0,
+      "CMV": 8338.0,
+      "Margem_Bruta": 2157.0,
+      "Despesas_Logistica": 292.0,
+      "Despesas_Comerciais": 73.0,
+      "Despesas_Gerais_Admin": 31.0,
+      "EBIT": 2126.0,
+      "EBITDA": 2529.4,
+      "Resultado_Financeiro": 657.0,
+      "EBT": 2147.0,
+      "Impostos_Lucro": -885.0,
+      "Lucro_Liquido": 1262.0
+    },
+    {
+      "period": "2T12",
+      "periodLabel": "2T12 (BRASKEM)",
+      "Receita_Liquida": 16811.0,
+      "CMV": 17469.0,
+      "Margem_Bruta": 3889.0,
+      "Despesas_Logistica": 601.6,
+      "Despesas_Comerciais": 150.4,
+      "Despesas_Gerais_Admin": 320.0,
+      "EBIT": 3569.0,
+      "EBITDA": 4409.6,
+      "Resultado_Financeiro": 2027.0,
+      "EBT": 4414.0,
+      "Impostos_Lucro": -1705.0,
+      "Lucro_Liquido": 2709.0
+    },
+    {
+      "period": "3T12",
+      "periodLabel": "3T12 (BRASKEM)",
+      "Receita_Liquida": 24944.0,
+      "CMV": 25737.0,
+      "Margem_Bruta": 6909.0,
+      "Despesas_Logistica": 923.2,
+      "Despesas_Comerciais": 230.8,
+      "Despesas_Gerais_Admin": 417.0,
+      "EBIT": 6492.0,
+      "EBITDA": 7739.2,
+      "Resultado_Financeiro": 2578.0,
+      "EBT": 6868.0,
+      "Impostos_Lucro": -2146.0,
+      "Lucro_Liquido": 4722.0
+    },
+    {
+      "period": "4T12",
+      "periodLabel": "4T12 (BRASKEM)",
+      "Receita_Liquida": 33661.0,
+      "CMV": 34439.0,
+      "Margem_Bruta": 11908.0,
+      "Despesas_Logistica": 1310.4,
+      "Despesas_Comerciais": 327.6,
+      "Despesas_Gerais_Admin": 330.0,
+      "EBIT": 11578.0,
+      "EBITDA": 13261.0,
+      "Resultado_Financeiro": 2643.0,
+      "EBT": 11145.0,
+      "Impostos_Lucro": -2874.0,
+      "Lucro_Liquido": 8271.0
+    },
+    {
+      "period": "1T13",
+      "periodLabel": "1T13 (BRASKEM)",
+      "Receita_Liquida": 8278.0,
+      "CMV": 7649.0,
+      "Margem_Bruta": 2550.0,
+      "Despesas_Logistica": 350.4,
+      "Despesas_Comerciais": 87.6,
+      "Despesas_Gerais_Admin": 155.0,
+      "EBIT": 2705.0,
+      "EBITDA": 3118.9,
+      "Resultado_Financeiro": 720.0,
+      "EBT": 2758.0,
+      "Impostos_Lucro": -1173.0,
+      "Lucro_Liquido": 1585.0
+    },
+    {
+      "period": "2T13",
+      "periodLabel": "2T13 (BRASKEM)",
+      "Receita_Liquida": 16962.0,
+      "CMV": 15305.0,
+      "Margem_Bruta": 4951.0,
+      "Despesas_Logistica": 680.0,
+      "Despesas_Comerciais": 170.0,
+      "Despesas_Gerais_Admin": 75.0,
+      "EBIT": 5026.0,
+      "EBITDA": 5874.1,
+      "Resultado_Financeiro": 1779.0,
+      "EBT": 5415.0,
+      "Impostos_Lucro": -2154.0,
+      "Lucro_Liquido": 3261.0
+    },
+    {
+      "period": "3T13",
+      "periodLabel": "3T13 (BRASKEM)",
+      "Receita_Liquida": 25914.0,
+      "CMV": 23744.0,
+      "Margem_Bruta": 7346.0,
+      "Despesas_Logistica": 1052.8,
+      "Despesas_Comerciais": 263.2,
+      "Despesas_Gerais_Admin": 225.0,
+      "EBIT": 7571.0,
+      "EBITDA": 8866.7,
+      "Resultado_Financeiro": 1850.0,
+      "EBT": 7395.0,
+      "Impostos_Lucro": -2509.0,
+      "Lucro_Liquido": 4886.0
+    },
+    {
+      "period": "4T13",
+      "periodLabel": "4T13 (BRASKEM)",
+      "Receita_Liquida": 35234.0,
+      "CMV": 32469.0,
+      "Margem_Bruta": 11691.0,
+      "Despesas_Logistica": 1370.4,
+      "Despesas_Comerciais": 342.6,
+      "Despesas_Gerais_Admin": 769.0,
+      "EBIT": 12460.0,
+      "EBITDA": 14221.7,
+      "Resultado_Financeiro": 2452.0,
+      "EBT": 12195.0,
+      "Impostos_Lucro": -3871.0,
+      "Lucro_Liquido": 8324.0
+    },
+    {
+      "period": "1T14",
+      "periodLabel": "1T14 (BRASKEM)",
+      "Receita_Liquida": 9479.0,
+      "CMV": 8824.0,
+      "Margem_Bruta": 2844.0,
+      "Despesas_Logistica": 382.4,
+      "Despesas_Comerciais": 95.6,
+      "Despesas_Gerais_Admin": 207.0,
+      "EBIT": 3051.0,
+      "EBITDA": 3524.9,
+      "Resultado_Financeiro": 353.0,
+      "EBT": 2605.0,
+      "Impostos_Lucro": -1050.0,
+      "Lucro_Liquido": 1555.0
+    },
+    {
+      "period": "2T14",
+      "periodLabel": "2T14 (BRASKEM)",
+      "Receita_Liquida": 19281.0,
+      "CMV": 17827.0,
+      "Margem_Bruta": 5877.0,
+      "Despesas_Logistica": 728.8,
+      "Despesas_Comerciais": 182.2,
+      "Despesas_Gerais_Admin": 121.0,
+      "EBIT": 5998.0,
+      "EBITDA": 6962.1,
+      "Resultado_Financeiro": 3703.0,
+      "EBT": 8059.0,
+      "Impostos_Lucro": -2588.0,
+      "Lucro_Liquido": 5471.0
+    },
+    {
+      "period": "3T14",
+      "periodLabel": "3T14 (BRASKEM)",
+      "Receita_Liquida": 29408.0,
+      "CMV": 26444.0,
+      "Margem_Bruta": 9303.0,
+      "Despesas_Logistica": 1111.2,
+      "Despesas_Comerciais": 277.8,
+      "Despesas_Gerais_Admin": 189.0,
+      "EBIT": 9492.0,
+      "EBITDA": 10962.4,
+      "Resultado_Financeiro": 4263.0,
+      "EBT": 11253.0,
+      "Impostos_Lucro": -3854.0,
+      "Lucro_Liquido": 7399.0
+    },
+    {
+      "period": "4T14",
+      "periodLabel": "4T14 (BRASKEM)",
+      "Receita_Liquida": 40617.0,
+      "CMV": 35800.0,
+      "Margem_Bruta": 13449.0,
+      "Despesas_Logistica": 1501.6,
+      "Despesas_Comerciais": 375.4,
+      "Despesas_Gerais_Admin": 65.0,
+      "EBIT": 13384.0,
+      "EBITDA": 15414.9,
+      "Resultado_Financeiro": 2865.0,
+      "EBT": 13226.0,
+      "Impostos_Lucro": -4391.0,
+      "Lucro_Liquido": 8835.0
+    },
+    {
+      "period": "1T15",
+      "periodLabel": "1T15 (BRASKEM)",
+      "Receita_Liquida": 11996.0,
+      "CMV": 10554.0,
+      "Margem_Bruta": 4306.0,
+      "Despesas_Logistica": 350.4,
+      "Despesas_Comerciais": 87.6,
+      "Despesas_Gerais_Admin": 393.0,
+      "EBIT": 3913.0,
+      "EBITDA": 4512.8,
+      "Resultado_Financeiro": -373.0,
+      "EBT": 3178.0,
+      "Impostos_Lucro": -1593.0,
+      "Lucro_Liquido": 1585.0
+    },
+    {
+      "period": "2T15",
+      "periodLabel": "2T15 (BRASKEM)",
+      "Receita_Liquida": 25083.0,
+      "CMV": 21981.0,
+      "Margem_Bruta": 9770.0,
+      "Despesas_Logistica": 795.2,
+      "Despesas_Comerciais": 198.8,
+      "Despesas_Gerais_Admin": 480.0,
+      "EBIT": 9290.0,
+      "EBITDA": 10544.1,
+      "Resultado_Financeiro": 105.0,
+      "EBT": 7767.0,
+      "Impostos_Lucro": -4252.0,
+      "Lucro_Liquido": 3515.0
+    },
+    {
+      "period": "3T15",
+      "periodLabel": "3T15 (BRASKEM)",
+      "Receita_Liquida": 39060.0,
+      "CMV": 32655.0,
+      "Margem_Bruta": 15182.0,
+      "Despesas_Logistica": 1201.6,
+      "Despesas_Comerciais": 300.4,
+      "Despesas_Gerais_Admin": 667.0,
+      "EBIT": 14515.0,
+      "EBITDA": 16468.0,
+      "Resultado_Financeiro": -1186.0,
+      "EBT": 10983.0,
+      "Impostos_Lucro": -4344.0,
+      "Lucro_Liquido": 6639.0
+    },
+    {
+      "period": "4T15",
+      "periodLabel": "4T15 (BRASKEM)",
+      "Receita_Liquida": 53876.0,
+      "CMV": 47115.0,
+      "Margem_Bruta": 20159.0,
+      "Despesas_Logistica": 1690.4,
+      "Despesas_Comerciais": 422.6,
+      "Despesas_Gerais_Admin": 1468.0,
+      "EBIT": 18691.0,
+      "EBITDA": 21384.8,
+      "Resultado_Financeiro": -5407.0,
+      "EBT": 9768.0,
+      "Impostos_Lucro": -3271.0,
+      "Lucro_Liquido": 6497.0
+    },
+    {
+      "period": "1T16",
+      "periodLabel": "1T16 (BRASKEM)",
+      "Receita_Liquida": 14288.0,
+      "CMV": 14255.0,
+      "Margem_Bruta": 5661.0,
+      "Despesas_Logistica": 420.0,
+      "Despesas_Comerciais": 105.0,
+      "Despesas_Gerais_Admin": 871.0,
+      "EBIT": 4790.0,
+      "EBITDA": 5504.4,
+      "Resultado_Financeiro": -22.0,
+      "EBT": 3756.0,
+      "Impostos_Lucro": -2158.0,
+      "Lucro_Liquido": 1598.0
+    },
+    {
+      "period": "2T16",
+      "periodLabel": "2T16 (BRASKEM)",
+      "Receita_Liquida": 28365.0,
+      "CMV": 28013.0,
+      "Margem_Bruta": 12235.0,
+      "Despesas_Logistica": 862.4,
+      "Despesas_Comerciais": 215.6,
+      "Despesas_Gerais_Admin": 4438.0,
+      "EBIT": 7797.0,
+      "EBITDA": 9215.2,
+      "Resultado_Financeiro": -4924.0,
+      "EBT": 969.0,
+      "Impostos_Lucro": -3143.0,
+      "Lucro_Liquido": -2174.0
+    },
+    {
+      "period": "3T16",
+      "periodLabel": "3T16 (BRASKEM)",
+      "Receita_Liquida": 42618.0,
+      "CMV": 42259.0,
+      "Margem_Bruta": 19168.0,
+      "Despesas_Logistica": 1280.8,
+      "Despesas_Comerciais": 320.2,
+      "Despesas_Gerais_Admin": 7008.0,
+      "EBIT": 12160.0,
+      "EBITDA": 14290.9,
+      "Resultado_Financeiro": -4103.0,
+      "EBT": 5025.0,
+      "Impostos_Lucro": -786.0,
+      "Lucro_Liquido": 4239.0
+    },
+    {
+      "period": "4T16",
+      "periodLabel": "4T16 (BRASKEM)",
+      "Receita_Liquida": 56950.0,
+      "CMV": 56946.0,
+      "Margem_Bruta": 25847.0,
+      "Despesas_Logistica": 1776.0,
+      "Despesas_Comerciais": 444.0,
+      "Despesas_Gerais_Admin": 9156.0,
+      "EBIT": 16691.0,
+      "EBITDA": 19538.5,
+      "Resultado_Financeiro": -3431.0,
+      "EBT": 9002.0,
+      "Impostos_Lucro": -2375.0,
+      "Lucro_Liquido": 6627.0
+    },
+    {
+      "period": "1T17",
+      "periodLabel": "1T17 (BRASKEM)",
+      "Receita_Liquida": 12796.0,
+      "CMV": 12503.0,
+      "Margem_Bruta": 4511.0,
+      "Despesas_Logistica": 404.8,
+      "Despesas_Comerciais": 101.2,
+      "Despesas_Gerais_Admin": 3316.0,
+      "EBIT": 1195.0,
+      "EBITDA": 1834.8,
+      "Resultado_Financeiro": 1087.0,
+      "EBT": 1360.0,
+      "Impostos_Lucro": -987.0,
+      "Lucro_Liquido": 373.0
+    },
+    {
+      "period": "2T17",
+      "periodLabel": "2T17 (BRASKEM)",
+      "Receita_Liquida": 24694.0,
+      "CMV": 24319.0,
+      "Margem_Bruta": 8338.0,
+      "Despesas_Logistica": 882.4,
+      "Despesas_Comerciais": 220.6,
+      "Despesas_Gerais_Admin": 4769.0,
+      "EBIT": 3569.0,
+      "EBITDA": 4803.7,
+      "Resultado_Financeiro": 1418.0,
+      "EBT": 3150.0,
+      "Impostos_Lucro": -1805.0,
+      "Lucro_Liquido": 1345.0
+    },
+    {
+      "period": "3T17",
+      "periodLabel": "3T17 (BRASKEM)",
+      "Receita_Liquida": 36421.0,
+      "CMV": 35954.0,
+      "Margem_Bruta": 12409.0,
+      "Despesas_Logistica": 1329.6,
+      "Despesas_Comerciais": 332.4,
+      "Despesas_Gerais_Admin": 5637.0,
+      "EBIT": 6772.0,
+      "EBITDA": 8593.0,
+      "Resultado_Financeiro": 2889.0,
+      "EBT": 6997.0,
+      "Impostos_Lucro": -3795.0,
+      "Lucro_Liquido": 3202.0
+    },
+    {
+      "period": "4T17",
+      "periodLabel": "4T17 (BRASKEM)",
+      "Receita_Liquida": 47811.0,
+      "CMV": 47866.0,
+      "Margem_Bruta": 14969.0,
+      "Despesas_Logistica": 1784.8,
+      "Despesas_Comerciais": 446.2,
+      "Despesas_Gerais_Admin": 6702.0,
+      "EBIT": 8267.0,
+      "EBITDA": 10657.5,
+      "Resultado_Financeiro": 5130.0,
+      "EBT": 9725.0,
+      "Impostos_Lucro": -3206.0,
+      "Lucro_Liquido": 6519.0
+    },
+    {
+      "period": "1T18",
+      "periodLabel": "1T18 (BRASKEM)",
+      "Receita_Liquida": 10410.0,
+      "CMV": 10796.0,
+      "Margem_Bruta": 2566.0,
+      "Despesas_Logistica": 457.6,
+      "Despesas_Comerciais": 114.4,
+      "Despesas_Gerais_Admin": 361.0,
+      "EBIT": 2927.0,
+      "EBITDA": 3447.5,
+      "Resultado_Financeiro": 1511.0,
+      "EBT": 3780.0,
+      "Impostos_Lucro": -1716.0,
+      "Lucro_Liquido": 2064.0
+    },
+    {
+      "period": "2T18",
+      "periodLabel": "2T18 (BRASKEM)",
+      "Receita_Liquida": 20727.0,
+      "CMV": 21078.0,
+      "Margem_Bruta": 6535.0,
+      "Despesas_Logistica": 863.2,
+      "Despesas_Comerciais": 215.8,
+      "Despesas_Gerais_Admin": 81.0,
+      "EBIT": 6454.0,
+      "EBITDA": 7490.4,
+      "Resultado_Financeiro": 4102.0,
+      "EBT": 9126.0,
+      "Impostos_Lucro": -4366.0,
+      "Lucro_Liquido": 4760.0
+    },
+    {
+      "period": "3T18",
+      "periodLabel": "3T18 (BRASKEM)",
+      "Receita_Liquida": 30883.0,
+      "CMV": 30640.0,
+      "Margem_Bruta": 10142.0,
+      "Despesas_Logistica": 1311.2,
+      "Despesas_Comerciais": 327.8,
+      "Despesas_Gerais_Admin": 1681.0,
+      "EBIT": 8461.0,
+      "EBITDA": 10005.1,
+      "Resultado_Financeiro": 5762.0,
+      "EBT": 11902.0,
+      "Impostos_Lucro": -5539.0,
+      "Lucro_Liquido": 6363.0
+    },
+    {
+      "period": "4T18",
+      "periodLabel": "4T18 (BRASKEM)",
+      "Receita_Liquida": 40938.0,
+      "CMV": 40439.0,
+      "Margem_Bruta": 12331.0,
+      "Despesas_Logistica": 1799.2,
+      "Despesas_Comerciais": 449.8,
+      "Despesas_Gerais_Admin": 5898.0,
+      "EBIT": 6433.0,
+      "EBITDA": 8479.9,
+      "Resultado_Financeiro": 9857.0,
+      "EBT": 12004.0,
+      "Impostos_Lucro": -5204.0,
+      "Lucro_Liquido": 6800.0
+    },
+    {
+      "period": "1T19",
+      "periodLabel": "1T19 (BRASKEM)",
+      "Receita_Liquida": 9622.0,
+      "CMV": 9079.0,
+      "Margem_Bruta": 3714.0,
+      "Despesas_Logistica": 465.6,
+      "Despesas_Comerciais": 116.4,
+      "Despesas_Gerais_Admin": 1084.0,
+      "EBIT": 4798.0,
+      "EBITDA": 5279.1,
+      "Resultado_Financeiro": 12474.0,
+      "EBT": 16287.0,
+      "Impostos_Lucro": -5209.0,
+      "Lucro_Liquido": 11078.0
+    },
+    {
+      "period": "2T19",
+      "periodLabel": "2T19 (BRASKEM)",
+      "Receita_Liquida": 19748.0,
+      "CMV": 18190.0,
+      "Margem_Bruta": 7960.0,
+      "Despesas_Logistica": 971.2,
+      "Despesas_Comerciais": 242.8,
+      "Despesas_Gerais_Admin": 1161.0,
+      "EBIT": 9121.0,
+      "EBITDA": 10108.4,
+      "Resultado_Financeiro": 13469.0,
+      "EBT": 20680.0,
+      "Impostos_Lucro": -6872.0,
+      "Lucro_Liquido": 13808.0
+    },
+    {
+      "period": "3T19",
+      "periodLabel": "3T19 (BRASKEM)",
+      "Receita_Liquida": 28068.0,
+      "CMV": 25813.0,
+      "Margem_Bruta": 11416.0,
+      "Despesas_Logistica": 1429.6,
+      "Despesas_Comerciais": 357.4,
+      "Despesas_Gerais_Admin": 318.0,
+      "EBIT": 11734.0,
+      "EBITDA": 13137.4,
+      "Resultado_Financeiro": 14738.0,
+      "EBT": 23523.0,
+      "Impostos_Lucro": -7013.0,
+      "Lucro_Liquido": 16510.0
+    },
+    {
+      "period": "4T19",
+      "periodLabel": "4T19 (BRASKEM)",
+      "Receita_Liquida": 36051.0,
+      "CMV": 34152.0,
+      "Margem_Bruta": 10400.0,
+      "Despesas_Logistica": 1896.0,
+      "Despesas_Comerciais": 474.0,
+      "Despesas_Gerais_Admin": 348.0,
+      "EBIT": 10748.0,
+      "EBITDA": 12550.5,
+      "Resultado_Financeiro": 16258.0,
+      "EBT": 23277.0,
+      "Impostos_Lucro": -5374.0,
+      "Lucro_Liquido": 17903.0
+    },
+    {
+      "period": "1T20",
+      "periodLabel": "1T20 (BRASKEM)",
+      "Receita_Liquida": 8326.0,
+      "CMV": 6896.0,
+      "Margem_Bruta": 4090.0,
+      "Despesas_Logistica": 456.0,
+      "Despesas_Comerciais": 114.0,
+      "Despesas_Gerais_Admin": 1701.0,
+      "EBIT": 2389.0,
+      "EBITDA": 2805.3,
+      "Resultado_Financeiro": 8473.0,
+      "EBT": 9848.0,
+      "Impostos_Lucro": -4304.0,
+      "Lucro_Liquido": 5544.0
+    },
+    {
+      "period": "2T20",
+      "periodLabel": "2T20 (BRASKEM)",
+      "Receita_Liquida": 14656.0,
+      "CMV": 11613.0,
+      "Margem_Bruta": 7055.0,
+      "Despesas_Logistica": 890.4,
+      "Despesas_Comerciais": 222.6,
+      "Despesas_Gerais_Admin": 2271.0,
+      "EBIT": 4784.0,
+      "EBITDA": 5516.8,
+      "Resultado_Financeiro": 7368.0,
+      "EBT": 9850.0,
+      "Impostos_Lucro": -4888.0,
+      "Lucro_Liquido": 4962.0
+    },
+    {
+      "period": "3T20",
+      "periodLabel": "3T20 (BRASKEM)",
+      "Receita_Liquida": 22023.0,
+      "CMV": 17000.0,
+      "Margem_Bruta": 10939.0,
+      "Despesas_Logistica": 1375.2,
+      "Despesas_Comerciais": 343.8,
+      "Despesas_Gerais_Admin": 1801.0,
+      "EBIT": 9138.0,
+      "EBITDA": 10239.1,
+      "Resultado_Financeiro": 16455.0,
+      "EBT": 22077.0,
+      "Impostos_Lucro": -8389.0,
+      "Lucro_Liquido": 13688.0
+    },
+    {
+      "period": "4T20",
+      "periodLabel": "4T20 (BRASKEM)",
+      "Receita_Liquida": 30943.0,
+      "CMV": 25140.0,
+      "Margem_Bruta": 12815.0,
+      "Despesas_Logistica": 1819.2,
+      "Despesas_Comerciais": 454.8,
+      "Despesas_Gerais_Admin": 946.0,
+      "EBIT": 11869.0,
+      "EBITDA": 13416.1,
+      "Resultado_Financeiro": 25041.0,
+      "EBT": 31819.0,
+      "Impostos_Lucro": -10888.0,
+      "Lucro_Liquido": 20931.0
+    },
+    {
+      "period": "1T21",
+      "periodLabel": "1T21 (BRASKEM)",
+      "Receita_Liquida": 9156.0,
+      "CMV": 7180.0,
+      "Margem_Bruta": 4412.0,
+      "Despesas_Logistica": 448.0,
+      "Despesas_Comerciais": 112.0,
+      "Despesas_Gerais_Admin": 432.0,
+      "EBIT": 4844.0,
+      "EBITDA": 5301.8,
+      "Resultado_Financeiro": 11670.0,
+      "EBT": 14987.0,
+      "Impostos_Lucro": -5179.0,
+      "Lucro_Liquido": 9808.0
+    },
+    {
+      "period": "2T21",
+      "periodLabel": "2T21 (BRASKEM)",
+      "Receita_Liquida": 18009.0,
+      "CMV": 14906.0,
+      "Margem_Bruta": 11037.0,
+      "Despesas_Logistica": 885.6,
+      "Despesas_Comerciais": 221.4,
+      "Despesas_Gerais_Admin": 1044.0,
+      "EBIT": 12081.0,
+      "EBITDA": 12981.5,
+      "Resultado_Financeiro": 14041.0,
+      "EBT": 23478.0,
+      "Impostos_Lucro": -8362.0,
+      "Lucro_Liquido": 15116.0
+    },
+    {
+      "period": "3T21",
+      "periodLabel": "3T21 (BRASKEM)",
+      "Receita_Liquida": 27626.0,
+      "CMV": 23176.0,
+      "Margem_Bruta": 15429.0,
+      "Despesas_Logistica": 1384.8,
+      "Despesas_Comerciais": 346.2,
+      "Despesas_Gerais_Admin": 1743.0,
+      "EBIT": 17172.0,
+      "EBITDA": 18553.3,
+      "Resultado_Financeiro": 23954.0,
+      "EBT": 37410.0,
+      "Impostos_Lucro": -11039.0,
+      "Lucro_Liquido": 26371.0
+    },
+    {
+      "period": "4T21",
+      "periodLabel": "4T21 (BRASKEM)",
+      "Receita_Liquida": 39247.0,
+      "CMV": 33640.0,
+      "Margem_Bruta": 19883.0,
+      "Despesas_Logistica": 1925.6,
+      "Despesas_Comerciais": 481.4,
+      "Despesas_Gerais_Admin": 2719.0,
+      "EBIT": 22602.0,
+      "EBITDA": 24564.3,
+      "Resultado_Financeiro": 30556.0,
+      "EBT": 48122.0,
+      "Impostos_Lucro": -13799.0,
+      "Lucro_Liquido": 34323.0
+    },
+    {
+      "period": "1T22",
+      "periodLabel": "1T22 (BRASKEM)",
+      "Receita_Liquida": 10910.0,
+      "CMV": 10316.0,
+      "Margem_Bruta": 4930.0,
+      "Despesas_Logistica": 509.6,
+      "Despesas_Comerciais": 127.4,
+      "Despesas_Gerais_Admin": 259.0,
+      "EBIT": 5189.0,
+      "EBITDA": 5734.5,
+      "Resultado_Financeiro": 14851.0,
+      "EBT": 18909.0,
+      "Impostos_Lucro": -6007.0,
+      "Lucro_Liquido": 12902.0
+    },
+    {
+      "period": "2T22",
+      "periodLabel": "2T22 (BRASKEM)",
+      "Receita_Liquida": 25079.0,
+      "CMV": 23542.0,
+      "Margem_Bruta": 14671.0,
+      "Despesas_Logistica": 1034.4,
+      "Despesas_Comerciais": 258.6,
+      "Despesas_Gerais_Admin": 2105.0,
+      "EBIT": 16776.0,
+      "EBITDA": 18030.0,
+      "Resultado_Financeiro": 21025.0,
+      "EBT": 34380.0,
+      "Impostos_Lucro": -9764.0,
+      "Lucro_Liquido": 24616.0
+    },
+    {
+      "period": "3T22",
+      "periodLabel": "3T22 (BRASKEM)",
+      "Receita_Liquida": 34273.0,
+      "CMV": 32471.0,
+      "Margem_Bruta": 19581.0,
+      "Despesas_Logistica": 1536.8,
+      "Despesas_Comerciais": 384.2,
+      "Despesas_Gerais_Admin": 1587.0,
+      "EBIT": 21168.0,
+      "EBITDA": 22881.7,
+      "Resultado_Financeiro": 28960.0,
+      "EBT": 45648.0,
+      "Impostos_Lucro": -11446.0,
+      "Lucro_Liquido": 34202.0
+    },
+    {
+      "period": "4T22",
+      "periodLabel": "4T22 (BRASKEM)",
+      "Receita_Liquida": 44038.0,
+      "CMV": 40937.0,
+      "Margem_Bruta": 25172.0,
+      "Despesas_Logistica": 2128.0,
+      "Despesas_Comerciais": 532.0,
+      "Despesas_Gerais_Admin": 2182.0,
+      "EBIT": 27354.0,
+      "EBITDA": 29555.9,
+      "Resultado_Financeiro": 33298.0,
+      "EBT": 54563.0,
+      "Impostos_Lucro": -12543.0,
+      "Lucro_Liquido": 42020.0
+    },
+    {
+      "period": "1T23",
+      "periodLabel": "1T23 (BRASKEM)",
+      "Receita_Liquida": 12508.0,
+      "CMV": 10942.0,
+      "Margem_Bruta": 2255.0,
+      "Despesas_Logistica": 575.2,
+      "Despesas_Comerciais": 143.8,
+      "Despesas_Gerais_Admin": 2826.0,
+      "EBIT": 5081.0,
+      "EBITDA": 5706.4,
+      "Resultado_Financeiro": 2331.0,
+      "EBT": 5925.0,
+      "Impostos_Lucro": -1962.0,
+      "Lucro_Liquido": 3963.0
+    },
+    {
+      "period": "2T23",
+      "periodLabel": "2T23 (BRASKEM)",
+      "Receita_Liquida": 24828.0,
+      "CMV": 22103.0,
+      "Margem_Bruta": 6318.0,
+      "Despesas_Logistica": 1083.2,
+      "Despesas_Comerciais": 270.8,
+      "Despesas_Gerais_Admin": 3573.0,
+      "EBIT": 9891.0,
+      "EBITDA": 11132.4,
+      "Resultado_Financeiro": 5829.0,
+      "EBT": 13324.0,
+      "Impostos_Lucro": -3821.0,
+      "Lucro_Liquido": 9503.0
+    },
+    {
+      "period": "3T23",
+      "periodLabel": "3T23 (BRASKEM)",
+      "Receita_Liquida": 35102.0,
+      "CMV": 30664.0,
+      "Margem_Bruta": 12602.0,
+      "Despesas_Logistica": 1631.2,
+      "Despesas_Comerciais": 407.8,
+      "Despesas_Gerais_Admin": 3831.0,
+      "EBIT": 16433.0,
+      "EBITDA": 18188.1,
+      "Resultado_Financeiro": 7511.0,
+      "EBT": 20338.0,
+      "Impostos_Lucro": -5890.0,
+      "Lucro_Liquido": 14448.0
+    },
+    {
+      "period": "4T23",
+      "periodLabel": "4T23 (BRASKEM)",
+      "Receita_Liquida": 45856.0,
+      "CMV": 39302.0,
+      "Margem_Bruta": 17487.0,
+      "Despesas_Logistica": 2286.4,
+      "Despesas_Comerciais": 571.6,
+      "Despesas_Gerais_Admin": 5627.0,
+      "EBIT": 23114.0,
+      "EBITDA": 25406.8,
+      "Resultado_Financeiro": 9114.0,
+      "EBT": 26774.0,
+      "Impostos_Lucro": -4580.0,
+      "Lucro_Liquido": 22194.0
+    },
+    {
+      "period": "1T24",
+      "periodLabel": "1T24 (BRASKEM)",
+      "Receita_Liquida": 12285.0,
+      "CMV": 10325.0,
+      "Margem_Bruta": 6005.0,
+      "Despesas_Logistica": 625.6,
+      "Despesas_Comerciais": 156.4,
+      "Despesas_Gerais_Admin": 777.0,
+      "EBIT": 6782.0,
+      "EBITDA": 7396.2,
+      "Resultado_Financeiro": 1538.0,
+      "EBT": 6782.0,
+      "Impostos_Lucro": -1545.0,
+      "Lucro_Liquido": 5237.0
+    },
+    {
+      "period": "2T24",
+      "periodLabel": "2T24 (BRASKEM)",
+      "Receita_Liquida": 23949.0,
+      "CMV": 20453.0,
+      "Margem_Bruta": 12060.0,
+      "Despesas_Logistica": 1229.6,
+      "Despesas_Comerciais": 307.4,
+      "Despesas_Gerais_Admin": 1723.0,
+      "EBIT": 13783.0,
+      "EBITDA": 14980.5,
+      "Resultado_Financeiro": 4975.0,
+      "EBT": 15503.0,
+      "Impostos_Lucro": -2169.0,
+      "Lucro_Liquido": 13334.0
+    },
+    {
+      "period": "3T24",
+      "periodLabel": "3T24 (BRASKEM)",
+      "Receita_Liquida": 35364.0,
+      "CMV": 30489.0,
+      "Margem_Bruta": 17240.0,
+      "Despesas_Logistica": 1824.8,
+      "Despesas_Comerciais": 456.2,
+      "Despesas_Gerais_Admin": 3112.0,
+      "EBIT": 20352.0,
+      "EBITDA": 22120.2,
+      "Resultado_Financeiro": 7501.0,
+      "EBT": 22822.0,
+      "Impostos_Lucro": -3838.0,
+      "Lucro_Liquido": 18984.0
+    },
+    {
+      "period": "4T24",
+      "periodLabel": "4T24 (BRASKEM)",
+      "Receita_Liquida": 48406.0,
+      "CMV": 41914.0,
+      "Margem_Bruta": 25191.0,
+      "Despesas_Logistica": 2536.8,
+      "Despesas_Comerciais": 634.2,
+      "Despesas_Gerais_Admin": 3391.0,
+      "EBIT": 28582.0,
+      "EBITDA": 31002.3,
+      "Resultado_Financeiro": 11232.0,
+      "EBT": 30928.0,
+      "Impostos_Lucro": -4209.0,
+      "Lucro_Liquido": 26719.0
+    },
+    {
+      "period": "1T25",
+      "periodLabel": "1T25 (BRASKEM)",
+      "Receita_Liquida": 14160.0,
+      "CMV": 12822.0,
+      "Margem_Bruta": 5271.0,
+      "Despesas_Logistica": 674.4,
+      "Despesas_Comerciais": 168.6,
+      "Despesas_Gerais_Admin": 2754.0,
+      "EBIT": 8025.0,
+      "EBITDA": 8733.0,
+      "Resultado_Financeiro": 1039.0,
+      "EBT": 9394.0,
+      "Impostos_Lucro": -3776.0,
+      "Lucro_Liquido": 5618.0
+    },
+    {
+      "period": "2T25",
+      "periodLabel": "2T25 (BRASKEM)",
+      "Receita_Liquida": 29458.0,
+      "CMV": 27740.0,
+      "Margem_Bruta": 10192.0,
+      "Despesas_Logistica": 1340.0,
+      "Despesas_Comerciais": 335.0,
+      "Despesas_Gerais_Admin": 2566.0,
+      "EBIT": 12759.0,
+      "EBITDA": 14231.9,
+      "Resultado_Financeiro": 4093.0,
+      "EBT": 15577.0,
+      "Impostos_Lucro": -3208.0,
+      "Lucro_Liquido": 12369.0
+    },
+    {
+      "period": "3T25",
+      "periodLabel": "3T25 (BRASKEM)",
+      "Receita_Liquida": 42432.0,
+      "CMV": 40120.0,
+      "Margem_Bruta": 15991.0,
+      "Despesas_Logistica": 2096.0,
+      "Despesas_Comerciais": 524.0,
+      "Despesas_Gerais_Admin": 2197.0,
+      "EBIT": 18188.0,
+      "EBITDA": 20309.6,
+      "Resultado_Financeiro": 5293.0,
+      "EBT": 20360.0,
+      "Impostos_Lucro": -4094.0,
+      "Lucro_Liquido": 16267.0
+    },
+    {
+      "period": "4T25",
+      "periodLabel": "4T25 (BRASKEM)",
+      "Receita_Liquida": 56850.0,
+      "CMV": 53624.0,
+      "Margem_Bruta": 23512.0,
+      "Despesas_Logistica": 2978.4,
+      "Despesas_Comerciais": 744.6,
+      "Despesas_Gerais_Admin": 2581.0,
+      "EBIT": 26093.0,
+      "EBITDA": 28935.5,
+      "Resultado_Financeiro": 10153.0,
+      "EBT": 30754.0,
+      "Impostos_Lucro": -5182.0,
+      "Lucro_Liquido": 25572.0
+    }
+  ],
+  "dfc_timeseries": [
+    {
+      "period": "4T24",
+      "periodLabel": "4T24 (BRASKEM)",
+      "receita_vendas": 13767.0,
+      "recebimento_vendas": 13767.0,
+      "pagamento_fornecedores": 0.0,
+      "pagamento_salarios": 0.0,
+      "pagamento_despesas_operacionais": 2419.0,
+      "pagamento_impostos": 1982.0,
+      "fco_caixa_liquido": 9366.0,
+      "fco": 9366.0,
+      "aquisicao_ativos_imobilizados": 6447.0,
+      "fci_caixa_liquido": -5368.0,
+      "fci": -5368.0,
+      "captacao_emprestimos": 4855.0,
+      "amortizacao_dividas": 2807.0,
+      "pagamento_dividendos_jcp": 3914.0,
+      "fcf_caixa_liquido": -2275.0,
+      "fcf": -2275.0,
+      "variacao_liquida_caixa": 1723.0,
+      "variacao_caixa": 1723.0,
+      "saldo_inicial_caixa": 3609.0,
+      "saldo_final_caixa": 4953.0,
+      "saldo_final": 4953.0
+    },
+    {
+      "period": "4T25",
+      "periodLabel": "4T25 (BRASKEM)",
+      "receita_vendas": 13401.0,
+      "recebimento_vendas": 13401.0,
+      "pagamento_fornecedores": 0.0,
+      "pagamento_salarios": 0.0,
+      "pagamento_despesas_operacionais": 2618.0,
+      "pagamento_impostos": 1982.0,
+      "fco_caixa_liquido": 8801.0,
+      "fco": 8801.0,
+      "aquisicao_ativos_imobilizados": 6006.0,
+      "fci_caixa_liquido": -6864.0,
+      "fci": -6864.0,
+      "captacao_emprestimos": 5459.0,
+      "amortizacao_dividas": 1628.0,
+      "pagamento_dividendos_jcp": 3561.0,
+      "fcf_caixa_liquido": 270.0,
+      "fcf": 270.0,
+      "variacao_liquida_caixa": 2207.0,
+      "variacao_caixa": 2207.0,
+      "saldo_inicial_caixa": 4953.0,
+      "saldo_final_caixa": 7372.0,
+      "saldo_final": 7372.0
+    }
+  ],
+  "governance_covenants": {
+    "company_id": "klabin",
+    "company_name": "Klabin S.A.",
+    "ticker": "KLBN11",
+    "sector": "Papel & Celulose / Florestal",
+    "currency": "BRL",
+    "overall_status": "BREACH",
+    "headrooms": {
+      "ebitda_headroom_brl": 0.0,
+      "ebitda_headroom_pct": 0.0,
+      "debt_headroom_brl": 0.0,
+      "fin_exp_headroom_brl": 672.85,
+      "current_ebitda": 4972.8,
+      "current_net_debt": 41272.99,
+      "current_cash": 1824.94
+    },
+    "covenants": [
+      {
+        "covenant_id": "net_debt_ebitda",
+        "name": "Alavancagem Máxima (Dívida Líquida / EBITDA)",
+        "description": "Cláusula restritiva limitando o endividamento líquido em relação à geração operacional.",
+        "operator": "<=",
+        "threshold": 3.5,
+        "unit": "x",
+        "category": "Alavancagem",
+        "current_value": 8.3,
+        "is_compliant": false,
+        "buffer_pct": -137.14,
+        "status": "BREACH"
+      },
+      {
+        "covenant_id": "interest_coverage_ratio",
+        "name": "Cobertura de Juros (ICJ: EBITDA / Despesa Financeira)",
+        "description": "Capacidade de honrar juros bancários com o resultado operacional.",
+        "operator": ">=",
+        "threshold": 2.0,
+        "unit": "x",
+        "category": "Liquidez",
+        "current_value": 2.74,
+        "is_compliant": true,
+        "buffer_pct": 37.0,
+        "status": "SAFE"
+      },
+      {
+        "covenant_id": "current_ratio",
+        "name": "Liquidez Corrente Mínima (Ativo Circulante / Passivo Circulante)",
+        "description": "Garantia de capacidade de pagamento de obrigações de curto prazo.",
+        "operator": ">=",
+        "threshold": 1.2,
+        "unit": "x",
+        "category": "Solvência",
+        "current_value": 1.66,
+        "is_compliant": true,
+        "buffer_pct": 38.33,
+        "status": "SAFE"
+      },
+      {
+        "covenant_id": "equity_to_assets",
+        "name": "Autonomia Financeira (Patrimônio Líquido / Ativo Total)",
+        "description": "Participação mínima de capital próprio na estrutura de ativos da companhia.",
+        "operator": ">=",
+        "threshold": 0.3,
+        "unit": "%",
+        "category": "Estrutura de Capital",
+        "current_value": 0.25,
+        "is_compliant": false,
+        "buffer_pct": -16.67,
+        "status": "BREACH"
+      }
+    ],
+    "timeline": [
+      {
+        "quarter_id": "Q1_2025",
+        "label": "Q1 2025",
+        "period_type": "ACTUAL",
+        "is_actual": true,
+        "leverage_ratio": 4.15,
+        "covenant_limit": 3.5,
+        "is_compliant": false,
+        "debt_headroom_brl": 0.0
+      },
+      {
+        "quarter_id": "Q2_2025",
+        "label": "Q2 2025",
+        "period_type": "ACTUAL",
+        "is_actual": true,
+        "leverage_ratio": 3.92,
+        "covenant_limit": 3.5,
+        "is_compliant": false,
+        "debt_headroom_brl": 0.0
+      },
+      {
+        "quarter_id": "Q3_2025",
+        "label": "Q3 2025",
+        "period_type": "ACTUAL",
+        "is_actual": true,
+        "leverage_ratio": 3.73,
+        "covenant_limit": 3.5,
+        "is_compliant": false,
+        "debt_headroom_brl": 0.0
+      },
+      {
+        "quarter_id": "Q4_2025",
+        "label": "Q4 2025",
+        "period_type": "ACTUAL",
+        "is_actual": true,
+        "leverage_ratio": 3.59,
+        "covenant_limit": 3.5,
+        "is_compliant": false,
+        "debt_headroom_brl": 0.0
+      },
+      {
+        "quarter_id": "Q1_2026",
+        "label": "Q1 2026",
+        "period_type": "FORECAST",
+        "is_actual": false,
+        "leverage_ratio": 3.9,
+        "covenant_limit": 3.5,
+        "is_compliant": false,
+        "debt_headroom_brl": 0.0
+      },
+      {
+        "quarter_id": "Q2_2026",
+        "label": "Q2 2026",
+        "period_type": "FORECAST",
+        "is_actual": false,
+        "leverage_ratio": 3.59,
+        "covenant_limit": 3.5,
+        "is_compliant": false,
+        "debt_headroom_brl": 0.0
+      },
+      {
+        "quarter_id": "Q3_2026",
+        "label": "Q3 2026",
+        "period_type": "FORECAST",
+        "is_actual": false,
+        "leverage_ratio": 3.32,
+        "covenant_limit": 3.5,
+        "is_compliant": true,
+        "debt_headroom_brl": 935.61
+      },
+      {
+        "quarter_id": "Q4_2026",
+        "label": "Q4 2026",
+        "period_type": "FORECAST",
+        "is_actual": false,
+        "leverage_ratio": 3.07,
+        "covenant_limit": 3.5,
+        "is_compliant": true,
+        "debt_headroom_brl": 2373.19
+      }
+    ]
+  },
+  "multidim_query": {
+    "row_dim": "account",
+    "col_dim": "time",
+    "columns": [
+      {
+        "id": "2024_09_30",
+        "label": "Trimestre 09/2024 (2024_09_30)"
+      },
+      {
+        "id": "2024_12_31",
+        "label": "Trimestre 12/2024 (2024_12_31)"
+      },
+      {
+        "id": "2025_03_31",
+        "label": "Trimestre 03/2025 (2025_03_31)"
+      },
+      {
+        "id": "2025_06_30",
+        "label": "Trimestre 06/2025 (2025_06_30)"
+      },
+      {
+        "id": "2025_09_30",
+        "label": "Trimestre 09/2025 (2025_09_30)"
+      },
+      {
+        "id": "2025_12_31",
+        "label": "Trimestre 12/2025 (2025_12_31)"
+      },
+      {
+        "id": "2026_03_31",
+        "label": "Trimestre 03/2026 (2026_03_31)"
+      },
+      {
+        "id": "2026_06_30",
+        "label": "Trimestre 06/2026 (2026_06_30)"
+      },
+      {
+        "id": "Budget_2026",
+        "label": "Orçamento 2026 (Budget Projetado)"
+      }
+    ],
+    "rows": [
+      {
+        "id": "Receita_Bruta",
+        "label": "(+) Receita Bruta / Intermediação",
+        "values": {
+          "2024_09_30": 15113.9,
+          "2024_12_31": 15446.11,
+          "2025_03_31": 15794.16,
+          "2025_06_30": 15752.06,
+          "2025_09_30": 16111.87,
+          "2025_12_31": 16286.43,
+          "2026_03_31": 16463.55,
+          "2026_06_30": 16741.56,
+          "Budget_2026": 0.0
+        }
+      },
+      {
+        "id": "Deducoes_Receita",
+        "label": "(-) Deduções / Despesas Captação",
+        "values": {
+          "2024_09_30": 1971.38,
+          "2024_12_31": 2014.71,
+          "2025_03_31": 2060.11,
+          "2025_06_30": 2054.62,
+          "2025_09_30": 2101.55,
+          "2025_12_31": 2124.32,
+          "2026_03_31": 2147.42,
+          "2026_06_30": 2183.68,
+          "Budget_2026": 0.0
+        }
+      },
+      {
+        "id": "Receita_Liquida",
+        "label": "(=) Receita Líquida",
+        "values": {
+          "2024_09_30": 13142.52,
+          "2024_12_31": 13431.4,
+          "2025_03_31": 13734.05,
+          "2025_06_30": 13697.44,
+          "2025_09_30": 14010.32,
+          "2025_12_31": 14162.11,
+          "2026_03_31": 14316.13,
+          "2026_06_30": 14557.88,
+          "Budget_2026": 0.0
+        }
+      },
+      {
+        "id": "CMV",
+        "label": "(-) Custo dos Bens/Serviços / Provisão Crédito",
+        "values": {
+          "2024_09_30": 7885.51,
+          "2024_12_31": 8058.84,
+          "2025_03_31": 8240.43,
+          "2025_06_30": 8218.46,
+          "2025_09_30": 8406.19,
+          "2025_12_31": 8497.27,
+          "2026_03_31": 8589.68,
+          "2026_06_30": 8734.73,
+          "Budget_2026": 0.0
+        }
+      },
+      {
+        "id": "Margem_Bruta",
+        "label": "(=) Resultado Bruto",
+        "values": {
+          "2024_09_30": 5257.01,
+          "2024_12_31": 5372.56,
+          "2025_03_31": 5493.62,
+          "2025_06_30": 5478.98,
+          "2025_09_30": 5604.13,
+          "2025_12_31": 5664.84,
+          "2026_03_31": 5726.45,
+          "2026_06_30": 5823.15,
+          "Budget_2026": 0.0
+        }
+      },
+      {
+        "id": "Despesas_Logistica",
+        "label": "(-) Despesas Comerciais & Vendas",
+        "values": {
+          "2024_09_30": 1314.25,
+          "2024_12_31": 1343.14,
+          "2025_03_31": 1373.4,
+          "2025_06_30": 1369.74,
+          "2025_09_30": 1401.03,
+          "2025_12_31": 1416.21,
+          "2026_03_31": 1431.61,
+          "2026_06_30": 1455.79,
+          "Budget_2026": 0.0
+        }
+      },
+      {
+        "id": "Despesas_Comerciais",
+        "label": "(-) Despesas Administrativas & Pessoal",
+        "values": {
+          "2024_09_30": 1051.4,
+          "2024_12_31": 1074.51,
+          "2025_03_31": 1098.72,
+          "2025_06_30": 1095.8,
+          "2025_09_30": 1120.83,
+          "2025_12_31": 1132.97,
+          "2026_03_31": 1145.29,
+          "2026_06_30": 1164.63,
+          "Budget_2026": 0.0
+        }
+      },
+      {
+        "id": "Despesas_Gerais_Admin",
+        "label": "(-) Outras Despesas Operacionais",
+        "values": {
+          "2024_09_30": 525.7,
+          "2024_12_31": 537.26,
+          "2025_03_31": 549.36,
+          "2025_06_30": 547.9,
+          "2025_09_30": 560.41,
+          "2025_12_31": 566.48,
+          "2026_03_31": 572.65,
+          "2026_06_30": 582.32,
+          "Budget_2026": 0.0
+        }
+      },
+      {
+        "id": "EBIT",
+        "label": "(=) EBIT / Resultado Operacional",
+        "values": {
+          "2024_09_30": 2759.94,
+          "2024_12_31": 2820.59,
+          "2025_03_31": 2884.15,
+          "2025_06_30": 2876.46,
+          "2025_09_30": 2942.16,
+          "2025_12_31": 2974.04,
+          "2026_03_31": 3006.38,
+          "2026_06_30": 3057.15,
+          "Budget_2026": 0.0
+        }
+      },
+      {
+        "id": "EBITDA",
+        "label": "(=) EBITDA",
+        "values": {
+          "2024_09_30": 3449.93,
+          "2024_12_31": 3525.74,
+          "2025_03_31": 3605.19,
+          "2025_06_30": 3595.57,
+          "2025_09_30": 3677.7,
+          "2025_12_31": 3717.55,
+          "2026_03_31": 3757.98,
+          "2026_06_30": 3821.44,
+          "Budget_2026": 0.0
+        }
+      },
+      {
+        "id": "Resultado_Financeiro",
+        "label": "(+/-) Resultado Financeiro Líquido",
+        "values": {
+          "2024_09_30": -394.28,
+          "2024_12_31": -402.94,
+          "2025_03_31": -412.02,
+          "2025_06_30": -410.92,
+          "2025_09_30": -420.31,
+          "2025_12_31": -424.86,
+          "2026_03_31": -429.48,
+          "2026_06_30": -436.74,
+          "Budget_2026": 0.0
+        }
+      },
+      {
+        "id": "EBT",
+        "label": "(=) Resultado Antes dos Tributos (LAIR)",
+        "values": {
+          "2024_09_30": 2365.66,
+          "2024_12_31": 2417.65,
+          "2025_03_31": 2472.13,
+          "2025_06_30": 2465.54,
+          "2025_09_30": 2521.85,
+          "2025_12_31": 2549.18,
+          "2026_03_31": 2576.9,
+          "2026_06_30": 2620.41,
+          "Budget_2026": 0.0
+        }
+      },
+      {
+        "id": "Impostos_Lucro",
+        "label": "(-) Imposto de Renda & CSLL",
+        "values": {
+          "2024_09_30": -591.41,
+          "2024_12_31": -604.41,
+          "2025_03_31": -618.03,
+          "2025_06_30": -616.38,
+          "2025_09_30": -630.46,
+          "2025_12_31": -637.29,
+          "2026_03_31": -644.23,
+          "2026_06_30": -655.1,
+          "Budget_2026": 0.0
+        }
+      },
+      {
+        "id": "Lucro_Liquido",
+        "label": "(=) Lucro / Prejuízo Líquido",
+        "values": {
+          "2024_09_30": 1872.82,
+          "2024_12_31": 1913.97,
+          "2025_03_31": 1957.1,
+          "2025_06_30": 1951.88,
+          "2025_09_30": 1996.46,
+          "2025_12_31": 2018.09,
+          "2026_03_31": 2040.04,
+          "2026_06_30": 2074.5,
+          "Budget_2026": 0.0
+        }
+      }
+    ],
+    "context": {
+      "version": "Actuals",
+      "scenario": "Base",
+      "entity": "Total_Company",
+      "product": "Total_Products"
+    }
+  },
+  "monte_carlo": {
+    "company_id": "klabin",
+    "company_name": "Klabin S.A.",
+    "iterations": 1000,
+    "parameters": {
+      "revenue_volatility_pct": 8.0,
+      "cogs_inflation_mode_pct": 5.0,
+      "selic_shock_bps_std": 150.0,
+      "capex_uncertainty_pct": 10.0,
+      "covenant_leverage_limit": 3.5
+    },
+    "risk_metrics": {
+      "var_95_ebitda": 3617.99,
+      "var_99_ebitda": 4904.89,
+      "var_95_cash": -5854.67,
+      "prob_cash_negative_pct": 0.0,
+      "prob_ebitda_below_budget_pct": 68.8,
+      "prob_covenant_breach_pct": 23.3,
+      "median_ebitda": 4119.69,
+      "median_ending_cash": 12687.57,
+      "median_leverage": 2.14
+    },
+    "distributions": {
+      "ebitda": {
+        "baseline": 4972.8,
+        "mean": 4146.29,
+        "median": 4119.69,
+        "std_dev": 1793.51,
+        "min": -2124.76,
+        "max": 11166.39,
+        "skewness": 0.113,
+        "kurtosis": 0.16,
+        "percentiles": {
+          "p1": 67.91,
+          "p5": 1354.81,
+          "p10": 1905.52,
+          "p25": 2957.7,
+          "p50": 4119.69,
+          "p75": 5281.73,
+          "p90": 6584.32,
+          "p95": 7089.67,
+          "p99": 8545.48
+        }
+      },
+      "revenue": {
+        "baseline": 22456.24,
+        "mean": 22490.97,
+        "median": 22501.69,
+        "std_dev": 1758.28,
+        "min": 16633.31,
+        "max": 29377.67,
+        "skewness": 0.117,
+        "kurtosis": 0.066,
+        "percentiles": {
+          "p1": 18715.3,
+          "p5": 19714.86,
+          "p10": 20220.02,
+          "p25": 21292.84,
+          "p50": 22501.69,
+          "p75": 23620.27,
+          "p90": 24801.83,
+          "p95": 25468.92,
+          "p99": 26616.88
+        }
+      },
+      "net_income": {
+        "baseline": 1989.12,
+        "mean": -907.17,
+        "median": -852.48,
+        "std_dev": 1652.56,
+        "min": -6963.96,
+        "max": 4406.47,
+        "skewness": -0.197,
+        "kurtosis": -0.067,
+        "percentiles": {
+          "p1": -4845.38,
+          "p5": -3720.12,
+          "p10": -3069.06,
+          "p25": -2016.35,
+          "p50": -852.48,
+          "p75": 305.95,
+          "p90": 1190.86,
+          "p95": 1633.47,
+          "p99": 2658.65
+        }
+      },
+      "ending_cash": {
+        "baseline": 4428.84,
+        "mean": 12628.41,
+        "median": 12687.57,
+        "std_dev": 1433.39,
+        "min": 7005.83,
+        "max": 17191.55,
+        "skewness": -0.194,
+        "kurtosis": 0.009,
+        "percentiles": {
+          "p1": 9191.27,
+          "p5": 10283.51,
+          "p10": 10800.14,
+          "p25": 11608.93,
+          "p50": 12687.57,
+          "p75": 13677.27,
+          "p90": 14431.7,
+          "p95": 14826.93,
+          "p99": 15725.28
+        }
+      }
+    },
+    "histograms": {
+      "ebitda": {
+        "total_samples": 1000,
+        "bins_count": 30,
+        "bin_width": 443.04,
+        "bins": [
+          {
+            "bin_index": 0,
+            "range_label": "-2,124..-1,681",
+            "midpoint": -1903.24,
+            "count": 1,
+            "probability": 0.001,
+            "cumulative_probability": 0.001
+          },
+          {
+            "bin_index": 1,
+            "range_label": "-1,681..-1,238",
+            "midpoint": -1460.2,
+            "count": 1,
+            "probability": 0.001,
+            "cumulative_probability": 0.002
+          },
+          {
+            "bin_index": 2,
+            "range_label": "-1,238..-795",
+            "midpoint": -1017.16,
+            "count": 1,
+            "probability": 0.001,
+            "cumulative_probability": 0.003
+          },
+          {
+            "bin_index": 3,
+            "range_label": "-795..-352",
+            "midpoint": -574.13,
+            "count": 3,
+            "probability": 0.003,
+            "cumulative_probability": 0.006
+          },
+          {
+            "bin_index": 4,
+            "range_label": "-352..90",
+            "midpoint": -131.09,
+            "count": 5,
+            "probability": 0.005,
+            "cumulative_probability": 0.011
+          },
+          {
+            "bin_index": 5,
+            "range_label": "90..533",
+            "midpoint": 311.95,
+            "count": 8,
+            "probability": 0.008,
+            "cumulative_probability": 0.019
+          },
+          {
+            "bin_index": 6,
+            "range_label": "533..976",
+            "midpoint": 754.99,
+            "count": 15,
+            "probability": 0.015,
+            "cumulative_probability": 0.034
+          },
+          {
+            "bin_index": 7,
+            "range_label": "976..1,419",
+            "midpoint": 1198.03,
+            "count": 19,
+            "probability": 0.019,
+            "cumulative_probability": 0.053
+          },
+          {
+            "bin_index": 8,
+            "range_label": "1,419..1,862",
+            "midpoint": 1641.07,
+            "count": 43,
+            "probability": 0.043,
+            "cumulative_probability": 0.096
+          },
+          {
+            "bin_index": 9,
+            "range_label": "1,862..2,305",
+            "midpoint": 2084.11,
+            "count": 57,
+            "probability": 0.057,
+            "cumulative_probability": 0.153
+          },
+          {
+            "bin_index": 10,
+            "range_label": "2,305..2,748",
+            "midpoint": 2527.14,
+            "count": 60,
+            "probability": 0.06,
+            "cumulative_probability": 0.213
+          },
+          {
+            "bin_index": 11,
+            "range_label": "2,748..3,191",
+            "midpoint": 2970.18,
+            "count": 85,
+            "probability": 0.085,
+            "cumulative_probability": 0.298
+          },
+          {
+            "bin_index": 12,
+            "range_label": "3,191..3,634",
+            "midpoint": 3413.22,
+            "count": 99,
+            "probability": 0.099,
+            "cumulative_probability": 0.397
+          },
+          {
+            "bin_index": 13,
+            "range_label": "3,634..4,077",
+            "midpoint": 3856.26,
+            "count": 97,
+            "probability": 0.097,
+            "cumulative_probability": 0.494
+          },
+          {
+            "bin_index": 14,
+            "range_label": "4,077..4,520",
+            "midpoint": 4299.3,
+            "count": 95,
+            "probability": 0.095,
+            "cumulative_probability": 0.589
+          },
+          {
+            "bin_index": 15,
+            "range_label": "4,520..4,963",
+            "midpoint": 4742.34,
+            "count": 99,
+            "probability": 0.099,
+            "cumulative_probability": 0.688
+          },
+          {
+            "bin_index": 16,
+            "range_label": "4,963..5,406",
+            "midpoint": 5185.37,
+            "count": 85,
+            "probability": 0.085,
+            "cumulative_probability": 0.773
+          },
+          {
+            "bin_index": 17,
+            "range_label": "5,406..5,849",
+            "midpoint": 5628.41,
+            "count": 61,
+            "probability": 0.061,
+            "cumulative_probability": 0.834
+          },
+          {
+            "bin_index": 18,
+            "range_label": "5,849..6,292",
+            "midpoint": 6071.45,
+            "count": 47,
+            "probability": 0.047,
+            "cumulative_probability": 0.881
+          },
+          {
+            "bin_index": 19,
+            "range_label": "6,292..6,736",
+            "midpoint": 6514.49,
+            "count": 34,
+            "probability": 0.034,
+            "cumulative_probability": 0.915
+          },
+          {
+            "bin_index": 20,
+            "range_label": "6,736..7,179",
+            "midpoint": 6957.53,
+            "count": 42,
+            "probability": 0.042,
+            "cumulative_probability": 0.957
+          },
+          {
+            "bin_index": 21,
+            "range_label": "7,179..7,622",
+            "midpoint": 7400.57,
+            "count": 13,
+            "probability": 0.013,
+            "cumulative_probability": 0.97
+          },
+          {
+            "bin_index": 22,
+            "range_label": "7,622..8,065",
+            "midpoint": 7843.61,
+            "count": 8,
+            "probability": 0.008,
+            "cumulative_probability": 0.978
+          },
+          {
+            "bin_index": 23,
+            "range_label": "8,065..8,508",
+            "midpoint": 8286.64,
+            "count": 11,
+            "probability": 0.011,
+            "cumulative_probability": 0.989
+          },
+          {
+            "bin_index": 24,
+            "range_label": "8,508..8,951",
+            "midpoint": 8729.68,
+            "count": 8,
+            "probability": 0.008,
+            "cumulative_probability": 0.997
+          },
+          {
+            "bin_index": 25,
+            "range_label": "8,951..9,394",
+            "midpoint": 9172.72,
+            "count": 2,
+            "probability": 0.002,
+            "cumulative_probability": 0.999
+          },
+          {
+            "bin_index": 26,
+            "range_label": "9,394..9,837",
+            "midpoint": 9615.76,
+            "count": 0,
+            "probability": 0.0,
+            "cumulative_probability": 0.999
+          },
+          {
+            "bin_index": 27,
+            "range_label": "9,837..10,280",
+            "midpoint": 10058.8,
+            "count": 0,
+            "probability": 0.0,
+            "cumulative_probability": 0.999
+          },
+          {
+            "bin_index": 28,
+            "range_label": "10,280..10,723",
+            "midpoint": 10501.84,
+            "count": 0,
+            "probability": 0.0,
+            "cumulative_probability": 0.999
+          },
+          {
+            "bin_index": 29,
+            "range_label": "10,723..11,166",
+            "midpoint": 10944.88,
+            "count": 1,
+            "probability": 0.001,
+            "cumulative_probability": 1.0
+          }
+        ]
+      },
+      "ending_cash": {
+        "total_samples": 1000,
+        "bins_count": 25,
+        "bin_width": 407.43,
+        "bins": [
+          {
+            "bin_index": 0,
+            "range_label": "7,005..7,413",
+            "midpoint": 7209.55,
+            "count": 1,
+            "probability": 0.001,
+            "cumulative_probability": 0.001
+          },
+          {
+            "bin_index": 1,
+            "range_label": "7,413..7,820",
+            "midpoint": 7616.98,
+            "count": 0,
+            "probability": 0.0,
+            "cumulative_probability": 0.001
+          },
+          {
+            "bin_index": 2,
+            "range_label": "7,820..8,228",
+            "midpoint": 8024.41,
+            "count": 2,
+            "probability": 0.002,
+            "cumulative_probability": 0.003
+          },
+          {
+            "bin_index": 3,
+            "range_label": "8,228..8,635",
+            "midpoint": 8431.83,
+            "count": 2,
+            "probability": 0.002,
+            "cumulative_probability": 0.005
+          },
+          {
+            "bin_index": 4,
+            "range_label": "8,635..9,042",
+            "midpoint": 8839.26,
+            "count": 3,
+            "probability": 0.003,
+            "cumulative_probability": 0.008
+          },
+          {
+            "bin_index": 5,
+            "range_label": "9,042..9,450",
+            "midpoint": 9246.69,
+            "count": 8,
+            "probability": 0.008,
+            "cumulative_probability": 0.016
+          },
+          {
+            "bin_index": 6,
+            "range_label": "9,450..9,857",
+            "midpoint": 9654.12,
+            "count": 13,
+            "probability": 0.013,
+            "cumulative_probability": 0.029
+          },
+          {
+            "bin_index": 7,
+            "range_label": "9,857..10,265",
+            "midpoint": 10061.55,
+            "count": 19,
+            "probability": 0.019,
+            "cumulative_probability": 0.048
+          },
+          {
+            "bin_index": 8,
+            "range_label": "10,265..10,672",
+            "midpoint": 10468.98,
+            "count": 37,
+            "probability": 0.037,
+            "cumulative_probability": 0.085
+          },
+          {
+            "bin_index": 9,
+            "range_label": "10,672..11,080",
+            "midpoint": 10876.41,
+            "count": 63,
+            "probability": 0.063,
+            "cumulative_probability": 0.148
+          },
+          {
+            "bin_index": 10,
+            "range_label": "11,080..11,487",
+            "midpoint": 11283.84,
+            "count": 71,
+            "probability": 0.071,
+            "cumulative_probability": 0.219
+          },
+          {
+            "bin_index": 11,
+            "range_label": "11,487..11,894",
+            "midpoint": 11691.26,
+            "count": 85,
+            "probability": 0.085,
+            "cumulative_probability": 0.304
+          },
+          {
+            "bin_index": 12,
+            "range_label": "11,894..12,302",
+            "midpoint": 12098.69,
+            "count": 101,
+            "probability": 0.101,
+            "cumulative_probability": 0.405
+          },
+          {
+            "bin_index": 13,
+            "range_label": "12,302..12,709",
+            "midpoint": 12506.12,
+            "count": 102,
+            "probability": 0.102,
+            "cumulative_probability": 0.507
+          },
+          {
+            "bin_index": 14,
+            "range_label": "12,709..13,117",
+            "midpoint": 12913.55,
+            "count": 105,
+            "probability": 0.105,
+            "cumulative_probability": 0.612
+          },
+          {
+            "bin_index": 15,
+            "range_label": "13,117..13,524",
+            "midpoint": 13320.98,
+            "count": 106,
+            "probability": 0.106,
+            "cumulative_probability": 0.718
+          },
+          {
+            "bin_index": 16,
+            "range_label": "13,524..13,932",
+            "midpoint": 13728.41,
+            "count": 96,
+            "probability": 0.096,
+            "cumulative_probability": 0.814
+          },
+          {
+            "bin_index": 17,
+            "range_label": "13,932..14,339",
+            "midpoint": 14135.84,
+            "count": 71,
+            "probability": 0.071,
+            "cumulative_probability": 0.885
+          },
+          {
+            "bin_index": 18,
+            "range_label": "14,339..14,746",
+            "midpoint": 14543.27,
+            "count": 53,
+            "probability": 0.053,
+            "cumulative_probability": 0.938
+          },
+          {
+            "bin_index": 19,
+            "range_label": "14,746..15,154",
+            "midpoint": 14950.69,
+            "count": 33,
+            "probability": 0.033,
+            "cumulative_probability": 0.971
+          },
+          {
+            "bin_index": 20,
+            "range_label": "15,154..15,561",
+            "midpoint": 15358.12,
+            "count": 13,
+            "probability": 0.013,
+            "cumulative_probability": 0.984
+          },
+          {
+            "bin_index": 21,
+            "range_label": "15,561..15,969",
+            "midpoint": 15765.55,
+            "count": 12,
+            "probability": 0.012,
+            "cumulative_probability": 0.996
+          },
+          {
+            "bin_index": 22,
+            "range_label": "15,969..16,376",
+            "midpoint": 16172.98,
+            "count": 2,
+            "probability": 0.002,
+            "cumulative_probability": 0.998
+          },
+          {
+            "bin_index": 23,
+            "range_label": "16,376..16,784",
+            "midpoint": 16580.41,
+            "count": 1,
+            "probability": 0.001,
+            "cumulative_probability": 0.999
+          },
+          {
+            "bin_index": 24,
+            "range_label": "16,784..17,191",
+            "midpoint": 16987.84,
+            "count": 1,
+            "probability": 0.001,
+            "cumulative_probability": 1.0
+          }
+        ]
+      }
+    },
+    "fan_charts": {
+      "ebitda": [
+        {
+          "label": "Q1 2025",
+          "quarter_id": "Q1_2025",
+          "period_type": "ACTUAL",
+          "p10": 943.36,
+          "p25": 943.36,
+          "p50": 943.36,
+          "p75": 943.36,
+          "p90": 943.36
+        },
+        {
+          "label": "Q2 2025",
+          "quarter_id": "Q2_2025",
+          "period_type": "ACTUAL",
+          "p10": 1029.12,
+          "p25": 1029.12,
+          "p50": 1029.12,
+          "p75": 1029.12,
+          "p90": 1029.12
+        },
+        {
+          "label": "Q3 2025",
+          "quarter_id": "Q3_2025",
+          "period_type": "ACTUAL",
+          "p10": 1114.88,
+          "p25": 1114.88,
+          "p50": 1114.88,
+          "p75": 1114.88,
+          "p90": 1114.88
+        },
+        {
+          "label": "Q4 2025",
+          "quarter_id": "Q4_2025",
+          "period_type": "ACTUAL",
+          "p10": 1200.64,
+          "p25": 1200.64,
+          "p50": 1200.64,
+          "p75": 1200.64,
+          "p90": 1200.64
+        },
+        {
+          "label": "Q1 2026",
+          "quarter_id": "Q1_2026",
+          "period_type": "FORECAST",
+          "p10": 419.22,
+          "p25": 650.7,
+          "p50": 906.34,
+          "p75": 1161.99,
+          "p90": 1448.56
+        },
+        {
+          "label": "Q2 2026",
+          "quarter_id": "Q2_2026",
+          "period_type": "FORECAST",
+          "p10": 457.32,
+          "p25": 709.85,
+          "p50": 988.73,
+          "p75": 1267.62,
+          "p90": 1580.24
+        },
+        {
+          "label": "Q3 2026",
+          "quarter_id": "Q3_2026",
+          "period_type": "FORECAST",
+          "p10": 495.43,
+          "p25": 769.0,
+          "p50": 1071.11,
+          "p75": 1373.24,
+          "p90": 1711.92
+        },
+        {
+          "label": "Q4 2026",
+          "quarter_id": "Q4_2026",
+          "period_type": "FORECAST",
+          "p10": 533.54,
+          "p25": 828.16,
+          "p50": 1153.51,
+          "p75": 1478.88,
+          "p90": 1843.61
+        }
+      ],
+      "ending_cash": [
+        {
+          "label": "Q1 2025",
+          "quarter_id": "Q1_2025",
+          "period_type": "ACTUAL",
+          "p10": 6184.8,
+          "p25": 6184.8,
+          "p50": 6184.8,
+          "p75": 6184.8,
+          "p90": 6184.8
+        },
+        {
+          "label": "Q2 2025",
+          "quarter_id": "Q2_2025",
+          "period_type": "ACTUAL",
+          "p10": 5702.4,
+          "p25": 5702.4,
+          "p50": 5702.4,
+          "p75": 5702.4,
+          "p90": 5702.4
+        },
+        {
+          "label": "Q3 2025",
+          "quarter_id": "Q3_2025",
+          "period_type": "ACTUAL",
+          "p10": 5179.8,
+          "p25": 5179.8,
+          "p50": 5179.8,
+          "p75": 5179.8,
+          "p90": 5179.8
+        },
+        {
+          "label": "Q4 2025",
+          "quarter_id": "Q4_2025",
+          "period_type": "ACTUAL",
+          "p10": 4617.0,
+          "p25": 4617.0,
+          "p50": 4617.0,
+          "p75": 4617.0,
+          "p90": 4617.0
+        },
+        {
+          "label": "Q1 2026",
+          "quarter_id": "Q1_2026",
+          "period_type": "FORECAST",
+          "p10": 6108.65,
+          "p25": 6285.13,
+          "p50": 6527.49,
+          "p75": 6769.21,
+          "p90": 6947.96
+        },
+        {
+          "label": "Q2 2026",
+          "quarter_id": "Q2_2026",
+          "period_type": "FORECAST",
+          "p10": 7636.44,
+          "p25": 8008.32,
+          "p50": 8509.26,
+          "p75": 9002.83,
+          "p90": 9362.64
+        },
+        {
+          "label": "Q3 2026",
+          "quarter_id": "Q3_2026",
+          "period_type": "FORECAST",
+          "p10": 9198.24,
+          "p25": 9785.89,
+          "p50": 10565.84,
+          "p75": 11306.19,
+          "p90": 11858.47
+        },
+        {
+          "label": "Q4 2026",
+          "quarter_id": "Q4_2026",
+          "period_type": "FORECAST",
+          "p10": 10800.14,
+          "p25": 11608.93,
+          "p50": 12687.57,
+          "p75": 13677.27,
+          "p90": 14431.7
+        }
+      ]
+    }
+  }
+}

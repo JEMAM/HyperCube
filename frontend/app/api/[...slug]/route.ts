@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import canonicalData from "../canonical_payloads.json";
+
+export const dynamic = "force-dynamic";
 
 // Fallback in-memory dataset for seamless Vercel / Cloud Demo
 const DEMO_ACTIVE_COMPANY = {
@@ -9,81 +12,6 @@ const DEMO_ACTIVE_COMPANY = {
   periods: ["2023", "2024", "2025", "Budget 2026"],
   description: "Companhia aberta listada na CVM (BRASKEM) - Petroquímicos e Borracha."
 };
-
-const DEMO_DRE_KPIS = {
-  Total_Produto_Intermediacao: 14560.0,
-  Total_Resultado_Intermediacao: 5824.0,
-  Total_Resultado_Antes_Tributacao: 3057.6,
-  Total_Lucro_Liquido: 2074.8
-};
-
-const DEMO_DRE_ANNUAL = [
-  {
-    ano: 2023,
-    produto_intermediacao: 13800.0,
-    resultado_intermediacao: 5520.0,
-    resultado_antes_tributacao: 2898.0,
-    lucro_liquido: 1960.0,
-    lucro_liquido_prev_year: 0.0,
-    yoy_growth_pct: 0.0
-  },
-  {
-    ano: 2024,
-    produto_intermediacao: 14560.0,
-    resultado_intermediacao: 5824.0,
-    resultado_antes_tributacao: 3057.6,
-    lucro_liquido: 2074.8,
-    lucro_liquido_prev_year: 1960.0,
-    yoy_growth_pct: 5.86
-  },
-  {
-    ano: 2025,
-    produto_intermediacao: 15430.0,
-    resultado_intermediacao: 6172.0,
-    resultado_antes_tributacao: 3240.3,
-    lucro_liquido: 2198.5,
-    lucro_liquido_prev_year: 2074.8,
-    yoy_growth_pct: 5.96
-  }
-];
-
-const DEMO_DFC_KPIS = {
-  Total_FCO: 11850.2,
-  Total_FCI: -7140.0,
-  Total_FCF: -4213.1,
-  Total_Variacao_Liquida: 497.1,
-  Saldo_Final_Atual: 4052.9
-};
-
-const DEMO_DFC_ANNUAL = [
-  {
-    ano: 2023,
-    fco: 10500.0,
-    fci: -6200.0,
-    fcf: -3900.0,
-    variacao_liquida: 400.0,
-    saldo_final: 3555.8,
-    yoy_growth_pct: 0.0
-  },
-  {
-    ano: 2024,
-    fco: 11850.2,
-    fci: -7140.0,
-    fcf: -4213.1,
-    variacao_liquida: 497.1,
-    saldo_final: 4052.9,
-    yoy_growth_pct: 12.86
-  },
-  {
-    ano: 2025,
-    fco: 12900.0,
-    fci: -7600.0,
-    fcf: -4500.0,
-    variacao_liquida: 800.0,
-    saldo_final: 4852.9,
-    yoy_growth_pct: 8.86
-  }
-];
 
 const DEMO_COMPANIES = [
   {
@@ -151,53 +79,57 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
     return NextResponse.json(DEMO_ACTIVE_COMPANY);
   }
 
-  // 3. Active ERP Connection
+  // 3. Active Connection
   if (path === "connections/active") {
     return NextResponse.json({
+      active: true,
       active_connection: {
-        id: "conn_totvs_protheus_local",
-        instrument_id: "totvs_protheus",
+        id: "conn_protheus_demo",
         name: "TOTVS Protheus (MSSQL Local ERP)",
+        category: "ERP_NACIONAL",
+        instrument_id: "totvs_protheus",
         environment: "local",
+        is_active: true,
         status: "connected",
-        latency_ms: 1.45,
-        last_sync: "Agora (Tempo Real)"
+        last_sync: "2026-09-01T21:00:00Z"
       }
     });
   }
 
-  if (path === "connections") {
-    return NextResponse.json([
-      {
-        id: "conn_totvs_protheus_local",
-        name: "TOTVS Protheus (MSSQL Local ERP)",
-        status: "connected",
-        environment: "local",
-        latency_ms: 1.45,
-        last_sync: "Agora (Tempo Real)"
-      }
-    ]);
+  // 4. Rolling Forecast Continuous Horizon
+  if (path === "financials/forecast/rolling") {
+    return NextResponse.json((canonicalData as any).forecast_rolling);
   }
 
-  // 4. DRE OLAP endpoints
-  if (path === "olap/kpis") {
-    return NextResponse.json(DEMO_DRE_KPIS);
+  // 5. Three-Statement Integrated Model
+  if (path === "financials/3statement/model") {
+    return NextResponse.json((canonicalData as any).three_statement_model);
   }
 
-  if (path === "olap/resultado-por-ano") {
-    return NextResponse.json(DEMO_DRE_ANNUAL);
+  // 6. Multidim Dimensions & Cube
+  if (path === "multidim/dimensions") {
+    return NextResponse.json((canonicalData as any).multidim_dimensions);
   }
 
-  // 5. DFC OLAP endpoints
-  if (path === "dfc/olap/kpis") {
-    return NextResponse.json(DEMO_DFC_KPIS);
+  if (path === "multidim/query") {
+    return NextResponse.json((canonicalData as any).multidim_query);
   }
 
-  if (path === "dfc/olap/resultado-por-ano") {
-    return NextResponse.json(DEMO_DFC_ANNUAL);
+  // 7. Balanço Patrimonial (BP Table)
+  if (path === "bp/table") {
+    return NextResponse.json((canonicalData as any).bp_table);
   }
 
-  // 6. CVM companies list
+  // 8. DRE & DFC Timeseries
+  if (path === "dre/timeseries") {
+    return NextResponse.json((canonicalData as any).dre_timeseries);
+  }
+
+  if (path === "dfc/timeseries") {
+    return NextResponse.json((canonicalData as any).dfc_timeseries);
+  }
+
+  // 9. CVM companies list
   if (path === "cvm/companies") {
     return NextResponse.json({
       companies: DEMO_COMPANIES,
@@ -205,7 +137,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
     });
   }
 
-  // 7. CVM Watchdog status
+  // 10. CVM Watchdog status
   if (path === "cvm/watchdog/status") {
     return NextResponse.json({
       last_sync: "2026-09-01T12:00:00Z",
@@ -215,7 +147,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
     });
   }
 
-  // 8. Macroeconomic indicators (BCB SGS API)
+  // 11. Macroeconomic indicators (BCB SGS API)
   if (path === "macro/indicators" || path === "macro/bcb") {
     return NextResponse.json({
       selic: { value: 10.75, date: "01/09/2026", unit: "% a.a." },
@@ -226,25 +158,19 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
     });
   }
 
-  // 9. Governance and Covenants
+  // 12. Governance and Covenants
   if (path === "governance/covenants") {
-    return NextResponse.json({
-      status: "compliant",
-      covenants: [
-        { name: "Dívida Líquida / EBITDA", current: 1.85, max: 3.50, status: "OK" },
-        { name: "Cobertura de Juros (ICR)", current: 4.20, min: 2.00, status: "OK" }
-      ]
-    });
+    return NextResponse.json((canonicalData as any).governance_covenants);
   }
 
-  // 10. AI Agent Explain
+  // 13. AI Agent Explain
   if (path === "agent/explain") {
     return NextResponse.json({
       summary: "Simulação executada com sucesso no motor DAG Reativo do HyperCube. O ajuste de premissas foi propagado na cadeia de valor da BRASKEM S.A., garantindo consistência matemática entre DRE, DFC e Balanço Patrimonial em 0.84 ms."
     });
   }
 
-  // 11. LLM Config
+  // 14. LLM Config
   if (path === "config/llm") {
     return NextResponse.json({
       provider: "gemini",
@@ -275,6 +201,21 @@ export async function POST(req: NextRequest, context: { params: Promise<{ slug: 
     body = {};
   }
 
+  // Monte Carlo Simulation
+  if (path === "financials/forecast/monte-carlo") {
+    return NextResponse.json((canonicalData as any).monte_carlo);
+  }
+
+  // Three Statement Simulation
+  if (path === "financials/3statement/simulate") {
+    return NextResponse.json((canonicalData as any).three_statement_model);
+  }
+
+  // Multidim query
+  if (path === "multidim/query") {
+    return NextResponse.json((canonicalData as any).multidim_query);
+  }
+
   // What-If Simulation for DRE / DFC
   if (path === "simulate/whatif" || path === "dfc/simulate/whatif") {
     const node = body.node || "receita_com_operacoes_de_credito_e_repasses";
@@ -301,23 +242,16 @@ export async function POST(req: NextRequest, context: { params: Promise<{ slug: 
     });
   }
 
-  // AI Agent Ask
-  if (path === "agent/ask") {
+  // AI Chat Agent response
+  if (path === "agent/chat") {
+    const prompt = body.prompt || "";
     return NextResponse.json({
-      answer: "A análise financeira da **BRASKEM S.A.** indica uma margem bruta de 40.0% e margem EBIT de 21.0%, com forte geração de caixa operacional (FCO de R$ 11,85 Bi). A estrutura de capital permanece sólida com cobertura de juros adequada e liquidez corrente compatível com o ciclo petroquímico global."
+      reply: `[HyperCube Agent] Analisei os indicadores contábeis da BRASKEM S.A. para a sua consulta: "${prompt.slice(0, 80)}". O EBITDA projetado para 2026 apresenta resiliência sob volatilidade estocástica e a reconciliação entre DRE, DFC e Balanço Patrimonial permanece 100% equilibrada com zero discrepância (Δ = 0.00).`,
+      elapsed_ms: 1.2
     });
   }
 
-  // LLM Config update
-  if (path === "config/llm") {
-    return NextResponse.json({
-      status: "success",
-      message: `Configuração atualizada para ${body.model || "Gemini 3.7 Flash"}.`,
-      has_key: true,
-      is_active: true
-    });
-  }
-
+  // Default POST response
   return NextResponse.json({
     status: "success",
     path,

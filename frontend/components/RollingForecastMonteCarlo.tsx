@@ -383,7 +383,13 @@ export default function RollingForecastMonteCarlo() {
       </div>
 
       {/* TAB 1: ROLLING FORECAST 8 QUARTERS */}
-      {activeTab === "ROLLING" && rollingData && (
+      {activeTab === "ROLLING" && (
+        !rollingData || !Array.isArray(rollingData.timeline) || rollingData.timeline.length === 0 ? (
+          <div className="p-12 text-center text-slate-400 bg-[#131b2e] rounded-3xl border border-[#222a3d]">
+            <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <span className="text-xs font-semibold">Carregando previsão contínua estocástica...</span>
+          </div>
+        ) : (
         <div className="space-y-5">
           {/* Visual Cut-off Line & Summary Banner */}
           <div className="p-4 rounded-2xl bg-[#131b2e] border border-[#222a3d] flex flex-col md:flex-row items-center justify-between gap-4">
@@ -587,7 +593,7 @@ export default function RollingForecastMonteCarlo() {
             </div>
           </div>
         </div>
-      )}
+      ))}
 
       {/* TAB 2: STOCHASTIC PARAMETERS */}
       {activeTab === "PARAMS" && (
@@ -786,8 +792,17 @@ export default function RollingForecastMonteCarlo() {
             {/* Fan Chart SVG Graphic */}
             <div className="w-full bg-[#0b1326] p-4 rounded-2xl border border-[#222a3d]">
               {(() => {
-                const trajectory = simulationResult.fan_charts[fanMetric];
-                const allVals = trajectory.flatMap((t: any) => [t.p10, t.p50, t.p90]);
+                const trajectory = Array.isArray(simulationResult?.fan_charts?.[fanMetric])
+                  ? simulationResult.fan_charts[fanMetric]
+                  : [];
+                if (trajectory.length < 2) {
+                  return (
+                    <div className="p-8 text-center text-slate-400 text-xs">
+                      Gerando dados estatísticos do Fan Chart...
+                    </div>
+                  );
+                }
+                const allVals = trajectory.flatMap((t: any) => [t?.p10 ?? 0, t?.p50 ?? 0, t?.p90 ?? 0]);
                 const minVal = Math.min(...allVals) * 0.85;
                 const maxVal = Math.max(...allVals) * 1.15;
                 const width = 800;
@@ -902,13 +917,21 @@ export default function RollingForecastMonteCarlo() {
             {/* Histogram Bars Graphic */}
             <div className="w-full bg-[#0b1326] p-4 rounded-2xl border border-[#222a3d] overflow-x-auto">
               {(() => {
-                const hist = simulationResult.histograms.ebitda;
-                const maxCount = Math.max(...hist.bins.map((b: any) => b.count));
-                const baseline = simulationResult.distributions.ebitda.baseline;
+                const hist = simulationResult?.histograms?.ebitda;
+                const bins = Array.isArray(hist?.bins) ? hist.bins : [];
+                if (bins.length === 0) {
+                  return (
+                    <div className="p-8 text-center text-slate-400 text-xs">
+                      Gerando histograma de frequências...
+                    </div>
+                  );
+                }
+                const maxCount = Math.max(...bins.map((b: any) => b?.count ?? 0));
+                const baseline = simulationResult?.distributions?.ebitda?.baseline ?? 0;
 
                 return (
                   <div className="flex items-end gap-1.5 h-48 pt-4 pb-2 px-2 min-w-[600px]">
-                    {hist.bins.map((b: any, idx: number) => {
+                    {bins.map((b: any, idx: number) => {
                       const barHeightPct = maxCount > 0 ? (b.count / maxCount) * 100 : 0;
                       const isNearBaseline = Math.abs(b.midpoint - baseline) < hist.bin_width;
 
