@@ -17,7 +17,8 @@ import {
   ArrowRight,
   Info,
   CheckCircle2,
-  RefreshCw
+  RefreshCw,
+  Building2
 } from "lucide-react";
 import { usePreferences, getApiUrl } from "./PreferencesContext";
 
@@ -56,11 +57,10 @@ interface RollingQuarter {
 }
 
 export default function RollingForecastMonteCarlo() {
-  const { theme, language, apiBaseUrl } = usePreferences();
+  const { theme, language, apiBaseUrl, activeCompany, hasActiveData } = usePreferences();
   const isDark = theme === "dark";
   const isEn = language === "en";
 
-  const [selectedCompany, setSelectedCompany] = useState<string>("klabin");
   const [activeTab, setActiveTab] = useState<"ROLLING" | "PARAMS" | "FANCHART" | "RISK">("ROLLING");
   const [fanMetric, setFanMetric] = useState<"ebitda" | "ending_cash">("ebitda");
 
@@ -75,20 +75,13 @@ export default function RollingForecastMonteCarlo() {
   // Data states
   const [rollingData, setRollingData] = useState<any>(null);
   const [simulationResult, setSimulationResult] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [simulating, setSimulating] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const companiesList = [
-    { id: "klabin", name: "Klabin S.A.", ticker: "KLBN11", sector: "Papel & Celulose" },
-    { id: "vale", name: "Vale S.A.", ticker: "VALE3", sector: "Mineração" },
-    { id: "petrobras", name: "Petrobras", ticker: "PETR4", sector: "Óleo & Gás" },
-    { id: "weg", name: "WEG S.A.", ticker: "WEGE3", sector: "Bens de Capital" },
-    { id: "banco_do_brasil", name: "Banco do Brasil", ticker: "BBAS3", sector: "Financeiro" }
-  ];
-
   // Fetch initial rolling forecast and trigger baseline Monte Carlo
   const loadForecastData = async (comp: string) => {
+    if (!comp || comp === "aguardando_upload") return;
     setLoading(true);
     setError(null);
     try {
@@ -125,8 +118,14 @@ export default function RollingForecastMonteCarlo() {
   };
 
   useEffect(() => {
-    loadForecastData(selectedCompany);
-  }, [selectedCompany]);
+    if (activeCompany?.id && activeCompany.id !== "aguardando_upload") {
+      loadForecastData(activeCompany.id);
+    } else {
+      setRollingData(null);
+      setSimulationResult(null);
+      setLoading(false);
+    }
+  }, [activeCompany?.id, apiBaseUrl]);
 
   // Run Monte Carlo simulation with current parameters
   const runMonteCarlo = async () => {
@@ -138,7 +137,7 @@ export default function RollingForecastMonteCarlo() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          company_id: selectedCompany,
+          company_id: activeCompany?.id || "cvm_company",
           iterations,
           revenue_volatility_pct: revVolatility,
           cogs_inflation_mode_pct: cogsInflation,
@@ -198,18 +197,25 @@ export default function RollingForecastMonteCarlo() {
 
         {/* Company and Iterations Controls */}
         <div className="flex items-center gap-2.5 flex-wrap w-full md:w-auto">
-          {/* Company Selector */}
-          <select
-            value={selectedCompany}
-            onChange={(e) => setSelectedCompany(e.target.value)}
-            className="px-3 py-2 rounded-xl text-xs font-bold bg-[#0b1326] border border-[#222a3d] text-white focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer"
-          >
-            {companiesList.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.ticker})
-              </option>
-            ))}
-          </select>
+          {/* Analyzed Company Badge */}
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0b1326] border border-sky-500/40 shadow-sm">
+            <Building2 className="w-4 h-4 text-sky-400 shrink-0" />
+            <div className="flex flex-col">
+              <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400">
+                {isEn ? "Analyzed Company" : "Empresa Analisada"}
+              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-black text-white">
+                  {activeCompany?.name || (isEn ? "Awaiting Company" : "Aguardando Empresa")}
+                </span>
+                {activeCompany?.ticker && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400 font-mono font-bold border border-sky-500/30">
+                    {activeCompany.ticker}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
 
           {/* Iterations Selector */}
           <div className="flex items-center bg-[#0b1326] p-1 rounded-xl border border-[#222a3d]">
@@ -231,7 +237,7 @@ export default function RollingForecastMonteCarlo() {
           {/* Run Button */}
           <button
             onClick={runMonteCarlo}
-            disabled={simulating || loading}
+            disabled={simulating || loading || (!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload")}
             className="px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-sky-500 to-emerald-400 hover:from-sky-400 hover:to-emerald-300 text-slate-950 flex items-center gap-2 shadow-lg transition cursor-pointer disabled:opacity-50"
           >
             <Play className={`w-3.5 h-3.5 ${simulating ? "animate-spin" : "fill-current"}`} />
@@ -239,6 +245,23 @@ export default function RollingForecastMonteCarlo() {
           </button>
         </div>
       </div>
+
+      {/* Empty State Banner when no company is loaded */}
+      {(!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload") && (
+        <div className="p-8 rounded-3xl bg-[#131b2e] border border-[#222a3d] text-center space-y-3 shadow-xl my-4">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center mx-auto text-sky-400">
+            <TrendingUp className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-white">
+            {isEn ? "No Company Loaded for Rolling Forecast & Monte Carlo" : "Nenhuma Empresa Carregada para Previsão Contínua & Monte Carlo"}
+          </h3>
+          <p className="text-xs text-slate-400 max-w-md mx-auto">
+            {isEn 
+              ? "Load a company via CVM Watch & Analysis or upload financial statements in Overview & Ingestion to run 8-quarter rolling simulations."
+              : "Carregue uma empresa no 'CVM Watch & Análise' ou envie uma planilha contábil em 'Visão Geral & Ingestão' para projetar 8 trimestres com Monte Carlo."}
+          </p>
+        </div>
+      )}
 
       {/* KPI Ribbon - Bloomberg Terminal Metrics */}
       {simulationResult && (

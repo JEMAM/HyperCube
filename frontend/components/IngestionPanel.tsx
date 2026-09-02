@@ -144,6 +144,7 @@ export default function IngestionPanel({ onUploadSuccess, onUploadProgress }: In
           setActiveCompany(data.company_info);
           if (typeof window !== "undefined") {
             localStorage.setItem("hypercube_active_company", JSON.stringify(data.company_info));
+            localStorage.setItem("hypercube_has_active_data", "true");
             window.dispatchEvent(new CustomEvent("hypercube_company_updated", { detail: data.company_info }));
           }
         }

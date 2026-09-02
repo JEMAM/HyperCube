@@ -42,7 +42,7 @@ interface MultiDimGridProps {
 }
 
 export default function MultiDimGrid({ onRefresh }: MultiDimGridProps) {
-  const { theme, language, apiBaseUrl, activeCompany: globalActiveCompany } = usePreferences();
+  const { theme, language, apiBaseUrl, activeCompany: globalActiveCompany, hasActiveData } = usePreferences();
   const isDark = theme === "dark";
   const isEn = language === "en";
 
@@ -187,6 +187,11 @@ export default function MultiDimGrid({ onRefresh }: MultiDimGridProps) {
 
   // Fetch Grid Data
   const fetchGridData = async () => {
+    if (!hasActiveData || !globalActiveCompany?.id || globalActiveCompany.id === "aguardando_upload") {
+      setGridData({ columns: [], rows: [] });
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch(`${apiBaseUrl}/api/multidim/query`, {
@@ -216,6 +221,10 @@ export default function MultiDimGrid({ onRefresh }: MultiDimGridProps) {
 
   // Fetch Variance Data
   const fetchVarianceData = async () => {
+    if (!hasActiveData || !globalActiveCompany?.id || globalActiveCompany.id === "aguardando_upload") {
+      setVarianceData(null);
+      return;
+    }
     try {
       const res = await fetch(`${apiBaseUrl}/api/multidim/variance`, {
         method: "POST",
@@ -241,33 +250,15 @@ export default function MultiDimGrid({ onRefresh }: MultiDimGridProps) {
     }
   };
 
-  const [activeCompany, setActiveCompany] = useState<any>(globalActiveCompany || {
-    name: "Vale S.A.",
-    ticker: "VALE3 / NYSE: VALE",
-    currency: "USD Milhões",
-    periods: ["2024", "2025", "Budget_2026"]
-  });
-
-  useEffect(() => {
-    if (globalActiveCompany?.name) {
-      setActiveCompany(globalActiveCompany);
-    }
-  }, [globalActiveCompany]);
+  const activeCompany = globalActiveCompany || {
+    name: "Aguardando Upload / CVM Watch",
+    ticker: "",
+    currency: "R$",
+    periods: []
+  };
 
   useEffect(() => {
     fetchDimensions();
-    const fetchCompany = async () => {
-      try {
-        const res = await fetch(`${apiBaseUrl}/api/active-company`);
-        if (res.ok) {
-          const comp = await res.json();
-          setActiveCompany(comp);
-        }
-      } catch (e) {
-        console.warn("Could not load active company in MultiDimGrid", e);
-      }
-    };
-    fetchCompany();
   }, [apiBaseUrl]);
 
   useEffect(() => {
@@ -719,6 +710,22 @@ export default function MultiDimGrid({ onRefresh }: MultiDimGridProps) {
                     <td colSpan={10} className="py-14 text-center text-slate-400">
                       <div className="w-7 h-7 border-2 border-anaplan-coral border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                       {isEn ? "Loading multidimensional model..." : "Carregando modelo multidimensional..."}
+                    </td>
+                  </tr>
+                ) : (!hasActiveData || !globalActiveCompany?.id || globalActiveCompany.id === "aguardando_upload" || (gridData?.rows || []).length === 0) ? (
+                  <tr>
+                    <td colSpan={10} className="py-14 text-center text-slate-400">
+                      <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400 mb-3">
+                        <FileSpreadsheet className="w-6 h-6" />
+                      </div>
+                      <p className="text-sm font-bold text-slate-200">
+                        {isEn ? "No statement data loaded into calculation engine" : "Nenhuma demonstração carregada no motor de cálculo"}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">
+                        {isEn 
+                          ? "Upload an Excel/CSV file in 'Overview & Ingestion' or select a company in 'CVM Watch & Analysis' to populate the grid."
+                          : "Faça o upload de uma planilha na aba 'Visão Geral & Ingestão' ou selecione uma empresa no 'CVM Watch & Análise' para preencher a grade."}
+                      </p>
                     </td>
                   </tr>
                 ) : (

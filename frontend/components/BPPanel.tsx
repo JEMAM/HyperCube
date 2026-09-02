@@ -33,7 +33,7 @@ interface BPPanelProps {
 }
 
 export default function BPPanel({ activeCompany, onNavigate }: BPPanelProps) {
-  const { theme, language, apiBaseUrl, activeCompany: globalActiveCompany } = usePreferences();
+  const { theme, language, apiBaseUrl, activeCompany: globalActiveCompany, hasActiveData } = usePreferences();
   const effectiveCompany = activeCompany || globalActiveCompany;
   const isDark = theme === "dark";
   const isEn = language === "en";
@@ -473,6 +473,25 @@ export default function BPPanel({ activeCompany, onNavigate }: BPPanelProps) {
           }
         }}
       />
+
+      {/* Empty state banner when no company is loaded */}
+      {(!hasActiveData || effectiveCompany?.id === "aguardando_upload") && (
+        <div className={`p-8 rounded-3xl border text-center space-y-3 shadow-xl ${
+          isDark ? "bg-[#0b1329] border-slate-800 text-white" : "bg-white border-slate-200 text-slate-900"
+        }`}>
+          <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center mx-auto text-orange-400">
+            <Scale className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold">
+            {isEn ? "No Company Balance Sheet Loaded" : "Nenhum Balanço Patrimonial Carregado"}
+          </h3>
+          <p className="text-xs text-slate-400 max-w-md mx-auto">
+            {isEn 
+              ? "Load a company via CVM Watch & Analysis or upload financial statements in Overview & Ingestion to populate balance sheet ratios and Fleuriet analysis."
+              : "Carregue uma empresa no 'CVM Watch & Análise' ou envie uma planilha contábil em 'Visão Geral & Ingestão' para calcular índices patrimoniais e capital de giro."}
+          </p>
+        </div>
+      )}
 
       {/* 5. Sub-Navigation Tabs */}
       <div className={`flex items-center gap-2 border-b pb-2 flex-wrap ${isDark ? "border-slate-800" : "border-slate-300"}`}>

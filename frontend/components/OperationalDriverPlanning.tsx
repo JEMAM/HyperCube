@@ -55,13 +55,12 @@ interface CapexProject {
 }
 
 export default function OperationalDriverPlanning() {
-  const { theme, language, apiBaseUrl, activeCompany } = usePreferences();
+  const { theme, language, apiBaseUrl, activeCompany, hasActiveData } = usePreferences();
   const isDark = theme === "dark";
   const isEn = language === "en";
 
-  const [selectedCompany, setSelectedCompany] = useState<string>(activeCompany?.id || "klabin");
   const [activeTab, setActiveTab] = useState<"HEADCOUNT" | "CAPEX" | "STATEMENTS" | "METRICS">("HEADCOUNT");
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [simulating, setSimulating] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -100,12 +99,14 @@ export default function OperationalDriverPlanning() {
     is_active: true
   });
 
-  // Fetch baseline drivers for selected company
-  const fetchBaseline = async (companyId: string) => {
+  // Fetch baseline drivers for active company
+  const fetchBaseline = async (companyId?: string) => {
+    const cid = companyId || activeCompany?.id;
+    if (!cid || cid === "aguardando_upload") return;
     setLoading(true);
     setError(null);
     try {
-      const url = getApiUrl(`/api/financials/planning/drivers?company_id=${encodeURIComponent(companyId)}`, apiBaseUrl);
+      const url = getApiUrl(`/api/financials/planning/drivers?company_id=${encodeURIComponent(cid)}`, apiBaseUrl);
       const res = await fetch(url);
       if (!res.ok) {
         throw new Error(`Erro ${res.status} ao carregar direcionadores operacionais`);
@@ -113,22 +114,7 @@ export default function OperationalDriverPlanning() {
       const data = await res.json();
       setSimulationResult(data);
       if (data.workforce_summary && data.workforce_summary.departments) {
-        setDepartments(
-          data.workforce_summary.departments.map((d: any) => ({
-            department_id: d.department_id,
-            department_name: d.department_name,
-            category: d.category,
-            current_headcount: d.current_headcount,
-            hiring_plan: d.hiring_plan,
-            attrition_rate_pct: 3.0,
-            avg_salary_monthly: d.avg_salary_monthly,
-            avg_benefits_monthly: d.avg_benefits_monthly,
-            fgts_pct: 8.0,
-            inss_patronal_pct: 20.0,
-            sistema_s_rat_pct: 8.8,
-            provisao_13_ferias_pct: 19.44
-          }))
-        );
+        setDepartments(data.workforce_summary.departments);
       }
       if (data.capex_summary && data.capex_summary.projects) {
         setCapexProjects(
@@ -152,16 +138,24 @@ export default function OperationalDriverPlanning() {
   };
 
   useEffect(() => {
-    fetchBaseline(selectedCompany);
-  }, [selectedCompany]);
+    if (activeCompany?.id && activeCompany.id !== "aguardando_upload") {
+      fetchBaseline(activeCompany.id);
+    } else {
+      setDepartments([]);
+      setCapexProjects([]);
+      setSimulationResult(null);
+      setLoading(false);
+    }
+  }, [activeCompany?.id, apiBaseUrl]);
 
   // Execute simulation when user modifies drivers
   const runSimulation = async () => {
+    if (!activeCompany?.id || activeCompany.id === "aguardando_upload") return;
     setSimulating(true);
     setError(null);
     try {
       const payload = {
-        company_id: selectedCompany,
+        company_id: activeCompany.id,
         headcount_plans: departments,
         capex_projects: capexProjects,
         growth_pct_override: 8.5,
@@ -285,26 +279,31 @@ export default function OperationalDriverPlanning() {
             </p>
           </div>
 
-          {/* Company Selector & Actions */}
+          {/* Company Badge & Actions */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-[#0b1326] border border-slate-200 dark:border-[#222a3d]">
-              <Building2 className="w-4 h-4 text-sky-400 flex-shrink-0" />
-              <select
-                value={selectedCompany}
-                onChange={(e) => setSelectedCompany(e.target.value)}
-                className="bg-transparent text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
-              >
-                <option value="klabin">Klabin S.A. (KLBN11)</option>
-                <option value="vale">Vale S.A. (VALE3)</option>
-                <option value="petrobras">Petrobras S.A. (PETR4)</option>
-                <option value="weg">WEG S.A. (WEGE3)</option>
-                <option value="banco_do_brasil">Banco do Brasil S.A. (BBAS3)</option>
-              </select>
+            {/* Analyzed Company Badge */}
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-[#0b1326] border border-slate-200 dark:border-orange-500/40">
+              <Building2 className="w-4 h-4 text-orange-400 flex-shrink-0" />
+              <div className="flex flex-col">
+                <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400">
+                  {isEn ? "Analyzed Company" : "Empresa Analisada"}
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-black text-slate-800 dark:text-white">
+                    {activeCompany?.name || (isEn ? "Awaiting Company" : "Aguardando Empresa")}
+                  </span>
+                  {activeCompany?.ticker && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-400 font-mono font-bold border border-orange-500/30">
+                      {activeCompany.ticker}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
 
             <button
               onClick={runSimulation}
-              disabled={simulating}
+              disabled={simulating || (!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload")}
               className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-500 text-white text-xs font-black shadow-lg hover:shadow-xl transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${simulating ? "animate-spin" : ""}`} />
@@ -312,14 +311,32 @@ export default function OperationalDriverPlanning() {
             </button>
 
             <button
-              onClick={() => fetchBaseline(selectedCompany)}
-              className="px-3.5 py-2.5 rounded-2xl bg-slate-100 dark:bg-[#0b1326] border border-slate-200 dark:border-[#222a3d] hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+              onClick={() => fetchBaseline()}
+              disabled={!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload"}
+              className="px-3.5 py-2.5 rounded-2xl bg-slate-100 dark:bg-[#0b1326] border border-slate-200 dark:border-[#222a3d] hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               title="Restaurar orçamento base"
             >
               <span>Resetar</span>
             </button>
           </div>
         </div>
+
+        {/* Empty state banner when no company is loaded */}
+        {(!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload") && (
+          <div className="p-8 rounded-3xl bg-slate-100 dark:bg-[#0b1326] border border-slate-200 dark:border-[#222a3d] text-center space-y-3 shadow-xl my-4">
+            <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center mx-auto text-orange-400">
+              <Building2 className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              {isEn ? "No Company Loaded for Driver Planning" : "Nenhuma Empresa Carregada para Planejamento por Drivers"}
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+              {isEn 
+                ? "Load a company via CVM Watch & Analysis or upload financial statements in Overview & Ingestion to model causal drivers (headcount & capex)."
+                : "Carregue uma empresa no 'CVM Watch & Análise' ou envie uma planilha contábil em 'Visão Geral & Ingestão' para modelar direcionadores causais."}
+            </p>
+          </div>
+        )}
 
         {/* Status Metrics Ribbon */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6">

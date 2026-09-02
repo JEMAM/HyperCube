@@ -28,7 +28,7 @@ export default function StructuredStatementTable({
   onClose,
   isModal = false,
 }: StructuredStatementTableProps) {
-  const { theme, language, apiBaseUrl } = usePreferences();
+  const { theme, language, apiBaseUrl, activeCompany, hasActiveData } = usePreferences();
   const isDark = theme === "dark";
   const isEn = language === "en";
 
@@ -72,9 +72,9 @@ export default function StructuredStatementTable({
     };
   }, [apiBaseUrl, statementType]);
 
-  const company = tableData.company || {
-    name: "Empresa",
-    ticker: "TICK3",
+  const company = tableData.company || activeCompany || {
+    name: "Aguardando Upload / CVM Watch",
+    ticker: "",
     currency: "R$ Milhões"
   };
 
@@ -252,8 +252,13 @@ export default function StructuredStatementTable({
             </p>
           </div>
         ) : filteredRows.length === 0 ? (
-          <div className="p-12 text-center text-slate-400 text-xs font-semibold">
-            {isEn ? "No accounts found matching your query." : "Nenhuma conta contábil encontrada para o filtro informado."}
+          <div className="p-12 text-center text-slate-400 text-xs font-semibold space-y-2">
+            <FileSpreadsheet className="w-8 h-8 mx-auto text-slate-500 opacity-60" />
+            <p>
+              {!hasActiveData || activeCompany.id === "aguardando_upload"
+                ? (isEn ? "No statement data loaded. Upload a file in Overview or select a company in CVM Watch." : "Nenhuma demonstração carregada. Realize o upload na Visão Geral ou selecione no CVM Watch.")
+                : (isEn ? "No accounts found matching your query." : "Nenhuma conta contábil encontrada para o filtro informado.")}
+            </p>
           </div>
         ) : (
           <table className="w-full text-left text-xs border-collapse">

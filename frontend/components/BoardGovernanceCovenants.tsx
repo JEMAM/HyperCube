@@ -51,28 +51,20 @@ interface TimelineCovenant {
 }
 
 export default function BoardGovernanceCovenants() {
-  const { theme, language, apiBaseUrl, activeCompany } = usePreferences();
+  const { theme, language, apiBaseUrl, activeCompany, hasActiveData } = usePreferences();
   const isDark = theme === "dark";
   const isEn = language === "en";
 
-  const [selectedCompany, setSelectedCompany] = useState<string>("klabin");
   const [activeTab, setActiveTab] = useState<"MEMO" | "COVENANTS" | "BOARDPACK" | "CHECKLIST">("MEMO");
 
   const [covenantData, setCovenantData] = useState<any>(null);
   const [boardMemo, setBoardMemo] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [memoLoading, setMemoLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const companiesList = [
-    { id: "klabin", name: "Klabin S.A.", ticker: "KLBN11", sector: "Papel & Celulose" },
-    { id: "vale", name: "Vale S.A.", ticker: "VALE3", sector: "Mineração" },
-    { id: "petrobras", name: "Petrobras", ticker: "PETR4", sector: "Óleo & Gás" },
-    { id: "weg", name: "WEG S.A.", ticker: "WEGE3", sector: "Bens de Capital" },
-    { id: "banco_do_brasil", name: "Banco do Brasil", ticker: "BBAS3", sector: "Financeiro" }
-  ];
-
   const fetchData = async (comp: string) => {
+    if (!comp || comp === "aguardando_upload") return;
     setLoading(true);
     setError(null);
     try {
@@ -102,8 +94,14 @@ export default function BoardGovernanceCovenants() {
   };
 
   useEffect(() => {
-    fetchData(selectedCompany);
-  }, [selectedCompany]);
+    if (activeCompany?.id && activeCompany.id !== "aguardando_upload") {
+      fetchData(activeCompany.id);
+    } else {
+      setCovenantData(null);
+      setBoardMemo(null);
+      setLoading(false);
+    }
+  }, [activeCompany?.id, apiBaseUrl]);
 
   const regenerateMemo = async () => {
     setMemoLoading(true);
@@ -112,7 +110,7 @@ export default function BoardGovernanceCovenants() {
       const memoRes = await fetch(memoUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company_id: selectedCompany })
+        body: JSON.stringify({ company_id: activeCompany?.id || "cvm_company" })
       });
       if (!memoRes.ok) throw new Error("Erro ao regerar parecer do conselho");
       const memoJson = await memoRes.json();
@@ -206,6 +204,23 @@ export default function BoardGovernanceCovenants() {
           </button>
         </div>
       </div>
+
+      {/* Empty state banner when no company is loaded */}
+      {(!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload") && (
+        <div className="p-8 rounded-3xl bg-[#131b2e] border border-[#222a3d] text-center space-y-3 shadow-xl my-4">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
+            <Building2 className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-white">
+            {isEn ? "No Company Loaded for Governance & Covenants" : "Nenhuma Empresa Carregada para Análise de Governança & Covenants"}
+          </h3>
+          <p className="text-xs text-slate-400 max-w-md mx-auto">
+            {isEn 
+              ? "Load a company via CVM Watch & Analysis or upload financial statements in Overview & Ingestion to calculate debt covenants and board memos."
+              : "Carregue uma empresa no 'CVM Watch & Análise' ou envie uma planilha contábil em 'Visão Geral & Ingestão' para calcular covenants e pareceres do conselho."}
+          </p>
+        </div>
+      )}
 
       {/* KPI Ribbon - Governance & Headrooms */}
       {covenantData && (

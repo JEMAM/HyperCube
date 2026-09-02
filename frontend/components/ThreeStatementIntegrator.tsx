@@ -30,7 +30,7 @@ import {
 import { usePreferences } from "./PreferencesContext";
 
 export default function ThreeStatementIntegrator() {
-  const { theme, language, apiBaseUrl, activeCompany } = usePreferences();
+  const { theme, language, apiBaseUrl, activeCompany, hasActiveData } = usePreferences();
   const isDark = theme === "dark";
   const isEn = language === "en";
 
@@ -38,9 +38,6 @@ export default function ThreeStatementIntegrator() {
   const [modelData, setModelData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [simulating, setSimulating] = useState(false);
-
-  // Selected company inside the closed-loop engine
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("vale");
 
   // Operational drivers state
   const [growthPct, setGrowthPct] = useState<number>(8.5);
@@ -51,20 +48,15 @@ export default function ThreeStatementIntegrator() {
   const [payoutPct, setPayoutPct] = useState<number>(40.0);
   const [showDriverDrawer, setShowDriverDrawer] = useState<boolean>(true);
 
-  // Sync with global active company if compatible
-  useEffect(() => {
-    if (activeCompany?.id) {
-      const lower = activeCompany.id.toLowerCase();
-      if (["vale", "petrobras", "klabin", "weg", "banco_do_brasil"].includes(lower)) {
-        setSelectedCompanyId(lower);
-      }
+  const fetchModel = async (cid?: string) => {
+    const targetId = cid || activeCompany?.id;
+    if (!targetId || targetId === "aguardando_upload") {
+      setLoading(false);
+      return;
     }
-  }, [activeCompany?.id]);
-
-  const fetchModel = async (cid = selectedCompanyId) => {
     setLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/api/financials/3statement/model?company_id=${cid}`);
+      const res = await fetch(`${apiBaseUrl}/api/financials/3statement/model?company_id=${encodeURIComponent(targetId)}`);
       if (res.ok) {
         const json = await res.json();
         setModelData(json);
@@ -84,10 +76,14 @@ export default function ThreeStatementIntegrator() {
     }
   };
 
-  const handleCompanyChange = (newCid: string) => {
-    setSelectedCompanyId(newCid);
-    fetchModel(newCid);
-  };
+  useEffect(() => {
+    if (activeCompany?.id && activeCompany.id !== "aguardando_upload") {
+      fetchModel(activeCompany.id);
+    } else {
+      setModelData(null);
+      setLoading(false);
+    }
+  }, [activeCompany?.id, apiBaseUrl]);
 
   const executeSimulation = async () => {
     setSimulating(true);
@@ -102,7 +98,7 @@ export default function ThreeStatementIntegrator() {
           pmp_dias: pmpDias,
           capex_val: capexVal,
           payout_pct: payoutPct,
-          company_id: selectedCompanyId
+          company_id: activeCompany?.id || "cvm_company"
         })
       });
       if (res.ok) {
@@ -119,7 +115,7 @@ export default function ThreeStatementIntegrator() {
   const handleResetDrivers = () => {
     setGrowthPct(8.5);
     setPayoutPct(40.0);
-    fetchModel(selectedCompanyId);
+    fetchModel(activeCompany?.id);
   };
 
   const handleExportJSON = () => {
@@ -134,8 +130,10 @@ export default function ThreeStatementIntegrator() {
   };
 
   useEffect(() => {
-    fetchModel(selectedCompanyId);
-  }, [apiBaseUrl]);
+    if (activeCompany?.id && activeCompany.id !== "aguardando_upload") {
+      fetchModel(activeCompany.id);
+    }
+  }, [apiBaseUrl, activeCompany?.id]);
 
   const roundVal = (n: number) => Math.round(n * 10) / 10;
 
@@ -200,22 +198,26 @@ export default function ThreeStatementIntegrator() {
           </div>
         </div>
 
-        {/* Company Selector & Actions */}
+        {/* Company Badge & Actions */}
         <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold bg-slate-900/40 border-slate-700">
-            <Building2 className="w-3.5 h-3.5 text-anaplan-coral" />
-            <span className="text-slate-400">{isEn ? "Company:" : "Empresa:"}</span>
-            <select
-              value={selectedCompanyId}
-              onChange={(e) => handleCompanyChange(e.target.value)}
-              className="bg-transparent text-white font-bold outline-none cursor-pointer"
-            >
-              {availableCompanies.map((c: any) => (
-                <option key={c.id} value={c.id} className="bg-slate-900 text-white">
-                  {c.name} ({c.ticker})
-                </option>
-              ))}
-            </select>
+          {/* Analyzed Company Badge */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold bg-slate-900/40 border-anaplan-coral/40">
+            <Building2 className="w-3.5 h-3.5 text-anaplan-coral shrink-0" />
+            <div className="flex flex-col">
+              <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400">
+                {isEn ? "Company:" : "Empresa:"}
+              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-black text-white">
+                  {activeCompany?.name || (isEn ? "Awaiting Company" : "Aguardando Empresa")}
+                </span>
+                {activeCompany?.ticker && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-anaplan-coral/15 text-anaplan-coral font-mono font-bold border border-anaplan-coral/30">
+                    {activeCompany.ticker}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
 
           <button
@@ -243,8 +245,8 @@ export default function ThreeStatementIntegrator() {
           </button>
 
           <button
-            onClick={() => fetchModel(selectedCompanyId)}
-            disabled={loading}
+            onClick={() => fetchModel()}
+            disabled={loading || (!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload")}
             className={`p-1.5 rounded-lg border transition ${
               isDark ? "border-slate-800 text-slate-400 hover:text-white" : "border-slate-200 text-slate-500 hover:text-slate-900"
             }`}
@@ -254,6 +256,23 @@ export default function ThreeStatementIntegrator() {
           </button>
         </div>
       </div>
+
+      {/* Empty State Banner when no company is loaded */}
+      {(!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload") && (
+        <div className="p-8 rounded-3xl bg-slate-900/40 border border-slate-800/80 text-center space-y-3 shadow-xl m-5">
+          <div className="w-12 h-12 rounded-2xl bg-anaplan-coral/10 border border-anaplan-coral/30 flex items-center justify-center mx-auto text-anaplan-coral">
+            <Building2 className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-white">
+            {isEn ? "No Company Loaded for 3-Statement Loop" : "Nenhuma Empresa Carregada para o Loop DRE-DFC-BP"}
+          </h3>
+          <p className="text-xs text-slate-400 max-w-md mx-auto">
+            {isEn 
+              ? "Load a company via CVM Watch & Analysis or upload financial statements in Overview & Ingestion to run the closed-loop accounting model."
+              : "Carregue uma empresa no 'CVM Watch & Análise' ou envie uma planilha contábil em 'Visão Geral & Ingestão' para calcular a integração DRE-DFC-BP e Fleuriet."}
+          </p>
+        </div>
+      )}
 
       {/* Driver Simulation Control Ribbon */}
       {showDriverDrawer && (

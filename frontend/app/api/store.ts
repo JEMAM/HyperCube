@@ -9,14 +9,14 @@ export interface CompanyInfo {
   description: string;
 }
 
-// Default initial company (Braskem as initial baseline, but overridden on any upload)
+// Default initial company: empty state awaiting upload or CVM watch
 const INITIAL_COMPANY: CompanyInfo = {
-  id: "cvm_004820",
-  name: "BRASKEM S.A.",
-  ticker: "BRASKEM",
+  id: "aguardando_upload",
+  name: "Aguardando Upload ou CVM Watch",
+  ticker: "",
   currency: "R$",
-  periods: ["2023", "2024", "2025", "Budget 2026"],
-  description: "Companhia aberta listada na CVM (BRASKEM) - Petroquímicos e Borracha carregada para análise corporativa."
+  periods: [],
+  description: "Nenhuma empresa carregada no motor. Realize o upload de demonstrações na aba 'Visão Geral & Ingestão' ou selecione uma companhia no 'CVM Watch & Análise'."
 };
 
 class SessionStore {
@@ -30,11 +30,22 @@ class SessionStore {
   }
 
   public setActiveCompany(company: Partial<CompanyInfo>): CompanyInfo {
+    const isReal = Boolean(company && company.id && company.id !== "aguardando_upload");
     this.activeCompany = {
       ...this.activeCompany,
       ...company,
+      periods: (company.periods && company.periods.length > 0) 
+        ? company.periods 
+        : (isReal ? ["2023", "2024", "2025", "Budget 2026"] : [])
     };
-    this.hasCustomUpload = true;
+    this.hasCustomUpload = isReal;
+    return this.activeCompany;
+  }
+
+  public resetToEmpty(): CompanyInfo {
+    this.activeCompany = { ...INITIAL_COMPANY };
+    this.hasCustomUpload = false;
+    this.customFilename = "";
     return this.activeCompany;
   }
 
@@ -132,6 +143,13 @@ class SessionStore {
   // DRE Table
   public getDreTable() {
     const comp = this.activeCompany;
+    if (!this.hasCustomUpload) {
+      return {
+        company: comp,
+        periods: [],
+        rows: []
+      };
+    }
     const p = comp.periods;
     return {
       company: comp,
@@ -158,6 +176,13 @@ class SessionStore {
   // DFC Table
   public getDfcTable() {
     const comp = this.activeCompany;
+    if (!this.hasCustomUpload) {
+      return {
+        company: comp,
+        periods: [],
+        rows: []
+      };
+    }
     const p = comp.periods;
     return {
       company: comp,
@@ -185,6 +210,13 @@ class SessionStore {
   // BP Table
   public getBpTable() {
     const comp = this.activeCompany;
+    if (!this.hasCustomUpload) {
+      return {
+        company: comp,
+        periods: [],
+        rows: []
+      };
+    }
     const p = comp.periods;
     return {
       company: comp,
@@ -222,6 +254,7 @@ class SessionStore {
 
   // DRE Time Series
   public getDreTimeseries() {
+    if (!this.hasCustomUpload) return [];
     const comp = this.activeCompany;
     return comp.periods.map((p, idx) => {
       const m = 1 + idx * 0.08;
@@ -240,6 +273,7 @@ class SessionStore {
 
   // DFC Time Series
   public getDfcTimeseries() {
+    if (!this.hasCustomUpload) return [];
     const comp = this.activeCompany;
     return comp.periods.map((p, idx) => {
       const m = 1 + idx * 0.08;
@@ -258,6 +292,7 @@ class SessionStore {
 
   // OLAP Resultado Por Ano
   public getOlapResultadoPorAno(isDfc: boolean = false) {
+    if (!this.hasCustomUpload) return [];
     const comp = this.activeCompany;
     return comp.periods.map((p, idx) => {
       const year = parseInt(p.replace(/\D/g, "")) || (2024 + idx);
@@ -287,6 +322,20 @@ class SessionStore {
 
   // OLAP KPIs
   public getOlapKpis(isDfc: boolean = false) {
+    if (!this.hasCustomUpload) {
+      return {
+        Total_Receita_Operacional: 0,
+        Total_Produto_Intermediacao: 0,
+        Total_Resultado_Intermediacao: 0,
+        Total_Resultado_Antes_Tributacao: 0,
+        Total_Lucro_Liquido: 0,
+        Total_FCO: 0,
+        Total_FCI: 0,
+        Total_FCF: 0,
+        Total_Variacao_Liquida: 0,
+        Saldo_Final_Atual: 0
+      };
+    }
     if (isDfc) {
       return {
         Total_FCO: 3250.0,
@@ -307,6 +356,18 @@ class SessionStore {
   // Statements: DRA, DMPL, DVA, NE
   public getStatement(type: "DRA" | "DMPL" | "DVA" | "NE") {
     const comp = this.activeCompany;
+    if (!this.hasCustomUpload) {
+      return {
+        has_data: false,
+        statement: type,
+        statement_full_name: `Demonstração ${type}`,
+        legal_basis: "CPC / NBC TG / Lei 6.404/76",
+        company: comp,
+        periods: [],
+        rows: [],
+        kpis: {}
+      };
+    }
     const p = comp.periods;
 
     if (type === "DRA") {

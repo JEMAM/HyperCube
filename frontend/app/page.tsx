@@ -109,7 +109,7 @@ const BoardGovernanceCovenants = dynamic(() => import("@/components/BoardGoverna
 });
 
 function DashboardContent() {
-  const { theme, language, t, apiBaseUrl, backendOnline, checkBackendHealth, activeCompany, setActiveCompany, refreshActiveCompany, activeConnection, refreshActiveConnection, disconnectConnection } = usePreferences();
+  const { theme, language, t, apiBaseUrl, backendOnline, checkBackendHealth, activeCompany, hasActiveData, clearActiveCompany, setActiveCompany, refreshActiveCompany, activeConnection, refreshActiveConnection, disconnectConnection } = usePreferences();
   const { user, isAuthenticated, logout } = useAuth();
   const isDark = theme === "dark";
   const [viewMode, setViewMode] = useState<"LANDING" | "OVERVIEW" | "CONNECTIONS" | "PLANNING" | "DRIVERS" | "FORECAST" | "GOVERNANCE" | "THREE_STATEMENT" | "DRE" | "DFC" | "BP" | "DRA" | "DMPL" | "DVA" | "NE" | "DAG" | "CUBE" | "VALUATION" | "ECONOMY" | "CVM" | "GUIDE">("LANDING");
@@ -150,7 +150,7 @@ function DashboardContent() {
   });
 
   useEffect(() => {
-    if (activeCompany.id !== "aguardando_upload") {
+    if (activeCompany.id && activeCompany.id !== "aguardando_upload" && hasActiveData) {
       setPipelineProgress({
         status: "completed",
         percent: 100,
@@ -158,8 +158,16 @@ function DashboardContent() {
           ? `All statements and pages fully populated for ${activeCompany.name}.`
           : `Todas as demonstrações e páginas 100% preenchidas para ${activeCompany.name}.`
       });
+    } else {
+      setPipelineProgress({
+        status: "idle",
+        percent: 0,
+        message: language === "en"
+          ? "No company loaded. Awaiting statement upload in Overview or selection in CVM Watch..."
+          : "Nenhuma empresa carregada. Aguardando envio de demonstração contábil na Visão Geral ou CVM Watch..."
+      });
     }
-  }, [activeCompany.id, activeCompany.name, language]);
+  }, [activeCompany.id, activeCompany.name, hasActiveData, language]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -234,6 +242,12 @@ function DashboardContent() {
         setKpis(kpiData);
         setError(null);
       } else {
+        if (!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload") {
+          setAnnualData([]);
+          setKpis({});
+          setError(null);
+          return;
+        }
         const prs = activeCompany?.periods || ["2024", "2025", "Budget 2026"];
         if (viewMode === "DFC") {
           const genAnnuals = prs.map((pr, idx) => {

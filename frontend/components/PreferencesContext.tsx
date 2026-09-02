@@ -24,14 +24,16 @@ export interface ActiveConnection {
   last_sync?: string;
 }
 
-export const DEFAULT_ACTIVE_COMPANY: ActiveCompany = {
-  id: "cvm_004820",
-  name: "BRASKEM S.A.",
-  ticker: "BRASKEM",
+export const EMPTY_ACTIVE_COMPANY: ActiveCompany = {
+  id: "aguardando_upload",
+  name: "Aguardando Upload ou CVM Watch",
+  ticker: "",
   currency: "R$",
-  periods: ["2023", "2024", "2025", "Budget 2026"],
-  description: "Companhia aberta listada na CVM (BRASKEM) - Petroquímicos e Borracha carregada para análise corporativa."
+  periods: [],
+  description: "Nenhuma empresa carregada no motor. Realize o upload de demonstrações na aba 'Visão Geral & Ingestão' ou selecione uma companhia no 'CVM Watch & Análise'."
 };
+
+export const DEFAULT_ACTIVE_COMPANY: ActiveCompany = EMPTY_ACTIVE_COMPANY;
 
 interface PreferencesContextType {
   language: Language;
@@ -43,6 +45,9 @@ interface PreferencesContextType {
   backendOnline: boolean | null;
   checkBackendHealth: () => Promise<boolean>;
   activeCompany: ActiveCompany;
+  hasActiveData: boolean;
+  setHasActiveData: (val: boolean) => void;
+  clearActiveCompany: () => void;
   setActiveCompany: (company: ActiveCompany) => void;
   refreshActiveCompany: () => Promise<ActiveCompany>;
   activeConnection: ActiveConnection | null;
@@ -304,7 +309,28 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
     return "http://127.0.0.1:8000";
   });
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
-  const [activeCompany, setActiveCompanyState] = useState<ActiveCompany>(DEFAULT_ACTIVE_COMPANY);
+  const [hasActiveData, setHasActiveData] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("hypercube_has_active_data") === "true";
+    }
+    return false;
+  });
+
+  const [activeCompany, setActiveCompanyState] = useState<ActiveCompany>(() => {
+    if (typeof window !== "undefined") {
+      const hasData = localStorage.getItem("hypercube_has_active_data") === "true";
+      const savedStr = localStorage.getItem("hypercube_active_company");
+      if (hasData && savedStr) {
+        try {
+          const parsed = JSON.parse(savedStr);
+          if (parsed && parsed.id && parsed.id !== "aguardando_upload") {
+            return parsed;
+          }
+        } catch {}
+      }
+    }
+    return EMPTY_ACTIVE_COMPANY;
+  });
   const [activeConnection, setActiveConnectionState] = useState<ActiveConnection | null>(null);
 
   const apiBaseUrlRef = useRef(apiBaseUrl);
@@ -319,24 +345,15 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
-        if (data && data.name) {
-          // If client has custom upload, protect it against default Braskem overwrites
+        if (data && data.name && data.id && data.id !== "aguardando_upload") {
           if (typeof window !== "undefined") {
-            const savedStr = localStorage.getItem("hypercube_active_company");
-            if (savedStr) {
-              try {
-                const parsed = JSON.parse(savedStr);
-                if (parsed?.id === "empresa_cliente" && data.id === "cvm_004820") {
-                  return parsed;
-                }
-              } catch {}
+            const hasData = localStorage.getItem("hypercube_has_active_data") === "true";
+            if (hasData) {
+              setActiveCompanyState(data);
+              localStorage.setItem("hypercube_active_company", JSON.stringify(data));
+              return data;
             }
           }
-          setActiveCompanyState(data);
-          if (typeof window !== "undefined") {
-            localStorage.setItem("hypercube_active_company", JSON.stringify(data));
-          }
-          return data;
         }
       }
     } catch (e) {
@@ -390,10 +407,23 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   };
 
   const handleSetActiveCompany = (comp: ActiveCompany) => {
+    const isRealCompany = Boolean(comp && comp.id && comp.id !== "aguardando_upload");
     setActiveCompanyState(comp);
+    setHasActiveData(isRealCompany);
     if (typeof window !== "undefined") {
       localStorage.setItem("hypercube_active_company", JSON.stringify(comp));
+      localStorage.setItem("hypercube_has_active_data", isRealCompany ? "true" : "false");
       window.dispatchEvent(new CustomEvent("hypercube_company_updated", { detail: comp }));
+    }
+  };
+
+  const clearActiveCompany = () => {
+    setActiveCompanyState(EMPTY_ACTIVE_COMPANY);
+    setHasActiveData(false);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("hypercube_active_company");
+      localStorage.setItem("hypercube_has_active_data", "false");
+      window.dispatchEvent(new CustomEvent("hypercube_company_updated", { detail: EMPTY_ACTIVE_COMPANY }));
     }
   };
 
@@ -559,6 +589,9 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
       backendOnline, 
       checkBackendHealth,
       activeCompany,
+      hasActiveData,
+      setHasActiveData,
+      clearActiveCompany,
       setActiveCompany: handleSetActiveCompany,
       refreshActiveCompany,
       activeConnection,
@@ -583,6 +616,9 @@ const defaultContext: PreferencesContextType = {
   backendOnline: null,
   checkBackendHealth: async () => false,
   activeCompany: DEFAULT_ACTIVE_COMPANY,
+  hasActiveData: false,
+  setHasActiveData: () => {},
+  clearActiveCompany: () => {},
   setActiveCompany: () => {},
   refreshActiveCompany: async () => DEFAULT_ACTIVE_COMPANY,
   activeConnection: null,

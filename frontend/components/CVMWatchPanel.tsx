@@ -302,6 +302,8 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
           setActiveCompany(activePayload);
         }
         if (typeof window !== "undefined") {
+          localStorage.setItem("hypercube_active_company", JSON.stringify(activePayload));
+          localStorage.setItem("hypercube_has_active_data", "true");
           window.dispatchEvent(new CustomEvent("hypercube_company_updated", { detail: activePayload }));
         }
       }
