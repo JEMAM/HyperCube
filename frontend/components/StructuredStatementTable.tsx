@@ -56,9 +56,11 @@ export default function StructuredStatementTable({
         if (res.ok) {
           const data = await res.json();
           if (isMounted) {
+            const rawPeriods: string[] = data.periods || [];
+            const uniquePeriods = Array.from(new Set(rawPeriods));
             setTableData({
               company: data.company,
-              periods: data.periods || [],
+              periods: uniquePeriods,
               rows: data.rows || []
             });
           }
@@ -271,9 +273,9 @@ export default function StructuredStatementTable({
               }`}>
                 <th className="py-3 px-4 font-black w-24">Código</th>
                 <th className="py-3 px-4 font-black min-w-[280px]">Conta Contábil</th>
-                {tableData.periods.map((p) => (
+                {tableData.periods.map((p, idx) => (
                   <th
-                    key={p}
+                    key={`${p}_${idx}`}
                     colSpan={3}
                     className={`py-3 px-3 font-black text-center border-l ${
                       isDark ? "border-slate-800" : "border-slate-300"
@@ -288,8 +290,8 @@ export default function StructuredStatementTable({
               }`}>
                 <th className="py-1 px-4"></th>
                 <th className="py-1 px-4"></th>
-                {tableData.periods.map((p) => (
-                  <React.Fragment key={`${p}-sub`}>
+                {tableData.periods.map((p, idx) => (
+                  <React.Fragment key={`${p}_${idx}-sub`}>
                     <th className={`py-1.5 px-2 text-right border-l font-bold ${
                       isDark ? "border-slate-800 text-slate-300" : "border-slate-300 text-slate-800"
                     }`}>
@@ -343,7 +345,7 @@ export default function StructuredStatementTable({
                       const isNegative = val < 0;
 
                       return (
-                        <React.Fragment key={`${row.id || row.code}-${p}`}>
+                        <React.Fragment key={`${row.id || row.code}-${p}-${idx}`}>
                           {/* Valor */}
                           <td className={`py-2.5 px-2 text-right font-mono font-bold border-l ${
                             isDark ? "border-slate-800 text-white" : "border-slate-300 text-slate-950"

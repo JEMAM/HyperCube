@@ -707,7 +707,6 @@ def get_dre_table():
         else:
             p_code = f"{trim}T{str(ano)[2:]}" if trim in [1,2,3,4] else str(ano)
             
-        periods.append(p_code)
         rec = float(row.get('receita_com_operacoes_de_credito_e_repasses', 0.0))
         cpv = -abs(float(row.get('despesas_de_captacao', 0.0)))
         bruto = float(row.get('produto_da_intermediacao_financeira', 0.0))
@@ -720,21 +719,38 @@ def get_dre_table():
         ir = -abs(float(row.get('tributos_sobre_o_lucro', 0.0)))
         ll = float(row.get('lucro_liquido', 0.0))
         
-        data_by_period[p_code] = {
-            "rec": rec,
-            "cpv": cpv,
-            "bruto": bruto,
-            "desp_comercial": round(sga * 0.35, 1),
-            "desp_admin": round(sga * 0.65, 1),
-            "sga": sga,
-            "prc": prc,
-            "ebitda": ebitda,
-            "ebit": ebit,
-            "fin": fin,
-            "ebt": ebt,
-            "ir": ir,
-            "ll": ll,
-        }
+        if p_code not in data_by_period:
+            periods.append(p_code)
+            data_by_period[p_code] = {
+                "rec": rec,
+                "cpv": cpv,
+                "bruto": bruto,
+                "desp_comercial": round(sga * 0.35, 1),
+                "desp_admin": round(sga * 0.65, 1),
+                "sga": sga,
+                "prc": prc,
+                "ebitda": ebitda,
+                "ebit": ebit,
+                "fin": fin,
+                "ebt": ebt,
+                "ir": ir,
+                "ll": ll,
+            }
+        else:
+            d = data_by_period[p_code]
+            d["rec"] += rec
+            d["cpv"] += cpv
+            d["bruto"] += bruto
+            d["desp_comercial"] += round(sga * 0.35, 1)
+            d["desp_admin"] += round(sga * 0.65, 1)
+            d["sga"] += sga
+            d["prc"] += prc
+            d["ebitda"] += ebitda
+            d["ebit"] += ebit
+            d["fin"] += fin
+            d["ebt"] += ebt
+            d["ir"] += ir
+            d["ll"] += ll
 
     base_p = periods[0] if periods else None
 
@@ -806,7 +822,6 @@ def get_dfc_table():
         else:
             p_code = f"{trim}T{str(ano)[2:]}" if trim in [1,2,3,4] else str(ano)
             
-        periods.append(p_code)
         rec = float(row.get('receita_vendas', row.get('recebimento_vendas', 0.0)))
         forn = -abs(float(row.get('pagamento_fornecedores', 0.0)))
         sal = -abs(float(row.get('pagamento_salarios', 0.0)))
@@ -829,29 +844,53 @@ def get_dfc_table():
         saldo_ini = float(row.get('saldo_inicial_caixa', 0.0))
         saldo_fim = float(row.get('saldo_final_caixa', 0.0))
         
-        data_by_period[p_code] = {
-            "fco_header": fco,
-            "rec": rec,
-            "forn": forn,
-            "sal": sal,
-            "desp": desp,
-            "imp": imp,
-            "fco": fco,
-            "fci_header": fci,
-            "imob": imob,
-            "imov": imov,
-            "venda": venda,
-            "fci": fci,
-            "fcf_header": fcf,
-            "aporte": aporte,
-            "capt": capt,
-            "amort": amort,
-            "div": div,
-            "fcf": fcf,
-            "var_caixa": var_caixa,
-            "saldo_ini": saldo_ini,
-            "saldo_fim": saldo_fim,
-        }
+        if p_code not in data_by_period:
+            periods.append(p_code)
+            data_by_period[p_code] = {
+                "fco_header": fco,
+                "rec": rec,
+                "forn": forn,
+                "sal": sal,
+                "desp": desp,
+                "imp": imp,
+                "fco": fco,
+                "fci_header": fci,
+                "imob": imob,
+                "imov": imov,
+                "venda": venda,
+                "fci": fci,
+                "fcf_header": fcf,
+                "aporte": aporte,
+                "capt": capt,
+                "amort": amort,
+                "div": div,
+                "fcf": fcf,
+                "var_caixa": var_caixa,
+                "saldo_ini": saldo_ini,
+                "saldo_fim": saldo_fim,
+            }
+        else:
+            d = data_by_period[p_code]
+            d["fco_header"] += fco
+            d["rec"] += rec
+            d["forn"] += forn
+            d["sal"] += sal
+            d["desp"] += desp
+            d["imp"] += imp
+            d["fco"] += fco
+            d["fci_header"] += fci
+            d["imob"] += imob
+            d["imov"] += imov
+            d["venda"] += venda
+            d["fci"] += fci
+            d["fcf_header"] += fcf
+            d["aporte"] += aporte
+            d["capt"] += capt
+            d["amort"] += amort
+            d["div"] += div
+            d["fcf"] += fcf
+            d["var_caixa"] += var_caixa
+            d["saldo_fim"] = saldo_fim
 
     base_p = periods[0] if periods else None
 
