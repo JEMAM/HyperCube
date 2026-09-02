@@ -89,9 +89,10 @@ export default function ExecutivePlanningViewCard({
         }
 
         const periodicity = currentComp?.periodicity || (currentComp?.periods?.some((p: string) => p.includes("T")) ? "TRIMESTRAL" : "ANUAL");
+        const compQuery = currentComp?.id && currentComp.id !== "aguardando_upload" ? `&company_id=${encodeURIComponent(currentComp.id)}` : "";
 
         if (statementType === "DRE") {
-          const tsRes = await fetch(`${apiBaseUrl}/api/dre/timeseries?periodicity=${periodicity}`);
+          const tsRes = await fetch(`${apiBaseUrl}/api/dre/timeseries?periodicity=${periodicity}${compQuery}`);
           if (tsRes.ok) {
             const ts = await tsRes.json();
             if (Array.isArray(ts) && ts.length > 0) {
@@ -106,7 +107,7 @@ export default function ExecutivePlanningViewCard({
             }
           }
         } else if (statementType === "DFC") {
-          const dfcRes = await fetch(`${apiBaseUrl}/api/dfc/timeseries?periodicity=${periodicity}`);
+          const dfcRes = await fetch(`${apiBaseUrl}/api/dfc/timeseries?periodicity=${periodicity}${compQuery}`);
           if (dfcRes.ok) {
             const data = await dfcRes.json();
             if (Array.isArray(data) && data.length > 0) {
@@ -284,7 +285,7 @@ export default function ExecutivePlanningViewCard({
                 ? (isEn ? "OPERATING CASH FLOW (FCO)" : "FLUXO OPERACIONAL (FCO)")
                 : statementType === "BP"
                 ? (isEn ? "TOTAL ASSETS" : "ATIVO TOTAL")
-                : (isEn ? "NET SALES REVENUE" : "RECEITA DE VENDAS")} ({latestRow.period || "4T25"})
+                : (isEn ? "NET SALES REVENUE" : "RECEITA DE VENDAS")} ({latestRow.period || (activeCompany.periodicity === "TRIMESTRAL" ? "4T25" : "2025")})
             </p>
             <p className={`text-xl sm:text-2xl font-black font-sans tracking-tight ${
               isDark ? "text-white" : "text-slate-900"

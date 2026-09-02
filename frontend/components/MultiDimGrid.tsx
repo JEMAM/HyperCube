@@ -173,11 +173,16 @@ export default function MultiDimGrid({ onRefresh }: MultiDimGridProps) {
         setDimensions(data);
         const timeMembers = (data.time?.members || []).filter((m: any) => m.id !== "Budget_2026");
         if (timeMembers.length >= 2) {
-          setBaseTime(timeMembers[1].id);
-          setTargetTime(timeMembers[0].id);
+          const latest = timeMembers[timeMembers.length - 1].id;
+          const prev = timeMembers[timeMembers.length - 2].id;
+          setSelectedTime(latest);
+          setTargetTime(latest);
+          setBaseTime(prev);
         } else if (timeMembers.length === 1) {
-          setBaseTime(timeMembers[0].id);
-          setTargetTime(timeMembers[0].id);
+          const only = timeMembers[0].id;
+          setSelectedTime(only);
+          setTargetTime(only);
+          setBaseTime(only);
         }
       }
     } catch {
@@ -259,7 +264,13 @@ export default function MultiDimGrid({ onRefresh }: MultiDimGridProps) {
 
   useEffect(() => {
     fetchDimensions();
-  }, [apiBaseUrl]);
+    const handleUpdated = () => {
+      fetchDimensions();
+      fetchGridData();
+    };
+    window.addEventListener("hypercube_company_updated", handleUpdated);
+    return () => window.removeEventListener("hypercube_company_updated", handleUpdated);
+  }, [apiBaseUrl, globalActiveCompany?.id, globalActiveCompany?.periodicity, hasActiveData]);
 
   useEffect(() => {
     if (varianceMode) {
@@ -267,7 +278,7 @@ export default function MultiDimGrid({ onRefresh }: MultiDimGridProps) {
     } else {
       fetchGridData();
     }
-  }, [apiBaseUrl, selectedVersion, selectedScenario, selectedEntity, selectedProduct, varianceMode, baseVersion, targetVersion, baseTime, targetTime, selectedTime]);
+  }, [apiBaseUrl, globalActiveCompany?.id, globalActiveCompany?.periodicity, hasActiveData, selectedVersion, selectedScenario, selectedEntity, selectedProduct, varianceMode, baseVersion, targetVersion, baseTime, targetTime, selectedTime]);
 
   // Handle Cell Double Click / Edit
   const handleStartEdit = (accountId: string, colId: string, currentVal: number) => {

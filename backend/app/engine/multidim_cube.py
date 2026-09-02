@@ -218,10 +218,11 @@ class MultiDimCube:
                             base_val = self.get_cell(t, "Actuals", "Base", e, acc_id, p)
                             self.set_cell(t, "Budget_2026", "Base", e, acc_id, p, round(base_val * 1.10, 2))
 
-    def load_cvm_company_dataset(self, cod_cvm: int):
+    def load_cvm_company_dataset(self, cod_cvm: int, periodicity: str = "ANUAL"):
         """
         Dynamically configures dimensions, formulas, and cells for any CVM listed company.
-        Integrates normalized financial statements into the multi-dimensional tensor.
+        Integrates normalized financial statements into the multi-dimensional tensor,
+        supporting both ANUAL (DFP) and TRIMESTRAL (ITR) reporting periods.
         """
         from backend.app.cvm.analysis import cvm_analyzer
         analysis = cvm_analyzer.get_company_analysis(cod_cvm)
@@ -233,6 +234,9 @@ class MultiDimCube:
         self.active_company_id = f"cvm_{cod_cvm}"
         self.active_company_name = company.get("nome_pregao") or company.get("denom_social") or f"CVM {cod_cvm}"
         
+        is_annual = not periodicity or str(periodicity).upper() == "ANUAL"
+        self.active_periodicity = "ANUAL" if is_annual else "TRIMESTRAL"
+
         self.dimensions.clear()
         self.cells.clear()
         self.calculated_cells.clear()
@@ -240,11 +244,50 @@ class MultiDimCube:
         # 1. TIME Dimension
         time_dim = Dimension("time", "Período Fiscal")
         order_idx = 1
-        for ts in time_series[-8:]:  # Most recent 8 quarters
-            p_id = ts["period"].replace("-", "_")
-            time_dim.add_member(p_id, f"Trimestre {ts['quarter']} ({p_id})", parent=None, order=order_idx)
-            order_idx += 1
-        time_dim.add_member("Budget_2026", "Orçamento 2026 (Budget Projetado)", parent=None, order=order_idx)
+
+        if is_annual:
+            # Aggregate time_series by year
+            by_year: Dict[str, Dict[str, float]] = {}
+            for ts in time_series:
+                yr = str(ts.get("year") or ts.get("period", "")[:4])
+                if not yr or len(yr) != 4 or not yr.isdigit():
+                    continue
+                rev_liq = float(ts.get("receita_liquida") or 0.0)
+                cmv = float(abs(ts.get("custo_bens_servicos") or (rev_liq * 0.55)))
+                mb = float(ts.get("lucro_bruto") or (rev_liq - cmv))
+                ebit = float(ts.get("resultado_ebit") or (mb * 0.40))
+                lucro_liq = float(ts.get("lucro_liquido") or (ebit * 0.70))
+
+                if yr not in by_year:
+                    by_year[yr] = {
+                        "receita_liquida": rev_liq,
+                        "custo_bens_servicos": cmv,
+                        "lucro_bruto": mb,
+                        "resultado_ebit": ebit,
+                        "lucro_liquido": lucro_liq
+                    }
+                else:
+                    by_year[yr]["receita_liquida"] += rev_liq
+                    by_year[yr]["custo_bens_servicos"] += cmv
+                    by_year[yr]["lucro_bruto"] += mb
+                    by_year[yr]["resultado_ebit"] += ebit
+                    by_year[yr]["lucro_liquido"] += lucro_liq
+
+            sorted_years = sorted(list(by_year.keys()))[-4:]
+            if not sorted_years:
+                sorted_years = ["2022", "2023", "2024", "2025"]
+
+            for yr in sorted_years:
+                time_dim.add_member(yr, f"Exercício {yr} (Consolidado)", parent=None, order=order_idx)
+                order_idx += 1
+            time_dim.add_member("Budget_2026", "Orçamento 2026 (Budget Projetado)", parent=None, order=order_idx)
+        else:
+            for ts in time_series[-8:]:  # Most recent 8 quarters
+                p_id = ts["period"].replace("-", "_")
+                time_dim.add_member(p_id, f"Trimestre {ts['quarter']} ({p_id})", parent=None, order=order_idx)
+                order_idx += 1
+            time_dim.add_member("Budget_2026", "Orçamento 2026 (Budget Projetado)", parent=None, order=order_idx)
+
         self.dimensions["time"] = time_dim
 
         # 2. VERSION Dimension
@@ -300,50 +343,95 @@ class MultiDimCube:
         entity_leaves = ent_dim.get_leaves()
         prod_leaves = prod_dim.get_leaves()
 
-        for ts in time_series[-8:]:
-            p_id = ts["period"].replace("-", "_")
-            rev_liq = float(ts.get("receita_liquida") or 1000.0)
-            cmv = float(abs(ts.get("custo_bens_servicos") or (rev_liq * 0.55)))
-            mb = float(ts.get("lucro_bruto") or (rev_liq - cmv))
-            ebit = float(ts.get("resultado_ebit") or (mb * 0.40))
-            ebitda = round(ebit * 1.25, 2)
-            lucro_liq = float(ts.get("lucro_liquido") or (ebit * 0.70))
-            res_fin = round(-rev_liq * 0.03, 2)
-            ebt = round(ebit + res_fin, 2)
-            impostos = round(-abs(ebt * 0.25), 2) if ebt > 0 else round(abs(ebt * 0.15), 2)
+        if is_annual:
+            for yr in sorted_years:
+                vals_agg = by_year.get(yr, {})
+                rev_liq = float(vals_agg.get("receita_liquida") or 1000.0)
+                cmv = float(abs(vals_agg.get("custo_bens_servicos") or (rev_liq * 0.55)))
+                mb = float(vals_agg.get("lucro_bruto") or (rev_liq - cmv))
+                ebit = float(vals_agg.get("resultado_ebit") or (mb * 0.40))
+                ebitda = round(ebit * 1.25, 2)
+                lucro_liq = float(vals_agg.get("lucro_liquido") or (ebit * 0.70))
+                res_fin = round(-rev_liq * 0.03, 2)
+                ebt = round(ebit + res_fin, 2)
+                impostos = round(-abs(ebt * 0.25), 2) if ebt > 0 else round(abs(ebt * 0.15), 2)
 
-            # Store consolidated cells
-            vals = {
-                "Receita_Bruta": round(rev_liq * 1.15, 2),
-                "Deducoes_Receita": round(rev_liq * 0.15, 2),
-                "Receita_Liquida": rev_liq,
-                "CMV": cmv,
-                "Margem_Bruta": mb,
-                "Despesas_Logistica": round(rev_liq * 0.10, 2),
-                "Despesas_Comerciais": round(rev_liq * 0.08, 2),
-                "Despesas_Gerais_Admin": round(rev_liq * 0.04, 2),
-                "EBIT": ebit,
-                "EBITDA": ebitda,
-                "Resultado_Financeiro": res_fin,
-                "EBT": ebt,
-                "Impostos_Lucro": impostos,
-                "Lucro_Liquido": lucro_liq
-            }
+                vals = {
+                    "Receita_Bruta": round(rev_liq * 1.15, 2),
+                    "Deducoes_Receita": round(rev_liq * 0.15, 2),
+                    "Receita_Liquida": round(rev_liq, 2),
+                    "CMV": round(cmv, 2),
+                    "Margem_Bruta": round(mb, 2),
+                    "Despesas_Logistica": round(rev_liq * 0.10, 2),
+                    "Despesas_Comerciais": round(rev_liq * 0.08, 2),
+                    "Despesas_Gerais_Admin": round(rev_liq * 0.04, 2),
+                    "EBIT": round(ebit, 2),
+                    "EBITDA": round(ebitda, 2),
+                    "Resultado_Financeiro": round(res_fin, 2),
+                    "EBT": round(ebt, 2),
+                    "Impostos_Lucro": round(impostos, 2),
+                    "Lucro_Liquido": round(lucro_liq, 2)
+                }
 
-            for acc_k, val in vals.items():
-                self.set_cell(p_id, "Actuals", "Base", "Total_Company", acc_k, "Total_Products", val)
-                
-                # Spread to leaves
-                num_leaves = len(entity_leaves) * len(prod_leaves)
-                if num_leaves > 0:
-                    leaf_share = val / num_leaves
-                    for e in entity_leaves:
-                        for p in prod_leaves:
-                            self.set_cell(p_id, "Actuals", "Base", e, acc_k, p, round(leaf_share, 2))
+                for acc_k, val in vals.items():
+                    self.set_cell(yr, "Actuals", "Base", "Total_Company", acc_k, "Total_Products", val)
+                    num_leaves = len(entity_leaves) * len(prod_leaves)
+                    if num_leaves > 0:
+                        leaf_share = val / num_leaves
+                        for e in entity_leaves:
+                            for p in prod_leaves:
+                                self.set_cell(yr, "Actuals", "Base", e, acc_k, p, round(leaf_share, 2))
 
-        # Budget 2026 (+10% over latest actuals)
-        latest_ts = time_series[-1]
-        latest_rev = float(latest_ts.get("receita_liquida") or 1000.0) * 1.10
+            # Budget 2026 (+10% over latest actual annual year)
+            latest_yr = sorted_years[-1]
+            latest_agg = by_year.get(latest_yr, {})
+            latest_rev = float(latest_agg.get("receita_liquida") or 1000.0) * 1.10
+        else:
+            for ts in time_series[-8:]:
+                p_id = ts["period"].replace("-", "_")
+                rev_liq = float(ts.get("receita_liquida") or 1000.0)
+                cmv = float(abs(ts.get("custo_bens_servicos") or (rev_liq * 0.55)))
+                mb = float(ts.get("lucro_bruto") or (rev_liq - cmv))
+                ebit = float(ts.get("resultado_ebit") or (mb * 0.40))
+                ebitda = round(ebit * 1.25, 2)
+                lucro_liq = float(ts.get("lucro_liquido") or (ebit * 0.70))
+                res_fin = round(-rev_liq * 0.03, 2)
+                ebt = round(ebit + res_fin, 2)
+                impostos = round(-abs(ebt * 0.25), 2) if ebt > 0 else round(abs(ebt * 0.15), 2)
+
+                # Store consolidated cells
+                vals = {
+                    "Receita_Bruta": round(rev_liq * 1.15, 2),
+                    "Deducoes_Receita": round(rev_liq * 0.15, 2),
+                    "Receita_Liquida": rev_liq,
+                    "CMV": cmv,
+                    "Margem_Bruta": mb,
+                    "Despesas_Logistica": round(rev_liq * 0.10, 2),
+                    "Despesas_Comerciais": round(rev_liq * 0.08, 2),
+                    "Despesas_Gerais_Admin": round(rev_liq * 0.04, 2),
+                    "EBIT": ebit,
+                    "EBITDA": ebitda,
+                    "Resultado_Financeiro": res_fin,
+                    "EBT": ebt,
+                    "Impostos_Lucro": impostos,
+                    "Lucro_Liquido": lucro_liq
+                }
+
+                for acc_k, val in vals.items():
+                    self.set_cell(p_id, "Actuals", "Base", "Total_Company", acc_k, "Total_Products", val)
+                    
+                    # Spread to leaves
+                    num_leaves = len(entity_leaves) * len(prod_leaves)
+                    if num_leaves > 0:
+                        leaf_share = val / num_leaves
+                        for e in entity_leaves:
+                            for p in prod_leaves:
+                                self.set_cell(p_id, "Actuals", "Base", e, acc_k, p, round(leaf_share, 2))
+
+            # Budget 2026 (+10% over latest quarter)
+            latest_ts = time_series[-1]
+            latest_rev = float(latest_ts.get("receita_liquida") or 1000.0) * 1.10
+
         budget_vals = {
             "Receita_Bruta": round(latest_rev * 1.15, 2),
             "Deducoes_Receita": round(latest_rev * 0.15, 2),
@@ -362,12 +450,14 @@ class MultiDimCube:
         }
         for acc_k, val in budget_vals.items():
             self.set_cell("Budget_2026", "Budget_2026", "Base", "Total_Company", acc_k, "Total_Products", val)
+            self.set_cell("Budget_2026", "Actuals", "Base", "Total_Company", acc_k, "Total_Products", val)
             num_leaves = len(entity_leaves) * len(prod_leaves)
             if num_leaves > 0:
                 leaf_share = val / num_leaves
                 for e in entity_leaves:
                     for p in prod_leaves:
                         self.set_cell("Budget_2026", "Budget_2026", "Base", e, acc_k, p, round(leaf_share, 2))
+                        self.set_cell("Budget_2026", "Actuals", "Base", e, acc_k, p, round(leaf_share, 2))
 
         return True
 
@@ -1031,7 +1121,7 @@ class MultiDimCube:
         elif self.active_company_id.startswith("cvm_"):
             try:
                 cod = int(self.active_company_id.replace("cvm_", ""))
-                self.load_cvm_company_dataset(cod)
+                self.load_cvm_company_dataset(cod, periodicity=getattr(self, "active_periodicity", "ANUAL"))
             except Exception:
                 self._seed_default_enterprise_cells()
         else:

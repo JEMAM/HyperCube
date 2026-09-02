@@ -53,7 +53,7 @@ def load_company_into_cube(
     Injects the company's financial data into the reactive MultiDimCube engine,
     enabling full OLAP slices, DAG dependency calculation, and What-If simulation.
     """
-    success = global_cube.load_cvm_company_dataset(cod_cvm)
+    success = global_cube.load_cvm_company_dataset(cod_cvm, periodicity=periodicity)
     if not success:
         raise HTTPException(status_code=400, detail="Failed to load company into Hyperblock Cube")
     
@@ -75,6 +75,7 @@ def load_company_into_cube(
         "ticker": comp.get("nome_pregao") or ("BRKM5" if cod_cvm == 4820 else f"CVM:{cod_cvm}"),
         "currency": "R$ Milhões",
         "periods": periods,
+        "periodicity": "TRIMESTRAL" if is_trimestral else "ANUAL",
         "description": f"Companhia aberta listada na CVM ({global_cube.active_company_name}) - {desc_type} carregada via CVM Watch & Análise."
     }
     set_active_company_info(new_active_info)
