@@ -272,12 +272,22 @@ const translations: Record<Language, Record<string, string>> = {
   },
 };
 
-export function getApiUrl(path: string, fallbackBase: string = "http://127.0.0.1:8000"): string {
+export function getApiUrl(path: string, fallbackBase?: string): string {
   const cleanPath = path.startsWith("/") ? path : "/" + path;
-  if (!fallbackBase || fallbackBase === "") {
-    return cleanPath;
+  if (typeof window !== "undefined") {
+    const isLoopback = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    if (!isLoopback) {
+      const envApi = process.env.NEXT_PUBLIC_API_URL;
+      if (envApi && envApi.startsWith("http") && !envApi.includes("localhost") && !envApi.includes("127.0.0.1")) {
+        const cleanBase = envApi.endsWith("/") ? envApi.slice(0, -1) : envApi;
+        return `${cleanBase}${cleanPath}`;
+      }
+      return cleanPath;
+    }
   }
-  const cleanBase = fallbackBase.endsWith("/") ? fallbackBase.slice(0, -1) : fallbackBase;
+
+  const base = fallbackBase || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+  const cleanBase = base.endsWith("/") ? base.slice(0, -1) : base;
   return `${cleanBase}${cleanPath}`;
 }
 
@@ -286,7 +296,13 @@ const PreferencesContext = createContext<PreferencesContextType | undefined>(und
 export function PreferencesProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>("pt");
   const [theme, setTheme] = useState<Theme>("light");
-  const [apiBaseUrl, setApiBaseUrl] = useState<string>("http://127.0.0.1:8000");
+  const [apiBaseUrl, setApiBaseUrl] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const isLoopback = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      if (!isLoopback) return "";
+    }
+    return "http://127.0.0.1:8000";
+  });
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
   const [activeCompany, setActiveCompanyState] = useState<ActiveCompany>(DEFAULT_ACTIVE_COMPANY);
   const [activeConnection, setActiveConnectionState] = useState<ActiveConnection | null>(null);
@@ -382,18 +398,17 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
       candidates.push(currentBase);
     }
 
-    // 3. Browser hostname on port 8000
+    // 3. Local loopback addresses ONLY when running on localhost
     if (typeof window !== "undefined") {
       const hostname = window.location.hostname;
-      const protocol = window.location.protocol || "http:";
-      if (hostname) {
+      const isLoopback = hostname === "localhost" || hostname === "127.0.0.1";
+      if (isLoopback) {
+        const protocol = window.location.protocol || "http:";
         candidates.push(`${protocol}//${hostname}:8000`);
+        candidates.push("http://127.0.0.1:8000");
+        candidates.push("http://localhost:8000");
       }
     }
-
-    // 4. Local loopback addresses
-    candidates.push("http://127.0.0.1:8000");
-    candidates.push("http://localhost:8000");
 
     const uniqueCandidates = candidates.filter((v, i, a) => a.indexOf(v) === i);
 

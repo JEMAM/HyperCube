@@ -199,13 +199,14 @@ export default function ERPConnectionsPanel({
 
       if (catRes.ok) {
         const catData = await catRes.json();
-        setCatalog(catData);
+        setCatalog(Array.isArray(catData) ? catData : (Array.isArray(catData?.catalog) ? catData.catalog : []));
       }
 
       if (connsRes.ok) {
         const connsData = await connsRes.json();
-        setSavedConnections(connsData);
-        const active = connsData.find((c: SavedConnection) => c.is_active);
+        const safeConns = Array.isArray(connsData) ? connsData : (Array.isArray(connsData?.connections) ? connsData.connections : []);
+        setSavedConnections(safeConns);
+        const active = safeConns.find((c: SavedConnection) => c.is_active);
         if (active) {
           setActiveConnection(active);
         }
@@ -482,7 +483,8 @@ export default function ERPConnectionsPanel({
   };
 
   // Filter instruments
-  const filteredCatalog = catalog.filter((inst) => {
+  const safeCatalog = Array.isArray(catalog) ? catalog : [];
+  const filteredCatalog = safeCatalog.filter((inst) => {
     const matchesCategory =
       activeCategory === "ALL" ||
       (activeCategory === "ERP_ENTERPRISE" && inst.category === "ERP_ENTERPRISE") ||
@@ -724,12 +726,12 @@ export default function ERPConnectionsPanel({
       }`}>
         <div className="flex flex-wrap items-center gap-2">
           {[
-            { id: "ALL", label: isEn ? "All Instruments" : "Todos os Instrumentos", count: catalog.length },
-            { id: "ERP_ENTERPRISE", label: isEn ? "Enterprise ERPs" : "ERPs Enterprise", count: catalog.filter(x => x.category === "ERP_ENTERPRISE").length },
-            { id: "ERP_NACIONAL", label: isEn ? "National ERPs" : "ERPs Nacionais", count: catalog.filter(x => x.category === "ERP_NACIONAL").length },
-            { id: "ERP_CLOUD", label: isEn ? "Cloud ERPs" : "ERPs Cloud", count: catalog.filter(x => x.category === "ERP_CLOUD").length },
-            { id: "DATABASE_SQL", label: isEn ? "SQL Databases" : "Bancos de Dados SQL", count: catalog.filter(x => x.category === "DATABASE_SQL").length },
-            { id: "CLOUD_WAREHOUSE", label: isEn ? "Cloud Warehouses" : "Cloud Warehouses", count: catalog.filter(x => x.category === "CLOUD_WAREHOUSE").length },
+            { id: "ALL", label: isEn ? "All Instruments" : "Todos os Instrumentos", count: safeCatalog.length },
+            { id: "ERP_ENTERPRISE", label: isEn ? "Enterprise ERPs" : "ERPs Enterprise", count: safeCatalog.filter(x => x.category === "ERP_ENTERPRISE").length },
+            { id: "ERP_NACIONAL", label: isEn ? "National ERPs" : "ERPs Nacionais", count: safeCatalog.filter(x => x.category === "ERP_NACIONAL").length },
+            { id: "ERP_CLOUD", label: isEn ? "Cloud ERPs" : "ERPs Cloud", count: safeCatalog.filter(x => x.category === "ERP_CLOUD").length },
+            { id: "DATABASE_SQL", label: isEn ? "SQL Databases" : "Bancos de Dados SQL", count: safeCatalog.filter(x => x.category === "DATABASE_SQL").length },
+            { id: "CLOUD_WAREHOUSE", label: isEn ? "Cloud Warehouses" : "Cloud Warehouses", count: safeCatalog.filter(x => x.category === "CLOUD_WAREHOUSE").length },
           ].map((cat) => (
             <button
               key={cat.id}
