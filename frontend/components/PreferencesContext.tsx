@@ -310,28 +310,8 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
     return "http://127.0.0.1:8000";
   });
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
-  const [hasActiveData, setHasActiveData] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("hypercube_has_active_data") === "true";
-    }
-    return false;
-  });
-
-  const [activeCompany, setActiveCompanyState] = useState<ActiveCompany>(() => {
-    if (typeof window !== "undefined") {
-      const hasData = localStorage.getItem("hypercube_has_active_data") === "true";
-      const savedStr = localStorage.getItem("hypercube_active_company");
-      if (hasData && savedStr) {
-        try {
-          const parsed = JSON.parse(savedStr);
-          if (parsed && parsed.id && parsed.id !== "aguardando_upload") {
-            return parsed;
-          }
-        } catch {}
-      }
-    }
-    return EMPTY_ACTIVE_COMPANY;
-  });
+  const [hasActiveData, setHasActiveData] = useState<boolean>(false);
+  const [activeCompany, setActiveCompanyState] = useState<ActiveCompany>(EMPTY_ACTIVE_COMPANY);
   const [activeConnection, setActiveConnectionState] = useState<ActiveConnection | null>(null);
 
   const apiBaseUrlRef = useRef(apiBaseUrl);
@@ -502,11 +482,15 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
       if (savedLang === "pt" || savedLang === "en") {
         setLanguage(savedLang);
       }
+      const hasData = localStorage.getItem("hypercube_has_active_data") === "true";
+      if (hasData) {
+        setHasActiveData(true);
+      }
       const savedCompanyStr = localStorage.getItem("hypercube_active_company");
-      if (savedCompanyStr) {
+      if (hasData && savedCompanyStr) {
         try {
           const parsed = JSON.parse(savedCompanyStr);
-          if (parsed && parsed.name) {
+          if (parsed && parsed.name && parsed.id && parsed.id !== "aguardando_upload") {
             setActiveCompanyState(parsed);
           }
         } catch {}

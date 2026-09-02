@@ -493,10 +493,16 @@ export default function ExecutivePlanningViewCard({
             isDark ? "bg-[#070e1b] border-[#14233a]" : "bg-white border-slate-200"
           }`}>
             <div className="space-y-0.5">
-              <h4 className={`text-xs sm:text-sm font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
+              <h4
+                suppressHydrationWarning
+                className={`text-xs sm:text-sm font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}
+              >
                 {statementTitle} — {activeCompany.name}
               </h4>
-              <p className={`text-[10px] sm:text-[11px] font-medium ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+              <p
+                suppressHydrationWarning
+                className={`text-[10px] sm:text-[11px] font-medium ${isDark ? "text-slate-400" : "text-slate-600"}`}
+              >
                 {activeCompany.description}
               </p>
             </div>
