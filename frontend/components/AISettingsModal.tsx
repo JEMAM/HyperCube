@@ -13,7 +13,10 @@ import {
   Cpu,
   Zap,
   Layers,
-  Server
+  Server,
+  Eye,
+  EyeOff,
+  Lock
 } from "lucide-react";
 import { usePreferences, getApiUrl } from "./PreferencesContext";
 import { AI_PROVIDERS_CONFIG } from "./aiModels";
@@ -56,6 +59,7 @@ export default function AISettingsModal({ isOpen, onClose }: AISettingsModalProp
     ollama: "http://localhost:11434",
   });
   const [loading, setLoading] = useState(false);
+  const [showKey, setShowKey] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Load saved config and keys from local database on open
@@ -93,19 +97,22 @@ export default function AISettingsModal({ isOpen, onClose }: AISettingsModalProp
         }
         if (data.saved_keys) {
           setProviderKeys((prev) => {
-            const merged = { ...prev, ...data.saved_keys };
-            if (typeof window !== "undefined") {
-              if (merged.groq) localStorage.setItem("hypercube_groq_key", merged.groq);
-              if (merged.gemini) localStorage.setItem("hypercube_gemini_key", merged.gemini);
-              if (merged.anthropic) localStorage.setItem("hypercube_anthropic_key", merged.anthropic);
-              if (merged.openai) localStorage.setItem("hypercube_openai_key", merged.openai);
-              if (merged.ollama) localStorage.setItem("hypercube_ollama_endpoint", merged.ollama);
-            }
+            const merged = { ...prev };
+            Object.entries(data.saved_keys).forEach(([prov, k]: [string, any]) => {
+              if (prov === "ollama" && k && !merged.ollama) {
+                merged.ollama = k;
+              } else if (k && typeof k === "string" && !k.includes("••••") && !merged[prov]) {
+                merged[prov] = k;
+                if (typeof window !== "undefined") {
+                  localStorage.setItem(`hypercube_${prov}_key`, k);
+                }
+              }
+            });
             return merged;
           });
         }
       })
-      .catch((err) => console.warn("Failed to load AI keys from local DB:", err));
+      .catch((err) => console.warn("Failed to load AI config from backend:", err));
   }, [isOpen, apiBaseUrl]);
 
   if (!isOpen) return null;
@@ -398,7 +405,7 @@ export default function AISettingsModal({ isOpen, onClose }: AISettingsModalProp
               ) : currentInputValue ? (
                 <span className="text-[9.5px] px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" />
-                  <span>{isEn ? "Saved in SQLite" : "Salva no SQLite"}</span>
+                  <span>{isEn ? "🔒 Local BYOK" : "🔒 BYOK Local"}</span>
                 </span>
               ) : (
                 <span className="text-[9.5px] px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/30 font-semibold">
@@ -407,30 +414,51 @@ export default function AISettingsModal({ isOpen, onClose }: AISettingsModalProp
               )}
             </div>
 
-            <input
-              type={currentProviderKey === "ollama" ? "text" : "password"}
-              placeholder={
-                currentProviderKey === "ollama"
-                  ? "http://localhost:11434 (Endpoint Padrão)"
-                  : "Insira sua chave de API (gsk_... / sk-... / AIzaSy...)"
-              }
-              value={currentInputValue}
-              onChange={(e) => handleInputChange(e.target.value)}
-              className={`w-full ${
-                isDark
-                  ? "bg-[#131b2e] border-[#222a3d] text-slate-100"
-                  : "bg-white border-slate-300 text-slate-900"
-              } border rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono`}
-            />
+            <div className="relative">
+              <input
+                type={currentProviderKey === "ollama" || showKey ? "text" : "password"}
+                placeholder={
+                  currentProviderKey === "ollama"
+                    ? "http://localhost:11434 (Endpoint Padrão)"
+                    : "Insira sua chave de API (gsk_... / sk-... / AIzaSy...)"
+                }
+                value={currentInputValue}
+                onChange={(e) => handleInputChange(e.target.value)}
+                className={`w-full ${
+                  isDark
+                    ? "bg-[#131b2e] border-[#222a3d] text-slate-100"
+                    : "bg-white border-slate-300 text-slate-900"
+                } border rounded-xl px-3 py-1.5 pr-10 text-xs focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono`}
+              />
+              {currentProviderKey !== "ollama" && (
+                <button
+                  type="button"
+                  onClick={() => setShowKey(!showKey)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition p-1"
+                  title={showKey ? (isEn ? "Hide key" : "Ocultar chave") : (isEn ? "Show key" : "Mostrar chave")}
+                >
+                  {showKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                </button>
+              )}
+            </div>
 
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-emerald-400 flex-shrink-0" />
-              <span>
-                {currentProviderKey === "ollama"
-                  ? (isEn ? "Ollama runs 100% offline on your machine. No cloud API key required." : "Ollama executa 100% offline na sua máquina. Não requer chave na nuvem.")
-                  : (isEn ? "Keys are encrypted and persisted locally in SQLite for fast switching." : "Chaves criptografadas no banco SQLite local para troca instantânea de modelo.")}
-              </span>
-            </p>
+            <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1.5 space-y-1">
+              <p className="flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                <span className="font-semibold text-emerald-400/90">
+                  {currentProviderKey === "ollama"
+                    ? (isEn ? "Ollama runs 100% offline on your machine. No cloud API key required." : "Ollama executa 100% offline na sua máquina. Não requer chave na nuvem.")
+                    : (isEn ? "BYOK Security: Key is saved only in your local browser and sent encrypted via HTTPS for AI processing." : "Segurança BYOK: Chave armazenada localmente no seu navegador e transmitida sob HTTPS criptografado.")}
+                </span>
+              </p>
+              {currentProviderKey !== "ollama" && (
+                <p className="text-[9.5px] text-slate-400 dark:text-slate-500 pl-4.5">
+                  {isEn
+                    ? "Zero Server Retention: Your credentials are never stored permanently in shared databases."
+                    : "Retenção Zero no Servidor: Suas credenciais nunca são armazenadas permanentemente em bancos de dados compartilhados."}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Status Message */}

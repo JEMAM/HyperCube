@@ -182,18 +182,37 @@ export function AgentExecutionProvider({ children }: { children: React.ReactNode
     const currentUrl = apiBaseUrlRef.current || "http://127.0.0.1:8000";
     const company = activeCompanyRef.current;
 
+    let clientKey = "";
+    let clientProvider = "gemini";
+    let clientModel = "";
+    if (typeof window !== "undefined") {
+      clientProvider = localStorage.getItem("hypercube_ai_provider") || "gemini";
+      clientModel = localStorage.getItem("hypercube_ai_model") || "";
+      clientKey = localStorage.getItem(`hypercube_${clientProvider}_key`) || localStorage.getItem("hypercube_ai_key") || "";
+    }
+
     const payload = {
       agent_type: agentType,
       question: question.trim(),
       valuation_context: extra.valuation_context,
       history: extra.history,
+      api_key: clientKey,
+      provider: clientProvider,
+      model: clientModel,
     };
 
     let taskId = `task_${Date.now()}_local`;
     try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (clientKey) headers["x-api-key"] = clientKey;
+      if (clientProvider) headers["x-provider"] = clientProvider;
+      if (clientModel) headers["x-model"] = clientModel;
+
       const res = await fetch(`${currentUrl}/api/agent/task/submit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(payload),
       });
 

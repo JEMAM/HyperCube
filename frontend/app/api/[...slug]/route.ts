@@ -205,16 +205,28 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
     });
   }
 
-  // 14. LLM Config
-  if (path === "config/llm") {
+  // 14. LLM Config (Secure BYOK Mock)
+  if (path === "config/llm" || path === "config") {
     return NextResponse.json({
       provider: "gemini",
       model: "Gemini 3.7 Flash",
       api_key: "",
+      api_key_masked: "",
       saved_keys: { gemini: "", groq: "", openai: "", anthropic: "", ollama: "http://localhost:11434" },
       has_key: true,
       is_active: true,
       custom_file_uploaded: false
+    });
+  }
+
+  // 15. Agent Task Status
+  if (path.startsWith("agent/task/status/")) {
+    const taskId = path.replace("agent/task/status/", "");
+    return NextResponse.json({
+      task_id: taskId,
+      status: "completed",
+      result: "Análise contábil processada no motor DAG Reativo do HyperCube. Indicadores e reconciliação consistentes sem divergências.",
+      elapsed_ms: 1.2
     });
   }
 
@@ -279,6 +291,28 @@ export async function POST(req: NextRequest, context: { params: Promise<{ slug: 
       status: "success",
       message: "BRASKEM S.A. carregada com sucesso no HyperCube Engine.",
       company: DEMO_ACTIVE_COMPANY
+    });
+  }
+
+  // AI Agent Task Submission
+  if (path === "agent/task/submit") {
+    const taskId = `task_${Date.now()}_vercel`;
+    return NextResponse.json({
+      task_id: taskId,
+      status: "running",
+      agent_type: body.agent_type || "dre",
+      question: body.question || "",
+      company_name: "BRASKEM S.A.",
+      elapsed_ms: 1.1
+    });
+  }
+
+  // Config LLM save (stateless BYOK mock)
+  if (path === "config/llm" || path === "config") {
+    return NextResponse.json({
+      status: "success",
+      message: "Configurações BYOK aplicadas com sucesso localmente.",
+      saved_keys: {}
     });
   }
 

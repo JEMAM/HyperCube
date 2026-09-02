@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Response, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Response, HTTPException, UploadFile, File, Form, Header
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 import os
@@ -75,14 +75,28 @@ class WhatIfRequest(BaseModel):
     start_year: Optional[int] = 2024
     end_year: Optional[int] = 2025
 
+def _mask_key(key: Optional[str]) -> str:
+    if not key or not str(key).strip():
+        return ""
+    k = str(key).strip()
+    if len(k) <= 8:
+        return "••••••••"
+    return f"{k[:4]}••••••••{k[-4:]}"
+
 class AskRequest(BaseModel):
     question: str
+    api_key: Optional[str] = None
+    provider: Optional[str] = None
+    model: Optional[str] = None
 
 class SubmitAgentTaskRequest(BaseModel):
     agent_type: str = "dre"
     question: str
     valuation_context: Optional[Dict[str, Any]] = None
     history: Optional[List[Dict[str, str]]] = None
+    api_key: Optional[str] = None
+    provider: Optional[str] = None
+    model: Optional[str] = None
 
 def _check_has_key(provider: str, explicit_key: str = "") -> bool:
     provider = (provider or "").lower()
@@ -100,11 +114,16 @@ def get_config():
     provider = db_cfg["provider"]
     api_key = db_cfg["api_key"]
     has_key = _check_has_key(provider, api_key)
+    masked_saved = {
+        prov: ("http://localhost:11434" if prov == "ollama" else _mask_key(k))
+        for prov, k in (db_cfg.get("saved_keys") or {}).items()
+    }
     return {
         "provider": provider,
         "model": db_cfg["model"],
-        "api_key": api_key,
-        "saved_keys": db_cfg["saved_keys"],
+        "api_key": _mask_key(api_key),
+        "api_key_masked": _mask_key(api_key),
+        "saved_keys": masked_saved,
         "has_key": has_key,
         "is_active": has_key,
         "custom_file_uploaded": _config_state.get("custom_file_uploaded", False)
@@ -116,11 +135,16 @@ def get_llm_config():
     provider = db_cfg["provider"]
     api_key = db_cfg["api_key"]
     has_key = _check_has_key(provider, api_key)
+    masked_saved = {
+        prov: ("http://localhost:11434" if prov == "ollama" else _mask_key(k))
+        for prov, k in (db_cfg.get("saved_keys") or {}).items()
+    }
     return {
         "provider": provider,
         "model": db_cfg["model"],
-        "api_key": api_key,
-        "saved_keys": db_cfg["saved_keys"],
+        "api_key": _mask_key(api_key),
+        "api_key_masked": _mask_key(api_key),
+        "saved_keys": masked_saved,
         "has_key": has_key,
         "is_active": has_key,
         "custom_file_uploaded": _config_state.get("custom_file_uploaded", False)
@@ -985,37 +1009,84 @@ def get_lucro_anual_chart():
     return Response(content=img_bytes, media_type="image/png")
 
 @router.get("/agent/explain")
-def explain_simulation():
-    return {"summary": _agent.explain_simulation(_last_metrics, _before_df, _engine.get_dataframe())}
+def explain_simulation(
+    x_api_key: Optional[str] = Header(None, alias="x-api-key"),
+    x_provider: Optional[str] = Header(None, alias="x-provider"),
+    x_model: Optional[str] = Header(None, alias="x-model"),
+):
+    effective_key = x_api_key or _config_state.get("api_key", "")
+    effective_provider = x_provider or _config_state.get("provider", "groq")
+    effective_model = x_model or _config_state.get("model", "")
+    byok_config = {
+        "provider": effective_provider,
+        "model": effective_model,
+        "api_key": effective_key or ""
+    }
+    agent = AnalysisAgent(byok_config)
+    return {"summary": agent.explain_simulation(_last_metrics, _before_df, _engine.get_dataframe())}
 
 @router.post("/agent/ask")
-def ask_agent(req: AskRequest):
-    answer = _agent.ask(req.question, _engine.get_dataframe())
+def ask_agent(
+    req: AskRequest,
+    x_api_key: Optional[str] = Header(None, alias="x-api-key"),
+    x_provider: Optional[str] = Header(None, alias="x-provider"),
+    x_model: Optional[str] = Header(None, alias="x-model"),
+):
+    effective_key = req.api_key or x_api_key or _config_state.get("api_key", "")
+    effective_provider = req.provider or x_provider or _config_state.get("provider", "groq")
+    effective_model = req.model or x_model or _config_state.get("model", "")
+    byok_config = {
+        "provider": effective_provider,
+        "model": effective_model,
+        "api_key": effective_key or ""
+    }
+    agent = AnalysisAgent(byok_config)
+    answer = agent.ask(req.question, _engine.get_dataframe())
     return {"question": req.question, "answer": answer}
 
 @router.post("/agent/task/submit")
-def submit_agent_task_endpoint(req: SubmitAgentTaskRequest):
+def submit_agent_task_endpoint(
+    req: SubmitAgentTaskRequest,
+    x_api_key: Optional[str] = Header(None, alias="x-api-key"),
+    x_provider: Optional[str] = Header(None, alias="x-provider"),
+    x_model: Optional[str] = Header(None, alias="x-model"),
+):
     agent_type = (req.agent_type or "dre").lower()
     company = get_active_company_info()
     company_name = company.get("name", "Modelo Consolidado")
 
+    # Ephemeral BYOK config per task execution (isolated in task scope, never stored permanently)
+    effective_key = req.api_key or x_api_key or _config_state.get("api_key", "")
+    effective_provider = req.provider or x_provider or _config_state.get("provider", "groq")
+    effective_model = req.model or x_model or _config_state.get("model", "")
+    byok_config = {
+        "provider": effective_provider,
+        "model": effective_model,
+        "api_key": effective_key or ""
+    }
+
     def run():
         if agent_type == "bp":
-            from backend.app.agents.bp_agent import bp_agent
-            return bp_agent.ask(req.question)
+            from backend.app.agents.bp_agent import BPAgent
+            agent = BPAgent(byok_config)
+            return agent.ask(req.question)
         elif agent_type == "valuation":
-            from backend.app.agents.valuation_agent import valuation_agent
-            return valuation_agent.chat(
+            from backend.app.agents.valuation_agent import ValuationAgent
+            agent = ValuationAgent(byok_config)
+            return agent.chat(
                 question=req.question,
                 valuation_context=req.valuation_context,
                 history=req.history
             )
         elif agent_type == "economy":
-            return _economic_agent.chat(req.question)
+            agent = AgnoEconomicAgent(byok_config)
+            return agent.chat(req.question)
         elif agent_type == "dfc":
-            return _agent.ask(req.question, _dfc_engine.get_dataframe())
+            agent = AnalysisAgent(byok_config)
+            return agent.ask(req.question, _dfc_engine.get_dataframe())
         else:
-            return _agent.ask(req.question, _engine.get_dataframe())
+            agent = AnalysisAgent(byok_config)
+            return agent.ask(req.question, _engine.get_dataframe())
 
     task_id = agent_task_manager.submit_task(
         agent_type=agent_type,
