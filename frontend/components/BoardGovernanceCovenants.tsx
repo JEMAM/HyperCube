@@ -51,7 +51,7 @@ interface TimelineCovenant {
 }
 
 export default function BoardGovernanceCovenants() {
-  const { theme, language, apiBaseUrl } = usePreferences();
+  const { theme, language, apiBaseUrl, activeCompany } = usePreferences();
   const isDark = theme === "dark";
   const isEn = language === "en";
 
@@ -163,26 +163,33 @@ export default function BoardGovernanceCovenants() {
           </div>
         </div>
 
-        {/* Company Selector & Actions */}
-        <div className="flex items-center gap-2.5 flex-wrap w-full md:w-auto">
-          {/* Company Selector */}
-          <select
-            value={selectedCompany}
-            onChange={(e) => setSelectedCompany(e.target.value)}
-            className="px-3 py-2 rounded-xl text-xs font-bold bg-[#0b1326] border border-[#222a3d] text-white focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer"
-          >
-            {companiesList.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.ticker})
-              </option>
-            ))}
-          </select>
+        {/* Analyzed Company Badge & Actions */}
+        <div className="flex items-center gap-3 flex-wrap w-full md:w-auto">
+          {/* Nome da Empresa Analisada (Aumentado de Tamanho) */}
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-[#0b1326] border border-amber-500/40 shadow-lg">
+            <Building2 className="w-6 h-6 text-amber-400 shrink-0" />
+            <div className="flex flex-col">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
+                {isEn ? "Analyzed Company" : "Empresa Analisada"}
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-lg sm:text-xl font-black tracking-tight text-white">
+                  {activeCompany?.name || "BANCO ABC BRASIL S/A"}
+                </span>
+                {activeCompany?.ticker && (
+                  <span className="text-xs px-2.5 py-0.5 rounded-md bg-amber-500/15 text-amber-400 font-mono font-bold border border-amber-500/30">
+                    {activeCompany.ticker}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
 
           {/* Regenerate AI Memo Button */}
           <button
             onClick={regenerateMemo}
             disabled={memoLoading || loading}
-            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#0b1326] border border-[#222a3d] hover:border-amber-500 text-amber-300 flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
+            className="px-3.5 py-2.5 rounded-xl text-xs font-bold bg-[#0b1326] border border-[#222a3d] hover:border-amber-500 text-amber-300 flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
             title="Regerar parecer executivo com o Agente Agno"
           >
             <Sparkles className={`w-3.5 h-3.5 ${memoLoading ? "animate-spin text-amber-400" : "text-amber-400"}`} />
@@ -192,7 +199,7 @@ export default function BoardGovernanceCovenants() {
           {/* Print Board Pack */}
           <button
             onClick={() => window.print()}
-            className="px-3.5 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500 to-emerald-400 hover:from-amber-400 hover:to-emerald-300 text-slate-950 flex items-center gap-1.5 shadow-lg transition cursor-pointer"
+            className="px-3.5 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500 to-emerald-400 hover:from-amber-400 hover:to-emerald-300 text-slate-950 flex items-center gap-1.5 shadow-lg transition cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>{isEn ? "Print Board Pack" : "Imprimir Dossiê"}</span>
@@ -486,7 +493,7 @@ export default function BoardGovernanceCovenants() {
                 Relatório Integrado de Governança & Covenants 2026
               </h2>
               <span className="text-xs text-slate-400 font-mono">
-                {covenantData.company_name} ({covenantData.ticker}) • Setor: {covenantData.sector}
+                {activeCompany?.name || covenantData.company_name} ({activeCompany?.ticker || covenantData.ticker}) • Setor: {covenantData.sector}
               </span>
             </div>
 
