@@ -160,7 +160,37 @@ Comando executado: `npx tsc --noEmit` (no diretório `frontend/`)
 
 ---
 
-## 🏁 7. Conclusão da Auditoria
+## 🔒 8. Auditoria de Estado Inicial Limpo e Persistência Multi-Páginas (Zero Regressão Klabin)
+
+Em atendimento à solicitação do usuário (*"carregado qualquer empresa quando mudo de pagina volta para a klabin. Ao abrir o aplicativo deixar todas as celulas vazias e qualquer conta ate receber a empresa do upload ou do cvm watch"*), foi implementada e validada uma reformulação completa do gerenciamento de estado e ciclo de vida:
+
+1. **Estado Inicial Limpo (Clean/Empty Slate):**
+   - Ao abrir o aplicativo pela primeira vez ou limpar os dados, o cabeçalho exibe `Empresa: Aguardando Upload ou CVM Watch` em destaque âmbar.
+   - As grades OLAP, demonstrativos (DRE, DFC, BP) e contas financeiras iniciam com células vazias / estado aguardando ingestão, sem dados fictícios pré-populados.
+   - O indicador de progresso do pipeline inicia em `0%` com status `idle` aguardando carga.
+
+2. **Eliminação Definitiva da Regressão para Klabin / Vale:**
+   - Removidos todos os `useState("klabin")` e fallbacks locais em componentes desmontados na troca de abas (`BoardGovernanceCovenants`, `RollingForecastMonteCarlo`, `OperationalDriverPlanning`, `ThreeStatementIntegrator`, `MultiDimGrid`).
+   - Sincronização estrita com `PreferencesContext` (`activeCompany` e `hasActiveData`) persistida no `localStorage`.
+   - Substituídos seletores estáticos isolados por badges dinâmicos vinculados à empresa ativa.
+
+3. **Validação E2E com Playwright (`scripts/verify_persistence_and_empty_state.py`):**
+   - **Etapa 1:** Abertura limpa sem dados -> Validado cabeçalho e DRE vazios [PASS].
+   - **Etapa 2:** Carga do **BANCO ABC BRASIL S/A** no CVM Watch -> Validado preenchimento e propagação [PASS].
+   - **Etapa 3:** Navegação contínua por todas as 8 páginas críticas do aplicativo:
+     - `Conselho & Covenants`: OK (BANCO ABC BRASIL S/A) [PASS]
+     - `Planejamento por Drivers`: OK (BANCO ABC BRASIL S/A) [PASS]
+     - `Previsão & Monte Carlo`: OK (BANCO ABC BRASIL S/A) [PASS]
+     - `Loop DRE-DFC-BP`: OK (BANCO ABC BRASIL S/A) [PASS]
+     - `Demonstração DRE`: OK (BANCO ABC BRASIL S/A) [PASS]
+     - `Fluxo de Caixa (DFC)`: OK (BANCO ABC BRASIL S/A) [PASS]
+     - `Balanço Patrimonial (BP)`: OK (BANCO ABC BRASIL S/A) [PASS]
+     - `Valuation Corporativo`: OK (BANCO ABC BRASIL S/A) [PASS]
+   - **Resultado:** 100% das páginas preservam a empresa ativa selecionada com **zero regressão para a Klabin ou Vale**.
+
+---
+
+## 🏁 9. Conclusão da Auditoria
 
 A aplicação **HyperCube Engine** atende plenamente a todos os requisitos de acurácia matemática, performance reativa, qualidade de código, integração de dados da CVM, sincronização multi-empresa e raciocínio financeiro via IA Google Gemini. O sistema encontra-se homologado e 100% operacional em produção.
 
