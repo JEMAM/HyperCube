@@ -102,15 +102,29 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
   const [watchStatus, setWatchStatus] = useState<any>(null);
   const [runningWatchdog, setRunningWatchdog] = useState<boolean>(false);
 
+function cleanSector(s: string): string {
+  return (s || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // remove accents
+    .replace(/[^a-zA-Z0-9]/g, "")    // remove non-alphanumeric, spaces, and replacement chars
+    .toLowerCase();
+}
+
+function matchSector(sec1: string, sec2: string): boolean {
+  if (!sec1 || !sec2) return false;
+  const s1 = cleanSector(sec1);
+  const s2 = cleanSector(sec2);
+  if (s1 === s2 || s1.includes(s2) || s2.includes(s1)) return true;
+  // Prefix comparison for truncated or encoded strings
+  const minLen = Math.min(s1.length, s2.length, 7);
+  return minLen >= 5 && s1.slice(0, minLen) === s2.slice(0, minLen);
+}
+
   // Synchronous and immediate company list filtering based on sector and search term
   const filteredCompanies = useMemo(() => {
     let list = allCompanies;
     if (selectedSector && selectedSector !== "all") {
-      const secNorm = selectedSector.toLowerCase().trim();
-      list = list.filter((c) => {
-        const cSec = (c.setor || "").toLowerCase().trim();
-        return cSec === secNorm || cSec.includes(secNorm) || secNorm.includes(cSec);
-      });
+      list = list.filter((c) => matchSector(c.setor, selectedSector));
     }
     if (searchTerm && searchTerm.trim()) {
       const term = searchTerm.toLowerCase().trim();
@@ -204,11 +218,19 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
         : (data && Array.isArray(data.companies) ? data.companies : null);
       if (rawList && rawList.length > 0) {
         const seen = new Set<number>();
-        const unique = rawList.filter((c: any) => {
-          if (!c || !c.cod_cvm || seen.has(c.cod_cvm)) return false;
-          seen.add(c.cod_cvm);
-          return true;
-        });
+        const unique = rawList
+          .filter((c: any) => {
+            if (!c || !c.cod_cvm || seen.has(c.cod_cvm)) return false;
+            seen.add(c.cod_cvm);
+            return true;
+          })
+          .map((c: any) => {
+            const canonSec = CVM_SECTORS.find((s) => matchSector(s, c.setor));
+            return {
+              ...c,
+              setor: canonSec || c.setor || "Sem Setor Principal",
+            };
+          });
         if (unique.length > 0) {
           setAllCompanies(unique);
         }

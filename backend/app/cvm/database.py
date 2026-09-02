@@ -207,14 +207,24 @@ class CVMDatabase:
 
     def get_sectors(self) -> List[str]:
         """Returns sorted list of distinct, deduplicated industry sectors."""
-        res = self.conn.execute("""
-            SELECT DISTINCT setor 
-            FROM cvm_companies 
-            WHERE setor IS NOT NULL AND trim(setor) != '' 
-            ORDER BY setor ASC
-        """).fetchall()
-        unique_sectors = sorted(list({normalize_sector(r[0]) for r in res if r[0] and r[0].strip()}))
-        return unique_sectors
+        from backend.app.cvm.normalizer import CVM_CANONICAL_SECTORS
+        try:
+            res = self.conn.execute("""
+                SELECT DISTINCT setor 
+                FROM cvm_companies 
+                WHERE setor IS NOT NULL 
+                ORDER BY setor ASC
+            """).fetchall()
+            unique_sectors = sorted(list({
+                normalize_sector(str(r[0]))
+                for r in res
+                if r and r[0] is not None and not isinstance(r[0], (datetime, date)) and str(r[0]).strip() and not str(r[0]).startswith("202")
+            }))
+            if len(unique_sectors) >= 20:
+                return unique_sectors
+        except Exception:
+            pass
+        return list(CVM_CANONICAL_SECTORS)
 
     def get_companies(self, sector: Optional[str] = None, search: Optional[str] = None) -> List[Dict[str, Any]]:
         """Returns list of active companies matching sector and search criteria."""

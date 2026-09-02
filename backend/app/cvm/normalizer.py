@@ -216,4 +216,39 @@ def normalize_sector(raw_sector: Optional[str]) -> str:
 
     return s if s else "Sem Setor Principal"
 
+CVM_CANONICAL_SECTORS = [
+    "Agricultura (Açúcar, Álcool e Cana)",
+    "Alimentos e Bebidas",
+    "Arrendamento Mercantil",
+    "Bancos",
+    "Bolsas de Valores / Mercado de Capitais",
+    "Brinquedos e Lazer",
+    "Comunicação e Informática",
+    "Comércio (Atacado e Varejo)",
+    "Construção Civil e Imobiliário",
+    "Crédito Imobiliário",
+    "Educação",
+    "Embalagens",
+    "Energia Elétrica",
+    "Extração Mineral",
+    "Farmacêutico e Higiene",
+    "Hospedagem e Turismo",
+    "Intermediação Financeira",
+    "Material de Transporte / Aeroespacial",
+    "Metalurgia e Siderurgia",
+    "Máquinas, Equipamentos, Veículos e Peças",
+    "Papel e Celulose",
+    "Petroquímicos e Borracha",
+    "Petróleo e Gás",
+    "Reflorestamento",
+    "Saneamento, Água e Serviços Básicos",
+    "Securitização de Recebíveis",
+    "Seguradoras e Corretoras",
+    "Sem Setor Principal",
+    "Serviços Médicos e Hospitalares",
+    "Serviços de Transporte e Logística",
+    "Telecomunicações",
+    "Têxtil e Vestuário"
+]
+
 

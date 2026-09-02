@@ -18,10 +18,27 @@ export default function CompanyBadge({
   showCurrency = true,
 }: CompanyBadgeProps) {
   const { activeCompany, theme, language } = usePreferences();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const isDark = theme === "dark";
   const isEn = language === "en";
 
-  const isAwaitingUpload = activeCompany.id === "aguardando_upload";
+  // Before client mounts, use clean initial SSR placeholder to prevent hydration mismatches with localStorage
+  const currentCompany = mounted
+    ? activeCompany
+    : {
+        id: "aguardando_upload",
+        name: isEn ? "Awaiting Data Upload" : "Aguardando Upload de Dados",
+        ticker: "EMPRESA",
+        description: "",
+        currency: "BRL"
+      };
+
+  const isAwaitingUpload = currentCompany.id === "aguardando_upload";
 
   if (variant === "chip") {
     return (
@@ -34,12 +51,12 @@ export default function CompanyBadge({
             ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
             : "bg-emerald-50 text-emerald-800 border border-emerald-300"
         } ${onClick ? "cursor-pointer hover:opacity-80" : ""} ${className}`}
-        title={activeCompany.description || activeCompany.name}
+        title={currentCompany.description || currentCompany.name}
       >
         <Building2 className="w-3.5 h-3.5" />
-        <span className="truncate max-w-[200px]">{activeCompany.name}</span>
-        {activeCompany.ticker && (
-          <span className="font-mono text-[10px] opacity-80">({activeCompany.ticker})</span>
+        <span className="truncate max-w-[200px]">{currentCompany.name}</span>
+        {currentCompany.ticker && (
+          <span className="font-mono text-[10px] opacity-80">({currentCompany.ticker})</span>
         )}
       </div>
     );
@@ -78,16 +95,16 @@ export default function CompanyBadge({
                     : "bg-emerald-100 text-emerald-800 border border-emerald-300"
                 }`}
               >
-                {activeCompany.ticker || "EMPRESA"}
+                {currentCompany.ticker || "EMPRESA"}
               </span>
-              {showCurrency && activeCompany.currency && (
+              {showCurrency && currentCompany.currency && (
                 <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                  • {activeCompany.currency}
+                  • {currentCompany.currency}
                 </span>
               )}
             </div>
             <h4 className="text-sm font-extrabold text-slate-900 dark:text-white mt-0.5">
-              {activeCompany.name}
+              {currentCompany.name}
             </h4>
           </div>
         </div>
@@ -121,7 +138,7 @@ export default function CompanyBadge({
           ? "bg-slate-800/90 border-slate-700 text-slate-200 hover:bg-slate-800"
           : "bg-slate-100 border-slate-300 text-slate-900 hover:bg-white shadow-xs"
       } ${onClick ? "cursor-pointer" : ""} ${className}`}
-      title={activeCompany.description || activeCompany.name}
+      title={currentCompany.description || currentCompany.name}
     >
       <Building2 className="w-3.5 h-3.5 text-anaplan-coral flex-shrink-0" />
       <span className={`text-[11px] font-bold hidden sm:inline ${
@@ -134,13 +151,13 @@ export default function CompanyBadge({
           ? isDark ? "text-amber-300" : "text-amber-950"
           : isDark ? "text-white" : "text-slate-900"
       }`}>
-        {activeCompany.name}
+        {currentCompany.name}
       </span>
-      {activeCompany.ticker && (
+      {currentCompany.ticker && (
         <span className={`px-1.5 py-0.2 rounded font-mono text-[10px] font-black ${
           isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-900"
         }`}>
-          {activeCompany.ticker}
+          {currentCompany.ticker}
         </span>
       )}
     </div>
