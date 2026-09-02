@@ -15,7 +15,7 @@ interface ResultsDashboardProps {
 }
 
 export default function ResultsDashboard({ viewMode = "DRE", annualData, kpis }: ResultsDashboardProps) {
-  const { theme, language, t, apiBaseUrl } = usePreferences();
+  const { theme, language, t, apiBaseUrl, activeCompany } = usePreferences();
   const isDark = theme === "dark";
   const isEn = language === "en";
   const [chartTab, setChartTab] = useState<"executive" | "line" | "bar" | "table">("executive");
@@ -44,9 +44,10 @@ export default function ResultsDashboard({ viewMode = "DRE", annualData, kpis }:
   useEffect(() => {
     const fetchSeries = async () => {
       try {
+        const periodicity = activeCompany?.periodicity || (activeCompany?.periods?.some((p: string) => p.includes("T")) ? "TRIMESTRAL" : "ANUAL");
         const endpoint = viewMode === "DFC"
-          ? `${apiBaseUrl}/api/dfc/timeseries`
-          : `${apiBaseUrl}/api/dre/timeseries`;
+          ? `${apiBaseUrl}/api/dfc/timeseries?periodicity=${periodicity}`
+          : `${apiBaseUrl}/api/dre/timeseries?periodicity=${periodicity}`;
         const res = await fetch(endpoint);
         if (res.ok) {
           const data = await res.json();
@@ -59,7 +60,7 @@ export default function ResultsDashboard({ viewMode = "DRE", annualData, kpis }:
       }
     };
     fetchSeries();
-  }, [apiBaseUrl, viewMode, annualData, kpis]);
+  }, [apiBaseUrl, viewMode, annualData, kpis, activeCompany?.id, activeCompany?.periodicity]);
 
   // Convert annualData or canonical records into structured TimeSeries for DynamicAccountsLineChart
   const customTimeSeriesData: AccountTimeSeriesData[] = React.useMemo(() => {

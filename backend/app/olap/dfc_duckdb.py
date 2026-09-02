@@ -11,8 +11,8 @@ class DuckDBDFCAnalytics:
         self.conn.register('dfc_quarterly', df)
 
     def summary_kpis(self) -> Dict[str, float]:
-        """Calculates total DFC KPIs across all quarters."""
-        query = """
+        """Calculates total DFC KPIs for the latest fiscal year or latest quarters."""
+        query_latest_year = """
         SELECT 
             SUM(fco_caixa_liquido) AS Total_FCO,
             SUM(fci_caixa_liquido) AS Total_FCI,
@@ -20,18 +20,31 @@ class DuckDBDFCAnalytics:
             SUM(variacao_liquida_caixa) AS Total_Variacao_Liquida,
             LAST(saldo_final_caixa) AS Saldo_Final_Atual
         FROM dfc_quarterly
+        WHERE ano = (SELECT MAX(ano) FROM dfc_quarterly)
         """
-        res = self.conn.execute(query).fetchone()
+        res = self.conn.execute(query_latest_year).fetchone()
+        if not res or res[0] is None:
+            query_all = """
+            SELECT 
+                SUM(fco_caixa_liquido) AS Total_FCO,
+                SUM(fci_caixa_liquido) AS Total_FCI,
+                SUM(fcf_caixa_liquido) AS Total_FCF,
+                SUM(variacao_liquida_caixa) AS Total_Variacao_Liquida,
+                LAST(saldo_final_caixa) AS Saldo_Final_Atual
+            FROM dfc_quarterly
+            """
+            res = self.conn.execute(query_all).fetchone()
+
         return {
-            "Total_FCO": round(res[0] or 0.0, 2),
-            "Total_FCI": round(res[1] or 0.0, 2),
-            "Total_FCF": round(res[2] or 0.0, 2),
-            "Total_Variacao_Liquida": round(res[3] or 0.0, 2),
-            "Saldo_Final_Atual": round(res[4] or 0.0, 2)
+            "Total_FCO": round(res[0] or 0.0, 2) if res else 0.0,
+            "Total_FCI": round(res[1] or 0.0, 2) if res else 0.0,
+            "Total_FCF": round(res[2] or 0.0, 2) if res else 0.0,
+            "Total_Variacao_Liquida": round(res[3] or 0.0, 2) if res else 0.0,
+            "Saldo_Final_Atual": round(res[4] or 0.0, 2) if res else 0.0
         }
 
     def resultado_por_ano(self) -> List[Dict[str, Any]]:
-        """Aggregates Cash Flow performance by calendar year."""
+        """Aggregates Cash Flow performance by calendar year (last 5 years)."""
         query = """
         WITH annual_summary AS (
             SELECT 
@@ -60,16 +73,6 @@ class DuckDBDFCAnalytics:
         FROM annual_summary
         ORDER BY ano ASC
         """
-        rows = self.conn.execute(query).fetchall()
-        result = []
-        for r in rows:
-            result.append({
-                "ano": int(r[0]),
-                "fco": round(r[1] or 0.0, 2),
-                "fci": round(r[2] or 0.0, 2),
-                "fcf": round(r[3] or 0.0, 2),
-                "variacao_liquida": round(r[4] or 0.0, 2),
-                "saldo_final": round(r[5] or 0.0, 2),
-                "yoy_growth_pct": float(r[6] or 0.0)
-            })
-        return result
+        res = self.conn.execute(query).df().fillna(0.0)
+        records = res.to_dict(orient='records')
+        return records[-5:] if len(records) > 5 else records

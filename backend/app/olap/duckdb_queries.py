@@ -8,8 +8,8 @@ class DuckDBAnalytics:
         self.conn.register('dre_quarterly', df)
 
     def summary_kpis(self) -> Dict[str, float]:
-        """Calculates DRE KPIs across quarters, returning latest quarter for custom uploads (<=4 periods)."""
-        query_latest = """
+        """Calculates DRE KPIs for the latest fiscal year (summing its 4 quarters) or latest quarter."""
+        query_latest_quarter = """
         SELECT 
             produto_da_intermediacao_financeira,
             resultado_da_intermediacao_financeira,
@@ -19,21 +19,28 @@ class DuckDBAnalytics:
         ORDER BY data DESC
         LIMIT 1
         """
-        query_sum = """
+        query_latest_year = """
         SELECT 
             SUM(produto_da_intermediacao_financeira) AS Total_Produto_Intermediacao,
             SUM(resultado_da_intermediacao_financeira) AS Total_Resultado_Intermediacao,
             SUM(resultado_antes_da_tributacao) AS Total_Resultado_Antes_Tributacao,
             SUM(lucro_liquido) AS Total_Lucro_Liquido,
-            COUNT(*) AS period_count
+            COUNT(*) AS qtr_count
         FROM dre_quarterly
+        WHERE ano = (SELECT MAX(ano) FROM dre_quarterly)
         """
-        res_sum = self.conn.execute(query_sum).fetchone()
-        res_latest = self.conn.execute(query_latest).fetchone()
-
-        period_count = res_sum[4] if res_sum and len(res_sum) > 4 else 96
-
-        if period_count <= 4 and res_latest:
+        res_year = self.conn.execute(query_latest_year).fetchone()
+        
+        if res_year and (res_year[0] is not None or res_year[3] is not None):
+            return {
+                "Total_Produto_Intermediacao": round(res_year[0] or 0.0, 2),
+                "Total_Resultado_Intermediacao": round(res_year[1] or 0.0, 2),
+                "Total_Resultado_Antes_Tributacao": round(res_year[2] or 0.0, 2),
+                "Total_Lucro_Liquido": round(res_year[3] or 0.0, 2)
+            }
+        
+        res_latest = self.conn.execute(query_latest_quarter).fetchone()
+        if res_latest:
             return {
                 "Total_Produto_Intermediacao": round(res_latest[0] or 0.0, 2),
                 "Total_Resultado_Intermediacao": round(res_latest[1] or 0.0, 2),
@@ -42,15 +49,16 @@ class DuckDBAnalytics:
             }
 
         return {
-            "Total_Produto_Intermediacao": round(res_sum[0] or 0.0, 2),
-            "Total_Resultado_Intermediacao": round(res_sum[1] or 0.0, 2),
-            "Total_Resultado_Antes_Tributacao": round(res_sum[2] or 0.0, 2),
-            "Total_Lucro_Liquido": round(res_sum[3] or 0.0, 2)
+            "Total_Produto_Intermediacao": 0.0,
+            "Total_Resultado_Intermediacao": 0.0,
+            "Total_Resultado_Antes_Tributacao": 0.0,
+            "Total_Lucro_Liquido": 0.0
         }
 
     def resultado_por_ano(self) -> List[Dict[str, Any]]:
         """
         Aggregates financial performance by calendar year and calculates YoY growth rates.
+        Returns the most recent 5 fiscal years.
         """
         query = """
         WITH annual_summary AS (
@@ -80,4 +88,5 @@ class DuckDBAnalytics:
         ORDER BY ano ASC
         """
         res = self.conn.execute(query).df().fillna(0.0)
-        return res.to_dict(orient='records')
+        records = res.to_dict(orient='records')
+        return records[-5:] if len(records) > 5 else records

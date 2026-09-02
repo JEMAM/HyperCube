@@ -55,13 +55,13 @@ export default function ExecutivePlanningViewCard({
   statementType = "DRE",
   onOpenTable,
 }: ExecutivePlanningViewCardProps) {
-  const { theme, language, apiBaseUrl } = usePreferences();
+  const { theme, language, apiBaseUrl, activeCompany: prefActiveCompany } = usePreferences();
   const isDark = forcedDark !== undefined ? forcedDark : theme === "dark";
   const isEn = language === "en";
   const [activeView, setActiveView] = useState<"chart" | "document">(defaultTab);
   const [showModal, setShowModal] = useState(false);
 
-  const [activeCompany, setActiveCompany] = useState<any>({
+  const [activeCompany, setActiveCompany] = useState<any>(prefActiveCompany || {
     id: "casas_bahia",
     name: "Grupo Casas Bahia S.A.",
     ticker: "BHIA3",
@@ -77,14 +77,21 @@ export default function ExecutivePlanningViewCard({
   useEffect(() => {
     const loadData = async () => {
       try {
-        const compRes = await fetch(`${apiBaseUrl}/api/active-company`);
-        if (compRes.ok) {
-          const comp = await compRes.json();
-          setActiveCompany(comp);
+        let currentComp = prefActiveCompany;
+        if (!currentComp || currentComp.id === "aguardando_upload") {
+          const compRes = await fetch(`${apiBaseUrl}/api/active-company`);
+          if (compRes.ok) {
+            currentComp = await compRes.json();
+            setActiveCompany(currentComp);
+          }
+        } else {
+          setActiveCompany(currentComp);
         }
 
+        const periodicity = currentComp?.periodicity || (currentComp?.periods?.some((p: string) => p.includes("T")) ? "TRIMESTRAL" : "ANUAL");
+
         if (statementType === "DRE") {
-          const tsRes = await fetch(`${apiBaseUrl}/api/dre/timeseries`);
+          const tsRes = await fetch(`${apiBaseUrl}/api/dre/timeseries?periodicity=${periodicity}`);
           if (tsRes.ok) {
             const ts = await tsRes.json();
             if (Array.isArray(ts) && ts.length > 0) {
@@ -99,7 +106,7 @@ export default function ExecutivePlanningViewCard({
             }
           }
         } else if (statementType === "DFC") {
-          const dfcRes = await fetch(`${apiBaseUrl}/api/dfc/timeseries`);
+          const dfcRes = await fetch(`${apiBaseUrl}/api/dfc/timeseries?periodicity=${periodicity}`);
           if (dfcRes.ok) {
             const data = await dfcRes.json();
             if (Array.isArray(data) && data.length > 0) {
@@ -152,7 +159,7 @@ export default function ExecutivePlanningViewCard({
       }
     };
     loadData();
-  }, [apiBaseUrl, statementType]);
+  }, [apiBaseUrl, statementType, prefActiveCompany?.id, prefActiveCompany?.periodicity, prefActiveCompany?.periods]);
 
   // Current series based on statement type
   const activeSeries = statementType === "DFC" ? dfcSeries : statementType === "BP" ? bpSeries : dreSeries;

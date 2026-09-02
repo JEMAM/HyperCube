@@ -592,101 +592,296 @@ def get_kpis():
     return analytics.summary_kpis()
 
 @router.get("/dre/timeseries")
-def get_dre_timeseries():
+def get_dre_timeseries(periodicity: Optional[str] = Query(None)):
     df = _engine.get_dataframe().to_pandas()
-    records = []
     company = get_active_company_info()
     periods_def = company.get("periods", [])
-    for _, row in df.iterrows():
-        ano = int(row.get('ano', 2026))
-        trim = int(row.get('trimestre', 1))
-        if any("4T" in p for p in periods_def):
+    
+    if periodicity:
+        is_annual = periodicity.upper() == "ANUAL"
+    elif company.get("periodicity"):
+        is_annual = company.get("periodicity").upper() == "ANUAL"
+    else:
+        is_annual = not any("T" in str(p) for p in periods_def if p != "Budget 2026")
+        
+    records = []
+    
+    if is_annual:
+        target_years = [str(p) for p in periods_def if p != "Budget 2026" and "T" not in str(p)]
+        if not target_years:
+            all_years = sorted(list(set(str(int(r)) for r in df['ano'].dropna())))
+            target_years = all_years[-4:]
+            
+        by_year = {}
+        for _, row in df.iterrows():
+            ano = str(int(row.get('ano', 2026)))
+            if ano not in target_years:
+                continue
+            rec = float(row.get('receita_com_operacoes_de_credito_e_repasses', 0.0))
+            cpv = abs(float(row.get('despesas_de_captacao', 0.0)))
+            bruto = float(row.get('produto_da_intermediacao_financeira', 0.0))
+            sga = abs(float(row.get('despesas_pessoal_e_administrativas', 0.0)))
+            ebit = float(row.get('resultado_da_intermediacao_financeira', 0.0))
+            fin = float(row.get('resultado_com_participacoes_societarias', 0.0))
+            ebt = float(row.get('resultado_antes_da_tributacao', 0.0))
+            ir = float(row.get('tributos_sobre_o_lucro', 0.0))
+            ll = float(row.get('lucro_liquido', 0.0))
+            prc = abs(float(row.get('provisao_para_risco_de_credito_prc', 0.0)))
+            
+            if ano not in by_year:
+                by_year[ano] = {
+                    "rec": rec, "cpv": cpv, "bruto": bruto, "sga": sga,
+                    "ebit": ebit, "fin": fin, "ebt": ebt, "ir": ir, "ll": ll, "prc": prc
+                }
+            else:
+                y = by_year[ano]
+                y["rec"] += rec
+                y["cpv"] += cpv
+                y["bruto"] += bruto
+                y["sga"] += sga
+                y["ebit"] += ebit
+                y["fin"] += fin
+                y["ebt"] += ebt
+                y["ir"] += ir
+                y["ll"] += ll
+                y["prc"] += prc
+                
+        for yr in target_years:
+            if yr in by_year:
+                d = by_year[yr]
+                records.append({
+                    "period": yr,
+                    "periodLabel": f"{yr} ({company['name']})",
+                    "Receita_Liquida": round(d["rec"], 2),
+                    "CMV": round(d["cpv"], 2),
+                    "Margem_Bruta": round(d["bruto"], 2),
+                    "Despesas_Logistica": round(d["sga"] * 0.8, 2),
+                    "Despesas_Comerciais": round(d["sga"] * 0.2, 2),
+                    "Despesas_Gerais_Admin": round(d["prc"], 2),
+                    "EBIT": round(d["ebit"], 2),
+                    "EBITDA": round(d["ebit"] + (d["rec"] * 0.05), 2),
+                    "Resultado_Financeiro": round(d["fin"], 2),
+                    "EBT": round(d["ebt"], 2),
+                    "Impostos_Lucro": round(d["ir"], 2),
+                    "Lucro_Liquido": round(d["ll"], 2),
+                })
+                
+        if "Budget 2026" in periods_def and records:
+            last = records[-1]
+            records.append({
+                "period": "Budget 2026",
+                "periodLabel": f"Budget 2026 ({company['name']})",
+                "Receita_Liquida": round(last["Receita_Liquida"] * 1.08, 2),
+                "CMV": round(last["CMV"] * 1.07, 2),
+                "Margem_Bruta": round(last["Margem_Bruta"] * 1.09, 2),
+                "Despesas_Logistica": round(last["Despesas_Logistica"] * 1.05, 2),
+                "Despesas_Comerciais": round(last["Despesas_Comerciais"] * 1.05, 2),
+                "Despesas_Gerais_Admin": round(last["Despesas_Gerais_Admin"] * 1.05, 2),
+                "EBIT": round(last["EBIT"] * 1.10, 2),
+                "EBITDA": round(last["EBITDA"] * 1.10, 2),
+                "Resultado_Financeiro": round(last["Resultado_Financeiro"] * 1.02, 2),
+                "EBT": round(last["EBT"] * 1.10, 2),
+                "Impostos_Lucro": round(last["Impostos_Lucro"] * 1.10, 2),
+                "Lucro_Liquido": round(last["Lucro_Liquido"] * 1.10, 2),
+            })
+    else:
+        target_qtrs = [str(p) for p in periods_def if p != "Budget 2026" and "T" in str(p)]
+        all_q_records = []
+        for _, row in df.iterrows():
+            ano = int(row.get('ano', 2026))
+            trim = int(row.get('trimestre', 1))
             p_code = f"{trim}T{str(ano)[2:]}" if trim in [1,2,3,4] else str(ano)
-        elif str(ano) in periods_def:
-            p_code = str(ano)
+            rec = float(row.get('receita_com_operacoes_de_credito_e_repasses', 0.0))
+            cpv = abs(float(row.get('despesas_de_captacao', 0.0)))
+            bruto = float(row.get('produto_da_intermediacao_financeira', 0.0))
+            sga = abs(float(row.get('despesas_pessoal_e_administrativas', 0.0)))
+            ebit = float(row.get('resultado_da_intermediacao_financeira', 0.0))
+            fin = float(row.get('resultado_com_participacoes_societarias', 0.0))
+            ebt = float(row.get('resultado_antes_da_tributacao', 0.0))
+            ir = float(row.get('tributos_sobre_o_lucro', 0.0))
+            ll = float(row.get('lucro_liquido', 0.0))
+            all_q_records.append({
+                "period": p_code,
+                "periodLabel": f"{p_code} ({company['name']})",
+                "Receita_Liquida": rec,
+                "CMV": cpv,
+                "Margem_Bruta": bruto,
+                "Despesas_Logistica": round(sga * 0.8, 1),
+                "Despesas_Comerciais": round(sga * 0.2, 1),
+                "Despesas_Gerais_Admin": abs(float(row.get('provisao_para_risco_de_credito_prc', 0.0))),
+                "EBIT": ebit,
+                "EBITDA": round(ebit + (rec * 0.05), 1),
+                "Resultado_Financeiro": fin,
+                "EBT": ebt,
+                "Impostos_Lucro": ir,
+                "Lucro_Liquido": ll,
+            })
+        if target_qtrs:
+            records = [r for r in all_q_records if r["period"] in target_qtrs]
         else:
-            p_code = f"{trim}T{str(ano)[2:]}" if trim in [1,2,3,4] else str(ano)
-        
-        rec = float(row.get('receita_com_operacoes_de_credito_e_repasses', 0.0))
-        cpv = abs(float(row.get('despesas_de_captacao', 0.0)))
-        bruto = float(row.get('produto_da_intermediacao_financeira', 0.0))
-        sga = abs(float(row.get('despesas_pessoal_e_administrativas', 0.0)))
-        ebit = float(row.get('resultado_da_intermediacao_financeira', 0.0))
-        fin = float(row.get('resultado_com_participacoes_societarias', 0.0))
-        ebt = float(row.get('resultado_antes_da_tributacao', 0.0))
-        ir = float(row.get('tributos_sobre_o_lucro', 0.0))
-        ll = float(row.get('lucro_liquido', 0.0))
-        
-        records.append({
-            "period": p_code,
-            "periodLabel": f"{p_code} ({company['name']})",
-            "Receita_Liquida": rec,
-            "CMV": cpv,
-            "Margem_Bruta": bruto,
-            "Despesas_Logistica": round(sga * 0.8, 1),
-            "Despesas_Comerciais": round(sga * 0.2, 1),
-            "Despesas_Gerais_Admin": abs(float(row.get('provisao_para_risco_de_credito_prc', 0.0))),
-            "EBIT": ebit,
-            "EBITDA": round(ebit + (rec * 0.05), 1),
-            "Resultado_Financeiro": fin,
-            "EBT": ebt,
-            "Impostos_Lucro": ir,
-            "Lucro_Liquido": ll,
-        })
+            records = all_q_records[-6:]
+            
     return records
 
 @router.get("/dfc/timeseries")
-def get_dfc_timeseries():
+def get_dfc_timeseries(periodicity: Optional[str] = Query(None)):
     df = _dfc_engine.get_dataframe().to_pandas()
-    records = []
     company = get_active_company_info()
     periods_def = company.get("periods", [])
-    for _, row in df.iterrows():
-        ano = int(row.get('ano', 2026))
-        trim = int(row.get('trimestre', 1))
-        if any("4T" in p for p in periods_def):
+    
+    if periodicity:
+        is_annual = periodicity.upper() == "ANUAL"
+    elif company.get("periodicity"):
+        is_annual = company.get("periodicity").upper() == "ANUAL"
+    else:
+        is_annual = not any("T" in str(p) for p in periods_def if p != "Budget 2026")
+        
+    records = []
+    
+    if is_annual:
+        target_years = [str(p) for p in periods_def if p != "Budget 2026" and "T" not in str(p)]
+        if not target_years:
+            all_years = sorted(list(set(str(int(r)) for r in df['ano'].dropna())))
+            target_years = all_years[-4:]
+            
+        by_year = {}
+        for _, row in df.iterrows():
+            ano = str(int(row.get('ano', 2026)))
+            if ano not in target_years:
+                continue
+            rec = float(row.get('receita_vendas', row.get('recebimento_vendas', 0.0)))
+            forn = float(row.get('pagamento_fornecedores', 0.0))
+            sal = float(row.get('pagamento_salarios', 0.0))
+            desp = float(row.get('pagamento_despesas_operacionais', 0.0))
+            imp = float(row.get('pagamento_impostos', 0.0))
+            fco = float(row.get('fco_caixa_liquido', 0.0))
+            fci = float(row.get('fci_caixa_liquido', 0.0))
+            fcf = float(row.get('fcf_caixa_liquido', 0.0))
+            var_caixa = float(row.get('variacao_liquida_caixa', 0.0))
+            saldo_fim = float(row.get('saldo_final_caixa', 0.0))
+            
+            if ano not in by_year:
+                by_year[ano] = {
+                    "rec": rec, "forn": forn, "sal": sal, "desp": desp, "imp": imp,
+                    "fco": fco, "fci": fci, "fcf": fcf, "var_caixa": var_caixa,
+                    "saldo_fim": saldo_fim
+                }
+            else:
+                y = by_year[ano]
+                y["rec"] += rec
+                y["forn"] += forn
+                y["sal"] += sal
+                y["desp"] += desp
+                y["imp"] += imp
+                y["fco"] += fco
+                y["fci"] += fci
+                y["fcf"] += fcf
+                y["var_caixa"] += var_caixa
+                y["saldo_fim"] = saldo_fim
+                
+        for yr in target_years:
+            if yr in by_year:
+                d = by_year[yr]
+                records.append({
+                    "period": yr,
+                    "periodLabel": f"{yr} ({company['name']})",
+                    "receita_vendas": round(d["rec"], 2),
+                    "recebimento_vendas": round(d["rec"], 2),
+                    "pagamento_fornecedores": round(d["forn"], 2),
+                    "pagamento_salarios": round(d["sal"], 2),
+                    "pagamento_despesas_operacionais": round(d["desp"], 2),
+                    "pagamento_impostos": round(d["imp"], 2),
+                    "fco_caixa_liquido": round(d["fco"], 2),
+                    "fco": round(d["fco"], 2),
+                    "aquisicao_ativos_imobilizados": round(d["fci"] * 0.7, 2),
+                    "fci_caixa_liquido": round(d["fci"], 2),
+                    "fci": round(d["fci"], 2),
+                    "captacao_emprestimos": round(d["fcf"] * 0.5, 2),
+                    "amortizacao_dividas": round(d["fcf"] * 0.3, 2),
+                    "pagamento_dividendos_jcp": round(d["fcf"] * 0.2, 2),
+                    "fcf_caixa_liquido": round(d["fcf"], 2),
+                    "fcf": round(d["fcf"], 2),
+                    "variacao_liquida_caixa": round(d["var_caixa"], 2),
+                    "variacao_caixa": round(d["var_caixa"], 2),
+                    "saldo_inicial_caixa": round(d["saldo_fim"] - d["var_caixa"], 2),
+                    "saldo_final_caixa": round(d["saldo_fim"], 2),
+                    "saldo_final": round(d["saldo_fim"], 2)
+                })
+                
+        if "Budget 2026" in periods_def and records:
+            last = records[-1]
+            records.append({
+                "period": "Budget 2026",
+                "periodLabel": f"Budget 2026 ({company['name']})",
+                "receita_vendas": round(last["receita_vendas"] * 1.08, 2),
+                "recebimento_vendas": round(last["receita_vendas"] * 1.08, 2),
+                "pagamento_fornecedores": round(last["pagamento_fornecedores"] * 1.06, 2),
+                "pagamento_salarios": round(last["pagamento_salarios"] * 1.05, 2),
+                "pagamento_despesas_operacionais": round(last["pagamento_despesas_operacionais"] * 1.05, 2),
+                "pagamento_impostos": round(last["pagamento_impostos"] * 1.08, 2),
+                "fco_caixa_liquido": round(last["fco_caixa_liquido"] * 1.10, 2),
+                "fco": round(last["fco_caixa_liquido"] * 1.10, 2),
+                "aquisicao_ativos_imobilizados": round(last["aquisicao_ativos_imobilizados"] * 1.05, 2),
+                "fci_caixa_liquido": round(last["fci_caixa_liquido"] * 1.05, 2),
+                "fci": round(last["fci_caixa_liquido"] * 1.05, 2),
+                "captacao_emprestimos": round(last["captacao_emprestimos"] * 1.05, 2),
+                "amortizacao_dividas": round(last["amortizacao_dividas"] * 1.05, 2),
+                "pagamento_dividendos_jcp": round(last["pagamento_dividendos_jcp"] * 1.08, 2),
+                "fcf_caixa_liquido": round(last["fcf_caixa_liquido"] * 1.08, 2),
+                "fcf": round(last["fcf_caixa_liquido"] * 1.08, 2),
+                "variacao_liquida_caixa": round(last["variacao_liquida_caixa"] * 1.08, 2),
+                "variacao_caixa": round(last["variacao_liquida_caixa"] * 1.08, 2),
+                "saldo_inicial_caixa": round(last["saldo_final_caixa"], 2),
+                "saldo_final_caixa": round(last["saldo_final_caixa"] * 1.12, 2),
+                "saldo_final": round(last["saldo_final_caixa"] * 1.12, 2)
+            })
+    else:
+        target_qtrs = [str(p) for p in periods_def if p != "Budget 2026" and "T" in str(p)]
+        all_q_records = []
+        for _, row in df.iterrows():
+            ano = int(row.get('ano', 2026))
+            trim = int(row.get('trimestre', 1))
             p_code = f"{trim}T{str(ano)[2:]}" if trim in [1,2,3,4] else str(ano)
-        elif str(ano) in periods_def:
-            p_code = str(ano)
+            rec = float(row.get('receita_vendas', row.get('recebimento_vendas', 0.0)))
+            forn = float(row.get('pagamento_fornecedores', 0.0))
+            sal = float(row.get('pagamento_salarios', 0.0))
+            desp = float(row.get('pagamento_despesas_operacionais', 0.0))
+            imp = float(row.get('pagamento_impostos', 0.0))
+            fco = float(row.get('fco_caixa_liquido', 0.0))
+            fci = float(row.get('fci_caixa_liquido', 0.0))
+            fcf = float(row.get('fcf_caixa_liquido', 0.0))
+            var_caixa = float(row.get('variacao_liquida_caixa', 0.0))
+            saldo_fim = float(row.get('saldo_final_caixa', 0.0))
+            all_q_records.append({
+                "period": p_code,
+                "periodLabel": f"{p_code} ({company['name']})",
+                "receita_vendas": rec,
+                "recebimento_vendas": rec,
+                "pagamento_fornecedores": forn,
+                "pagamento_salarios": sal,
+                "pagamento_despesas_operacionais": desp,
+                "pagamento_impostos": imp,
+                "fco_caixa_liquido": fco,
+                "fco": fco,
+                "aquisicao_ativos_imobilizados": float(row.get('aquisicao_ativos_imobilizados', 0.0)),
+                "fci_caixa_liquido": fci,
+                "fci": fci,
+                "captacao_emprestimos": float(row.get('captacao_emprestimos', 0.0)),
+                "amortizacao_dividas": float(row.get('amortizacao_dividas', 0.0)),
+                "pagamento_dividendos_jcp": float(row.get('pagamento_dividendos_jcp', 0.0)),
+                "fcf_caixa_liquido": fcf,
+                "fcf": fcf,
+                "variacao_liquida_caixa": var_caixa,
+                "variacao_caixa": var_caixa,
+                "saldo_inicial_caixa": float(row.get('saldo_inicial_caixa', 0.0)),
+                "saldo_final_caixa": saldo_fim,
+                "saldo_final": saldo_fim
+            })
+        if target_qtrs:
+            records = [r for r in all_q_records if r["period"] in target_qtrs]
         else:
-            p_code = f"{trim}T{str(ano)[2:]}" if trim in [1,2,3,4] else str(ano)
-        
-        rec = float(row.get('receita_vendas', row.get('recebimento_vendas', 0.0)))
-        forn = float(row.get('pagamento_fornecedores', 0.0))
-        sal = float(row.get('pagamento_salarios', 0.0))
-        desp = float(row.get('pagamento_despesas_operacionais', 0.0))
-        imp = float(row.get('pagamento_impostos', 0.0))
-        fco = float(row.get('fco_caixa_liquido', 0.0))
-        fci = float(row.get('fci_caixa_liquido', 0.0))
-        fcf = float(row.get('fcf_caixa_liquido', 0.0))
-        var_caixa = float(row.get('variacao_liquida_caixa', 0.0))
-        saldo_fim = float(row.get('saldo_final_caixa', 0.0))
-        
-        records.append({
-            "period": p_code,
-            "periodLabel": f"{p_code} ({company['name']})",
-            "receita_vendas": rec,
-            "recebimento_vendas": rec,
-            "pagamento_fornecedores": forn,
-            "pagamento_salarios": sal,
-            "pagamento_despesas_operacionais": desp,
-            "pagamento_impostos": imp,
-            "fco_caixa_liquido": fco,
-            "fco": fco,
-            "aquisicao_ativos_imobilizados": float(row.get('aquisicao_ativos_imobilizados', 0.0)),
-            "fci_caixa_liquido": fci,
-            "fci": fci,
-            "captacao_emprestimos": float(row.get('captacao_emprestimos', 0.0)),
-            "amortizacao_dividas": float(row.get('amortizacao_dividas', 0.0)),
-            "pagamento_dividendos_jcp": float(row.get('pagamento_dividendos_jcp', 0.0)),
-            "fcf_caixa_liquido": fcf,
-            "fcf": fcf,
-            "variacao_liquida_caixa": var_caixa,
-            "variacao_caixa": var_caixa,
-            "saldo_inicial_caixa": float(row.get('saldo_inicial_caixa', 0.0)),
-            "saldo_final_caixa": saldo_fim,
-            "saldo_final": saldo_fim
-        })
+            records = all_q_records[-6:]
+            
     return records
 
 @router.get("/dre/table")
