@@ -243,58 +243,58 @@ export default function IngestionPanel({ onUploadSuccess, onUploadProgress }: In
   }> = [
     {
       id: "ALL",
-      label: isEn ? "All Statements (CVM)" : "Todas as Demonstrações",
-      sublabel: isEn ? "DFP/ITR Package" : "Pacote Completo CVM",
+      label: isEn ? "All Statements (CVM Package)" : "Pacote Completo CVM",
+      sublabel: isEn ? "All 7 Statements (DFP / ITR)" : "Todas as 7 Demonstrações (DFP/ITR)",
       icon: Sparkles,
-      badge: "Recomendado"
+      badge: isEn ? "Recommended" : "Recomendado"
     },
     {
       id: "DRE",
-      label: isEn ? "DRE (Income)" : "DRE (Resultado)",
-      sublabel: isEn ? "Income Statement" : "Desempenho Econômico",
+      label: isEn ? "DRE (Income Statement)" : "DRE (Resultado do Exercício)",
+      sublabel: isEn ? "Revenues, Costs, Margins & Net Income" : "Receitas, Custos, Margens e Lucro",
       icon: BarChart2
     },
     {
       id: "DFC",
-      label: isEn ? "DFC (Cash Flow)" : "DFC (Fluxo de Caixa)",
-      sublabel: isEn ? "Cash Statement" : "FCO, FCI e FCF",
+      label: isEn ? "DFC (Cash Flow Statement)" : "DFC (Fluxo de Caixa)",
+      sublabel: isEn ? "Operating, Investing & Financing Cash Flow" : "Atividades Operacionais, Investimento e Financiamento",
       icon: Activity
     },
     {
       id: "BP",
-      label: isEn ? "BP (Balance Sheet)" : "BP (Balanço)",
-      sublabel: isEn ? "Balance Sheet" : "Ativo, Passivo e PL",
+      label: isEn ? "BP (Balance Sheet)" : "BP (Balanço Patrimonial)",
+      sublabel: isEn ? "Assets, Liabilities & Shareholders' Equity" : "Ativo Circulante, Passivo e Patrimônio Líquido",
       icon: Scale
     },
     {
       id: "DRA",
-      label: isEn ? "DRA (Comprehensive)" : "DRA (Abrangente)",
-      sublabel: isEn ? "Comprehensive Income" : "CPC 26 • Hedge & ORA",
+      label: isEn ? "DRA (Comprehensive Income)" : "DRA (Resultado Abrangente)",
+      sublabel: isEn ? "CPC 26 • Equity Valuation & Cash Flow Hedge" : "CPC 26 • Ajustes de Avaliação Patrimonial e Hedge",
       icon: FileSpreadsheet
     },
     {
       id: "DMPL",
-      label: isEn ? "DMPL (Equity)" : "DMPL (Mutações PL)",
-      sublabel: isEn ? "Changes in Equity" : "Art. 186 Lei 6.404",
+      label: isEn ? "DMPL (Changes in Equity)" : "DMPL (Mutações do Patrimônio Líquido)",
+      sublabel: isEn ? "Art. 186 Lei 6.404 • Profit & Capital Reserves" : "Art. 186 Lei 6.404 • Reservas de Lucro e Capital",
       icon: SlidersHorizontal
     },
     {
       id: "DVA",
-      label: isEn ? "DVA (Added Value)" : "DVA (Valor Adicionado)",
-      sublabel: isEn ? "Added Value" : "CPC 09 • Cia Aberta",
+      label: isEn ? "DVA (Value Added Statement)" : "DVA (Valor Adicionado)",
+      sublabel: isEn ? "CPC 09 • Wealth Generation & Distribution" : "CPC 09 • Geração e Distribuição de Riqueza",
       icon: PieChart
     },
     {
       id: "NE",
-      label: isEn ? "NE (Notes)" : "NE (Notas Explicativas)",
-      sublabel: isEn ? "Explanatory Notes" : "Políticas & Covenants",
+      label: isEn ? "NE (Explanatory Notes)" : "NE (Notas Explicativas)",
+      sublabel: isEn ? "Accounting Policies, Debentures & Covenants" : "Políticas Contábeis, Debêntures e Covenants",
       icon: BookOpen
     }
   ];
 
   return (
     <div className={`${isDark ? "bg-slate-900 border-slate-800 text-slate-100" : "bg-white border-slate-200 text-slate-900 shadow-sm"} border rounded-xl p-6 flex flex-col justify-between h-full space-y-6 transition`}>
-      <div className="space-y-4">
+      <div className="space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between border-b pb-3 border-slate-700/50">
           <div className="flex items-center gap-2 font-bold text-sm uppercase tracking-wider text-anaplan-coral">
@@ -308,7 +308,7 @@ export default function IngestionPanel({ onUploadSuccess, onUploadProgress }: In
 
         {/* Statement Selector (All 8 possibilities per CVM requirements) */}
         <div>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2.5">
             <label className={`block text-xs font-bold ${isDark ? "text-slate-100" : "text-slate-800"}`}>
               {isEn ? "Select Statement to Ingest:" : "Selecione a Demonstração para Ingestão:"}
             </label>
@@ -317,7 +317,7 @@ export default function IngestionPanel({ onUploadSuccess, onUploadProgress }: In
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2.5">
             {statementOptions.map((opt) => {
               const Icon = opt.icon;
               const isSelected = statementType === opt.id;
@@ -330,28 +330,52 @@ export default function IngestionPanel({ onUploadSuccess, onUploadProgress }: In
                     setUploadStatus("");
                     setUploadSuccess(false);
                   }}
-                  className={`p-2.5 rounded-xl text-left border transition-all flex flex-col justify-between cursor-pointer ${
+                  className={`p-3 sm:p-3.5 rounded-xl text-left border transition-all flex flex-col justify-between cursor-pointer min-h-[86px] ${
                     isSelected
                       ? "border-anaplan-coral bg-anaplan-coral/10 text-anaplan-coral shadow-sm ring-1 ring-anaplan-coral/40"
                       : isDark
-                      ? "border-slate-800 bg-slate-800/60 text-slate-300 hover:text-white hover:bg-slate-800"
+                      ? "border-slate-800 bg-slate-800/60 text-slate-200 hover:text-white hover:bg-slate-800"
                       : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-1 mb-1">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isSelected ? "text-anaplan-coral" : opt.id === "ALL" ? "text-emerald-500" : isDark ? "text-slate-400" : "text-slate-600"}`} />
-                      <span className="font-bold text-xs truncate">{opt.label}</span>
+                  <div className="w-full space-y-1">
+                    <div className="flex items-start justify-between gap-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <Icon className={`w-4 h-4 flex-shrink-0 ${
+                          isSelected
+                            ? "text-anaplan-coral"
+                            : opt.id === "ALL"
+                            ? "text-emerald-400"
+                            : isDark
+                            ? "text-slate-300"
+                            : "text-slate-600"
+                        }`} />
+                        <span className={`font-bold text-xs sm:text-[12.5px] leading-tight ${
+                          isSelected
+                            ? "text-anaplan-coral"
+                            : isDark
+                            ? "text-white"
+                            : "text-slate-900"
+                        }`}>
+                          {opt.label}
+                        </span>
+                      </div>
+                      {opt.badge && (
+                        <span className="text-[9.5px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-black border border-emerald-500/30 flex-shrink-0 uppercase tracking-wide">
+                          {opt.badge}
+                        </span>
+                      )}
                     </div>
-                    {opt.badge && (
-                      <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-extrabold flex-shrink-0">
-                        {opt.badge}
-                      </span>
-                    )}
+                    <p className={`text-[11px] leading-snug font-medium ${
+                      isSelected
+                        ? "text-anaplan-coral/90"
+                        : isDark
+                        ? "text-slate-400"
+                        : "text-slate-500"
+                    }`}>
+                      {opt.sublabel}
+                    </p>
                   </div>
-                  <span className={`text-[10px] truncate ${isSelected ? "text-anaplan-coral/80 font-medium" : isDark ? "text-slate-400" : "text-slate-500"}`}>
-                    {opt.sublabel}
-                  </span>
                 </button>
               );
             })}
