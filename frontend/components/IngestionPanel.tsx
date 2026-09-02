@@ -338,8 +338,8 @@ export default function IngestionPanel({ onUploadSuccess, onUploadProgress }: In
                       : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
                   }`}
                 >
-                  <div className="w-full space-y-1">
-                    <div className="flex items-center justify-between gap-1.5">
+                  <div className="w-full space-y-1.5">
+                    <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
                         <Icon className={`w-4 h-4 flex-shrink-0 ${
                           isSelected
@@ -350,7 +350,7 @@ export default function IngestionPanel({ onUploadSuccess, onUploadProgress }: In
                             ? "text-slate-300"
                             : "text-slate-600"
                         }`} />
-                        <span className={`font-bold text-xs sm:text-[13px] leading-snug truncate ${
+                        <span className={`font-bold text-xs sm:text-[13px] leading-tight ${
                           isSelected
                             ? "text-anaplan-coral"
                             : isDark
@@ -361,7 +361,7 @@ export default function IngestionPanel({ onUploadSuccess, onUploadProgress }: In
                         </span>
                       </div>
                       {opt.badge && (
-                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold border border-emerald-500/30 flex-shrink-0 uppercase whitespace-nowrap">
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold border border-emerald-500/30 flex-shrink-0 uppercase whitespace-nowrap">
                           {opt.badge}
                         </span>
                       )}
