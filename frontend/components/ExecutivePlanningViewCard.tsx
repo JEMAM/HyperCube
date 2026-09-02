@@ -194,7 +194,10 @@ export default function ExecutivePlanningViewCard({
         }`}>
           {isEn ? "AI" : "IA"}
         </div>
-        <span className={`font-bold tracking-tight truncate max-w-[260px] sm:max-w-md ${isDark ? "text-slate-100" : "text-slate-800"}`}>
+        <span
+          suppressHydrationWarning
+          className={`font-bold tracking-tight truncate max-w-[260px] sm:max-w-md ${isDark ? "text-slate-100" : "text-slate-800"}`}
+        >
           {aiQueryText}
         </span>
       </div>
@@ -217,9 +220,12 @@ export default function ExecutivePlanningViewCard({
             <span className="w-3 h-3 rounded-full bg-[#f43f5e] inline-block shadow-sm"></span>
             <span className="w-3 h-3 rounded-full bg-[#f59e0b] inline-block shadow-sm"></span>
             <span className="w-3 h-3 rounded-full bg-[#10b981] inline-block shadow-sm"></span>
-            <span className={`text-xs font-black ml-3 tracking-wide font-sans ${
-              isDark ? "text-slate-200" : "text-slate-800"
-            }`}>
+            <span
+              suppressHydrationWarning
+              className={`text-xs font-black ml-3 tracking-wide font-sans ${
+                isDark ? "text-slate-200" : "text-slate-800"
+              }`}
+            >
               HyperCube Executive Planning View — {statementType} {activeCompany.name} ({activeCompany.currency})
             </span>
           </div>
@@ -384,14 +390,20 @@ export default function ExecutivePlanningViewCard({
             }`}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className={`text-[11px] font-extrabold ${isDark ? "text-slate-300" : "text-slate-800"}`}>
+                  <span
+                    suppressHydrationWarning
+                    className={`text-[11px] font-extrabold ${isDark ? "text-slate-300" : "text-slate-800"}`}
+                  >
                     {statementType === "DFC"
                       ? (isEn ? "Cash Flow Dynamics (DFC)" : "Trajetória dos Fluxos DFC")
                       : statementType === "BP"
                       ? (isEn ? "Balance Sheet Capital Structure (BP)" : "Estrutura Patrimonial do Balanço (BP)")
                       : (isEn ? "Income Statement Trendlines (DRE)" : "Trajetória das Linhas DRE")} — {activeCompany.name} ({activeCompany.currency})
                   </span>
-                  <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-bold font-mono">
+                  <span
+                    suppressHydrationWarning
+                    className="text-[9.5px] px-1.5 py-0.2 rounded bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-bold font-mono"
+                  >
                     {activeCompany.ticker}
                   </span>
                 </div>
