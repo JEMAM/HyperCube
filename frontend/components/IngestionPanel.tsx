@@ -243,51 +243,51 @@ export default function IngestionPanel({ onUploadSuccess, onUploadProgress }: In
   }> = [
     {
       id: "ALL",
-      label: isEn ? "All Statements (CVM Package)" : "Pacote Completo CVM",
-      sublabel: isEn ? "All 7 Statements (DFP / ITR)" : "Todas as 7 Demonstrações (DFP/ITR)",
+      label: isEn ? "All Statements (CVM)" : "Pacote Completo CVM",
+      sublabel: isEn ? "All 7 Statements (DFP / ITR)" : "Todas as 7 Demonstrações Oficiais",
       icon: Sparkles,
       badge: isEn ? "Recommended" : "Recomendado"
     },
     {
       id: "DRE",
-      label: isEn ? "DRE (Income Statement)" : "DRE (Resultado do Exercício)",
-      sublabel: isEn ? "Revenues, Costs, Margins & Net Income" : "Receitas, Custos, Margens e Lucro",
+      label: isEn ? "DRE (Income Statement)" : "DRE (Demonstração do Resultado)",
+      sublabel: isEn ? "Revenues, Costs and Margins" : "Receitas, Custos, Margens e Lucro",
       icon: BarChart2
     },
     {
       id: "DFC",
       label: isEn ? "DFC (Cash Flow Statement)" : "DFC (Fluxo de Caixa)",
-      sublabel: isEn ? "Operating, Investing & Financing Cash Flow" : "Atividades Operacionais, Investimento e Financiamento",
+      sublabel: isEn ? "Operating, Investing & Financing" : "Operacional, Investimento e Financiamento",
       icon: Activity
     },
     {
       id: "BP",
       label: isEn ? "BP (Balance Sheet)" : "BP (Balanço Patrimonial)",
-      sublabel: isEn ? "Assets, Liabilities & Shareholders' Equity" : "Ativo Circulante, Passivo e Patrimônio Líquido",
+      sublabel: isEn ? "Assets, Liabilities & Equity" : "Ativo, Passivo e Patrimônio Líquido",
       icon: Scale
     },
     {
       id: "DRA",
       label: isEn ? "DRA (Comprehensive Income)" : "DRA (Resultado Abrangente)",
-      sublabel: isEn ? "CPC 26 • Equity Valuation & Cash Flow Hedge" : "CPC 26 • Ajustes de Avaliação Patrimonial e Hedge",
+      sublabel: isEn ? "CPC 26 • Equity Valuation & Hedge" : "CPC 26 • Ajustes de Avaliação e Hedge",
       icon: FileSpreadsheet
     },
     {
       id: "DMPL",
-      label: isEn ? "DMPL (Changes in Equity)" : "DMPL (Mutações do Patrimônio Líquido)",
-      sublabel: isEn ? "Art. 186 Lei 6.404 • Profit & Capital Reserves" : "Art. 186 Lei 6.404 • Reservas de Lucro e Capital",
+      label: isEn ? "DMPL (Changes in Equity)" : "DMPL (Mutações do PL)",
+      sublabel: isEn ? "Art. 186 Lei 6.404 • Capital Reserves" : "Art. 186 Lei 6.404 • Reservas e Capital",
       icon: SlidersHorizontal
     },
     {
       id: "DVA",
       label: isEn ? "DVA (Value Added Statement)" : "DVA (Valor Adicionado)",
-      sublabel: isEn ? "CPC 09 • Wealth Generation & Distribution" : "CPC 09 • Geração e Distribuição de Riqueza",
+      sublabel: isEn ? "CPC 09 • Wealth Distribution" : "CPC 09 • Distribuição de Riqueza",
       icon: PieChart
     },
     {
       id: "NE",
       label: isEn ? "NE (Explanatory Notes)" : "NE (Notas Explicativas)",
-      sublabel: isEn ? "Accounting Policies, Debentures & Covenants" : "Políticas Contábeis, Debêntures e Covenants",
+      sublabel: isEn ? "Policies & Covenants" : "Políticas Contábeis e Covenants",
       icon: BookOpen
     }
   ];
@@ -317,7 +317,7 @@ export default function IngestionPanel({ onUploadSuccess, onUploadProgress }: In
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {statementOptions.map((opt) => {
               const Icon = opt.icon;
               const isSelected = statementType === opt.id;
@@ -330,7 +330,7 @@ export default function IngestionPanel({ onUploadSuccess, onUploadProgress }: In
                     setUploadStatus("");
                     setUploadSuccess(false);
                   }}
-                  className={`p-3 sm:p-3.5 rounded-xl text-left border transition-all flex flex-col justify-between cursor-pointer min-h-[86px] ${
+                  className={`p-3 rounded-xl text-left border transition-all flex flex-col justify-between cursor-pointer min-h-[76px] ${
                     isSelected
                       ? "border-anaplan-coral bg-anaplan-coral/10 text-anaplan-coral shadow-sm ring-1 ring-anaplan-coral/40"
                       : isDark
@@ -339,8 +339,8 @@ export default function IngestionPanel({ onUploadSuccess, onUploadProgress }: In
                   }`}
                 >
                   <div className="w-full space-y-1">
-                    <div className="flex items-start justify-between gap-1.5">
-                      <div className="flex items-center gap-1.5">
+                    <div className="flex items-center justify-between gap-1.5">
+                      <div className="flex items-center gap-2 min-w-0">
                         <Icon className={`w-4 h-4 flex-shrink-0 ${
                           isSelected
                             ? "text-anaplan-coral"
@@ -350,7 +350,7 @@ export default function IngestionPanel({ onUploadSuccess, onUploadProgress }: In
                             ? "text-slate-300"
                             : "text-slate-600"
                         }`} />
-                        <span className={`font-bold text-xs sm:text-[12.5px] leading-tight ${
+                        <span className={`font-bold text-xs sm:text-[13px] leading-snug truncate ${
                           isSelected
                             ? "text-anaplan-coral"
                             : isDark
@@ -361,12 +361,12 @@ export default function IngestionPanel({ onUploadSuccess, onUploadProgress }: In
                         </span>
                       </div>
                       {opt.badge && (
-                        <span className="text-[9.5px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-black border border-emerald-500/30 flex-shrink-0 uppercase tracking-wide">
+                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold border border-emerald-500/30 flex-shrink-0 uppercase whitespace-nowrap">
                           {opt.badge}
                         </span>
                       )}
                     </div>
-                    <p className={`text-[11px] leading-snug font-medium ${
+                    <p className={`text-[11px] leading-snug font-medium pl-6 ${
                       isSelected
                         ? "text-anaplan-coral/90"
                         : isDark

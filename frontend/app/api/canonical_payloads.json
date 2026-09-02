@@ -5759,5 +5759,2423 @@
       "adjusted_book_value": 7533.7,
       "liquidation_value": 4585.73
     }
+  },
+  "economy_indicators": {
+    "table": [
+      {
+        "id": 432,
+        "key": "selic_target",
+        "name": "Taxa Selic Meta",
+        "unit": "% a.a.",
+        "freq": "Diária",
+        "source": "BCB SGS",
+        "latest_val": 14.0,
+        "prev_val": 14.0,
+        "latest_date": "14/08/2026",
+        "diff": 0.0,
+        "var_12m": 0.0,
+        "trend": "stable"
+      },
+      {
+        "id": 11,
+        "key": "selic_effective",
+        "name": "Taxa Selic Efetiva",
+        "unit": "% a.d.",
+        "freq": "Diária",
+        "source": "BCB SGS",
+        "latest_val": 0.05,
+        "prev_val": 0.05,
+        "latest_date": "14/08/2026",
+        "diff": 0.0,
+        "var_12m": 0.0,
+        "trend": "stable"
+      },
+      {
+        "id": 433,
+        "key": "ipca_monthly",
+        "name": "IPCA Mensal",
+        "unit": "%",
+        "freq": "Mensal",
+        "source": "IBGE / BCB",
+        "latest_val": 0.07,
+        "prev_val": 0.16,
+        "latest_date": "01/07/2026",
+        "diff": -0.09,
+        "var_12m": -0.09,
+        "trend": "down"
+      },
+      {
+        "id": 13522,
+        "key": "ipca_12m",
+        "name": "IPCA Acumulado 12 Meses",
+        "unit": "%",
+        "freq": "Mensal",
+        "source": "IBGE / BCB",
+        "latest_val": 4.44,
+        "prev_val": 4.64,
+        "latest_date": "01/07/2026",
+        "diff": -0.2,
+        "var_12m": -0.2,
+        "trend": "down"
+      },
+      {
+        "id": 10813,
+        "key": "usd_brl",
+        "name": "Câmbio USD/BRL PTAX (Venda)",
+        "unit": "R$",
+        "freq": "Diária",
+        "source": "BCB SGS",
+        "latest_val": 5.22,
+        "prev_val": 5.16,
+        "latest_date": "14/08/2026",
+        "diff": 0.06,
+        "var_12m": 0.06,
+        "trend": "up"
+      },
+      {
+        "id": 27810,
+        "key": "m4_money",
+        "name": "Meios de Pagamento M4",
+        "unit": "R$ Mi",
+        "freq": "Mensal",
+        "source": "BCB SGS",
+        "latest_val": 11842105.0,
+        "prev_val": 11450000.0,
+        "latest_date": "01/06/2026",
+        "diff": 392105.0,
+        "var_12m": 392105.0,
+        "trend": "up"
+      },
+      {
+        "id": 4513,
+        "key": "net_debt_gdp",
+        "name": "Dívida Líquida Setor Público",
+        "unit": "% PIB",
+        "freq": "Mensal",
+        "source": "BCB SGS",
+        "latest_val": 68.48,
+        "prev_val": 67.89,
+        "latest_date": "01/06/2026",
+        "diff": 0.59,
+        "var_12m": 0.59,
+        "trend": "up"
+      },
+      {
+        "id": 13762,
+        "key": "gross_debt_gdp",
+        "name": "Dívida Bruta Governo Geral",
+        "unit": "% PIB",
+        "freq": "Mensal",
+        "source": "BCB SGS",
+        "latest_val": 81.93,
+        "prev_val": 81.05,
+        "latest_date": "01/06/2026",
+        "diff": 0.88,
+        "var_12m": 0.88,
+        "trend": "up"
+      },
+      {
+        "id": "IBGE-IPP-01",
+        "key": "ipp_geral_m",
+        "name": "IPP - Indústria Geral (Variação Mensal)",
+        "unit": "%",
+        "freq": "Mensal",
+        "source": "IBGE SIDRA (IPP)",
+        "latest_val": 0.48,
+        "prev_val": 0.32,
+        "latest_date": "Mês Atual (IBGE)",
+        "diff": 0.16,
+        "var_12m": 5.82,
+        "trend": "up"
+      },
+      {
+        "id": "IBGE-IPP-02",
+        "key": "ipp_geral_12m",
+        "name": "IPP - Indústria Geral (Acumulado 12M)",
+        "unit": "%",
+        "freq": "Mensal",
+        "source": "IBGE SIDRA (IPP)",
+        "latest_val": 5.82,
+        "prev_val": 5.2,
+        "latest_date": "Mês Atual (IBGE)",
+        "diff": 0.62,
+        "var_12m": 5.82,
+        "trend": "up"
+      },
+      {
+        "id": "IBGE-IPP-03",
+        "key": "ipp_extrativa",
+        "name": "IPP - Indústrias Extrativas",
+        "unit": "%",
+        "freq": "Mensal",
+        "source": "IBGE SIDRA (IPP)",
+        "latest_val": -2.14,
+        "prev_val": -1.8,
+        "latest_date": "Mês Atual (IBGE)",
+        "diff": -0.34,
+        "var_12m": -4.5,
+        "trend": "down"
+      },
+      {
+        "id": "IBGE-IPP-04",
+        "key": "ipp_transformacao",
+        "name": "IPP - Indústria de Transformação",
+        "unit": "%",
+        "freq": "Mensal",
+        "source": "IBGE SIDRA (IPP)",
+        "latest_val": 0.62,
+        "prev_val": 0.45,
+        "latest_date": "Mês Atual (IBGE)",
+        "diff": 0.17,
+        "var_12m": 6.1,
+        "trend": "up"
+      },
+      {
+        "id": "IBGE-IPP-05",
+        "key": "ipp_alimentos",
+        "name": "IPP - Fabricação de Produtos Alimentícios",
+        "unit": "%",
+        "freq": "Mensal",
+        "source": "IBGE SIDRA (IPP)",
+        "latest_val": 1.15,
+        "prev_val": 0.85,
+        "latest_date": "Mês Atual (IBGE)",
+        "diff": 0.3,
+        "var_12m": 8.4,
+        "trend": "up"
+      }
+    ],
+    "charts": {
+      "ipca_vs_selic": [
+        {
+          "data": "01/01/2025",
+          "mes": "01/2025",
+          "ipca_12m": 4.51,
+          "selic_target": 12.25,
+          "juro_real": 7.74
+        },
+        {
+          "data": "01/03/2025",
+          "mes": "03/2025",
+          "ipca_12m": 4.42,
+          "selic_target": 12.75,
+          "juro_real": 8.33
+        },
+        {
+          "data": "01/06/2025",
+          "mes": "06/2025",
+          "ipca_12m": 4.38,
+          "selic_target": 13.25,
+          "juro_real": 8.87
+        },
+        {
+          "data": "01/03/2026",
+          "mes": "03/2026",
+          "ipca_12m": 4.14,
+          "selic_target": 14.25,
+          "juro_real": 10.11
+        },
+        {
+          "data": "01/04/2026",
+          "mes": "04/2026",
+          "ipca_12m": 4.39,
+          "selic_target": 14.0,
+          "juro_real": 9.61
+        },
+        {
+          "data": "01/05/2026",
+          "mes": "05/2026",
+          "ipca_12m": 4.72,
+          "selic_target": 14.0,
+          "juro_real": 9.28
+        },
+        {
+          "data": "01/06/2026",
+          "mes": "06/2026",
+          "ipca_12m": 4.64,
+          "selic_target": 14.0,
+          "juro_real": 9.36
+        },
+        {
+          "data": "01/07/2026",
+          "mes": "07/2026",
+          "ipca_12m": 4.44,
+          "selic_target": 14.0,
+          "juro_real": 9.56
+        }
+      ],
+      "usd_brl": [
+        {
+          "data": "01/01/2025",
+          "mes": "01/2025",
+          "usd_brl": 5.821
+        },
+        {
+          "data": "01/03/2025",
+          "mes": "03/2025",
+          "usd_brl": 5.742
+        },
+        {
+          "data": "01/06/2025",
+          "mes": "06/2025",
+          "usd_brl": 5.615
+        },
+        {
+          "data": "01/09/2025",
+          "mes": "09/2025",
+          "usd_brl": 5.512
+        },
+        {
+          "data": "01/12/2025",
+          "mes": "12/2025",
+          "usd_brl": 5.391
+        },
+        {
+          "data": "01/03/2026",
+          "mes": "03/2026",
+          "usd_brl": 5.284
+        },
+        {
+          "data": "01/06/2026",
+          "mes": "06/2026",
+          "usd_brl": 5.163
+        },
+        {
+          "data": "14/08/2026",
+          "mes": "08/2026",
+          "usd_brl": 5.223
+        }
+      ],
+      "debt_gdp": [
+        {
+          "data": "01/01/2025",
+          "mes": "01/2025",
+          "divida_bruta": 77.2,
+          "divida_liquida": 62.1
+        },
+        {
+          "data": "01/06/2025",
+          "mes": "06/2025",
+          "divida_bruta": 78.5,
+          "divida_liquida": 63.8
+        },
+        {
+          "data": "01/04/2026",
+          "mes": "04/2026",
+          "divida_bruta": 80.09,
+          "divida_liquida": 67.13
+        },
+        {
+          "data": "01/05/2026",
+          "mes": "05/2026",
+          "divida_bruta": 81.05,
+          "divida_liquida": 67.89
+        },
+        {
+          "data": "01/06/2026",
+          "mes": "06/2026",
+          "divida_bruta": 81.93,
+          "divida_liquida": 68.48
+        }
+      ]
+    },
+    "focus_survey": {
+      "survey_weeks": [
+        {
+          "survey_date": "2026-08-28",
+          "monday_release_date": "2026-08-31",
+          "monday_formatted": "31/08/2026",
+          "friday_formatted": "28/08/2026",
+          "short": "31/08",
+          "release_header": "31/08/2026 (Seg)",
+          "week_label": "Mais Recente",
+          "weeks_ago": 0
+        },
+        {
+          "survey_date": "2026-08-21",
+          "monday_release_date": "2026-08-24",
+          "monday_formatted": "24/08/2026",
+          "friday_formatted": "21/08/2026",
+          "short": "24/08",
+          "release_header": "24/08/2026 (Seg)",
+          "week_label": "Há 1 sem.",
+          "weeks_ago": 1
+        },
+        {
+          "survey_date": "2026-08-14",
+          "monday_release_date": "2026-08-17",
+          "monday_formatted": "17/08/2026",
+          "friday_formatted": "14/08/2026",
+          "short": "17/08",
+          "release_header": "17/08/2026 (Seg)",
+          "week_label": "Há 2 sem.",
+          "weeks_ago": 2
+        },
+        {
+          "survey_date": "2026-08-07",
+          "monday_release_date": "2026-08-10",
+          "monday_formatted": "10/08/2026",
+          "friday_formatted": "07/08/2026",
+          "short": "10/08",
+          "release_header": "10/08/2026 (Seg)",
+          "week_label": "Há 3 sem.",
+          "weeks_ago": 3
+        },
+        {
+          "survey_date": "2026-07-31",
+          "monday_release_date": "2026-08-03",
+          "monday_formatted": "03/08/2026",
+          "friday_formatted": "31/07/2026",
+          "short": "03/08",
+          "release_header": "03/08/2026 (Seg)",
+          "week_label": "Há 4 sem.",
+          "weeks_ago": 4
+        },
+        {
+          "survey_date": "2026-07-24",
+          "monday_release_date": "2026-07-27",
+          "monday_formatted": "27/07/2026",
+          "friday_formatted": "24/07/2026",
+          "short": "27/07",
+          "release_header": "27/07/2026 (Seg)",
+          "week_label": "Há 5 sem.",
+          "weeks_ago": 5
+        }
+      ],
+      "survey_dates": [
+        {
+          "survey_date": "2026-08-28",
+          "monday_release_date": "2026-08-31",
+          "monday_formatted": "31/08/2026",
+          "friday_formatted": "28/08/2026",
+          "short": "31/08",
+          "release_header": "31/08/2026 (Seg)",
+          "week_label": "Mais Recente",
+          "weeks_ago": 0
+        },
+        {
+          "survey_date": "2026-08-21",
+          "monday_release_date": "2026-08-24",
+          "monday_formatted": "24/08/2026",
+          "friday_formatted": "21/08/2026",
+          "short": "24/08",
+          "release_header": "24/08/2026 (Seg)",
+          "week_label": "Há 1 sem.",
+          "weeks_ago": 1
+        },
+        {
+          "survey_date": "2026-08-14",
+          "monday_release_date": "2026-08-17",
+          "monday_formatted": "17/08/2026",
+          "friday_formatted": "14/08/2026",
+          "short": "17/08",
+          "release_header": "17/08/2026 (Seg)",
+          "week_label": "Há 2 sem.",
+          "weeks_ago": 2
+        },
+        {
+          "survey_date": "2026-08-07",
+          "monday_release_date": "2026-08-10",
+          "monday_formatted": "10/08/2026",
+          "friday_formatted": "07/08/2026",
+          "short": "10/08",
+          "release_header": "10/08/2026 (Seg)",
+          "week_label": "Há 3 sem.",
+          "weeks_ago": 3
+        },
+        {
+          "survey_date": "2026-07-31",
+          "monday_release_date": "2026-08-03",
+          "monday_formatted": "03/08/2026",
+          "friday_formatted": "31/07/2026",
+          "short": "03/08",
+          "release_header": "03/08/2026 (Seg)",
+          "week_label": "Há 4 sem.",
+          "weeks_ago": 4
+        },
+        {
+          "survey_date": "2026-07-24",
+          "monday_release_date": "2026-07-27",
+          "monday_formatted": "27/07/2026",
+          "friday_formatted": "24/07/2026",
+          "short": "27/07",
+          "release_header": "27/07/2026 (Seg)",
+          "week_label": "Há 5 sem.",
+          "weeks_ago": 5
+        }
+      ],
+      "reference_years": [
+        "2026",
+        "2027",
+        "2028",
+        "2029"
+      ],
+      "by_year": {
+        "2026": [
+          {
+            "id": "IPCA_2026",
+            "indicador": "IPCA",
+            "nome": "IPCA (Índice de Preços ao Consumidor Amplo)",
+            "categoria": "Preços & Inflação",
+            "unidade": "% a.a.",
+            "ref_year": "2026",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 5.01,
+                "media": 5.0,
+                "desvio": 0.219,
+                "min": 4.3,
+                "max": 5.81,
+                "respondentes": 145
+              },
+              "2026-08-21": {
+                "mediana": 5.02,
+                "media": 5.01,
+                "desvio": 0.214,
+                "min": 4.3,
+                "max": 5.81,
+                "respondentes": 148
+              },
+              "2026-08-14": {
+                "mediana": 5.02,
+                "media": 5.01,
+                "desvio": 0.21,
+                "min": 4.3,
+                "max": 5.59,
+                "respondentes": 149
+              },
+              "2026-08-07": {
+                "mediana": 5.02,
+                "media": 5.01,
+                "desvio": 0.223,
+                "min": 4.3,
+                "max": 5.57,
+                "respondentes": 151
+              },
+              "2026-07-31": {
+                "mediana": 5.03,
+                "media": 5.02,
+                "desvio": 0.218,
+                "min": 4.3,
+                "max": 5.62,
+                "respondentes": 152
+              },
+              "2026-07-24": {
+                "mediana": 5.12,
+                "media": 5.1,
+                "desvio": 0.223,
+                "min": 4.3,
+                "max": 5.69,
+                "respondentes": 151
+              }
+            },
+            "latest_mediana": 5.01,
+            "prev_mediana": 5.02,
+            "four_weeks_mediana": 5.03,
+            "delta_1sem": -0.01,
+            "delta_4sem": -0.02,
+            "tendencia_1sem": "queda",
+            "tendencia_4sem": "queda",
+            "min_global": 4.3,
+            "max_global": 5.81,
+            "respondentes": 145
+          },
+          {
+            "id": "Selic_2026",
+            "indicador": "Selic",
+            "nome": "Taxa Selic Meta (Fim de Período)",
+            "categoria": "Taxas de Juros & Câmbio",
+            "unidade": "% a.a.",
+            "ref_year": "2026",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 13.75,
+                "media": 13.67,
+                "desvio": 0.251,
+                "min": 12.75,
+                "max": 14.0,
+                "respondentes": 143
+              },
+              "2026-08-21": {
+                "mediana": 13.75,
+                "media": 13.69,
+                "desvio": 0.265,
+                "min": 12.75,
+                "max": 14.25,
+                "respondentes": 145
+              },
+              "2026-08-14": {
+                "mediana": 13.75,
+                "media": 13.71,
+                "desvio": 0.272,
+                "min": 12.75,
+                "max": 14.25,
+                "respondentes": 148
+              },
+              "2026-08-07": {
+                "mediana": 13.75,
+                "media": 13.76,
+                "desvio": 0.315,
+                "min": 12.25,
+                "max": 14.25,
+                "respondentes": 151
+              },
+              "2026-07-31": {
+                "mediana": 13.75,
+                "media": 13.78,
+                "desvio": 0.303,
+                "min": 12.5,
+                "max": 14.25,
+                "respondentes": 152
+              },
+              "2026-07-24": {
+                "mediana": 14.0,
+                "media": 13.82,
+                "desvio": 0.302,
+                "min": 12.5,
+                "max": 14.25,
+                "respondentes": 149
+              }
+            },
+            "latest_mediana": 13.75,
+            "prev_mediana": 13.75,
+            "four_weeks_mediana": 13.75,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.0,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "estavel",
+            "min_global": 12.25,
+            "max_global": 14.25,
+            "respondentes": 143
+          },
+          {
+            "id": "Câmbio_2026",
+            "indicador": "Câmbio",
+            "nome": "Câmbio USD/BRL (Fim de Período)",
+            "categoria": "Taxas de Juros & Câmbio",
+            "unidade": "R$/US$",
+            "ref_year": "2026",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 5.2,
+                "media": 5.21,
+                "desvio": 0.125,
+                "min": 4.8,
+                "max": 5.6,
+                "respondentes": 115
+              },
+              "2026-08-21": {
+                "mediana": 5.2,
+                "media": 5.21,
+                "desvio": 0.126,
+                "min": 4.8,
+                "max": 5.6,
+                "respondentes": 117
+              },
+              "2026-08-14": {
+                "mediana": 5.2,
+                "media": 5.2,
+                "desvio": 0.127,
+                "min": 4.8,
+                "max": 5.6,
+                "respondentes": 119
+              },
+              "2026-08-07": {
+                "mediana": 5.2,
+                "media": 5.2,
+                "desvio": 0.13,
+                "min": 4.8,
+                "max": 5.6,
+                "respondentes": 122
+              },
+              "2026-07-31": {
+                "mediana": 5.2,
+                "media": 5.2,
+                "desvio": 0.127,
+                "min": 4.85,
+                "max": 5.6,
+                "respondentes": 122
+              },
+              "2026-07-24": {
+                "mediana": 5.2,
+                "media": 5.21,
+                "desvio": 0.13,
+                "min": 4.85,
+                "max": 5.6,
+                "respondentes": 120
+              }
+            },
+            "latest_mediana": 5.2,
+            "prev_mediana": 5.2,
+            "four_weeks_mediana": 5.2,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.0,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "estavel",
+            "min_global": 4.8,
+            "max_global": 5.6,
+            "respondentes": 115
+          },
+          {
+            "id": "PIB Total_2026",
+            "indicador": "PIB Total",
+            "nome": "PIB Total (Crescimento Real)",
+            "categoria": "Atividade Econômica",
+            "unidade": "% a.a.",
+            "ref_year": "2026",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 1.92,
+                "media": 1.92,
+                "desvio": 0.154,
+                "min": 1.33,
+                "max": 2.4,
+                "respondentes": 110
+              },
+              "2026-08-21": {
+                "mediana": 1.95,
+                "media": 1.94,
+                "desvio": 0.15,
+                "min": 1.33,
+                "max": 2.4,
+                "respondentes": 115
+              },
+              "2026-08-14": {
+                "mediana": 1.98,
+                "media": 1.95,
+                "desvio": 0.156,
+                "min": 1.33,
+                "max": 2.4,
+                "respondentes": 116
+              },
+              "2026-08-07": {
+                "mediana": 1.98,
+                "media": 1.96,
+                "desvio": 0.153,
+                "min": 1.33,
+                "max": 2.4,
+                "respondentes": 118
+              },
+              "2026-07-31": {
+                "mediana": 1.99,
+                "media": 1.97,
+                "desvio": 0.16,
+                "min": 1.33,
+                "max": 2.51,
+                "respondentes": 119
+              },
+              "2026-07-24": {
+                "mediana": 1.99,
+                "media": 1.98,
+                "desvio": 0.164,
+                "min": 1.33,
+                "max": 2.51,
+                "respondentes": 117
+              }
+            },
+            "latest_mediana": 1.92,
+            "prev_mediana": 1.95,
+            "four_weeks_mediana": 1.99,
+            "delta_1sem": -0.03,
+            "delta_4sem": -0.07,
+            "tendencia_1sem": "queda",
+            "tendencia_4sem": "queda",
+            "min_global": 1.33,
+            "max_global": 2.51,
+            "respondentes": 110
+          },
+          {
+            "id": "IGP-M_2026",
+            "indicador": "IGP-M",
+            "nome": "IGP-M (Índice Geral de Preços do Mercado)",
+            "categoria": "Preços & Inflação",
+            "unidade": "% a.a.",
+            "ref_year": "2026",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 4.38,
+                "media": 4.24,
+                "desvio": 0.816,
+                "min": 2.36,
+                "max": 5.51,
+                "respondentes": 64
+              },
+              "2026-08-21": {
+                "mediana": 4.55,
+                "media": 4.48,
+                "desvio": 0.823,
+                "min": 1.97,
+                "max": 5.71,
+                "respondentes": 63
+              },
+              "2026-08-14": {
+                "mediana": 4.71,
+                "media": 4.6,
+                "desvio": 0.864,
+                "min": 1.97,
+                "max": 6.01,
+                "respondentes": 64
+              },
+              "2026-08-07": {
+                "mediana": 4.47,
+                "media": 4.59,
+                "desvio": 0.861,
+                "min": 1.97,
+                "max": 6.01,
+                "respondentes": 65
+              },
+              "2026-07-31": {
+                "mediana": 4.54,
+                "media": 4.61,
+                "desvio": 0.853,
+                "min": 1.97,
+                "max": 6.01,
+                "respondentes": 66
+              },
+              "2026-07-24": {
+                "mediana": 5.42,
+                "media": 5.22,
+                "desvio": 0.657,
+                "min": 3.35,
+                "max": 6.21,
+                "respondentes": 66
+              }
+            },
+            "latest_mediana": 4.38,
+            "prev_mediana": 4.55,
+            "four_weeks_mediana": 4.54,
+            "delta_1sem": -0.17,
+            "delta_4sem": -0.16,
+            "tendencia_1sem": "queda",
+            "tendencia_4sem": "queda",
+            "min_global": 1.97,
+            "max_global": 6.21,
+            "respondentes": 64
+          },
+          {
+            "id": "Resultado primário_2026",
+            "indicador": "Resultado primário",
+            "nome": "Resultado Primário (% do PIB)",
+            "categoria": "Setor Público & Fiscal",
+            "unidade": "% PIB",
+            "ref_year": "2026",
+            "valores": {
+              "2026-08-28": {
+                "mediana": -0.5,
+                "media": -0.45,
+                "desvio": 0.15,
+                "min": -0.9,
+                "max": 0.0,
+                "respondentes": 60
+              },
+              "2026-08-21": {
+                "mediana": -0.5,
+                "media": -0.47,
+                "desvio": 0.162,
+                "min": -1.0,
+                "max": 0.0,
+                "respondentes": 63
+              },
+              "2026-08-14": {
+                "mediana": -0.5,
+                "media": -0.46,
+                "desvio": 0.172,
+                "min": -1.0,
+                "max": 0.0,
+                "respondentes": 63
+              },
+              "2026-08-07": {
+                "mediana": -0.5,
+                "media": -0.46,
+                "desvio": 0.172,
+                "min": -1.0,
+                "max": 0.0,
+                "respondentes": 63
+              },
+              "2026-07-31": {
+                "mediana": -0.5,
+                "media": -0.46,
+                "desvio": 0.171,
+                "min": -1.0,
+                "max": 0.0,
+                "respondentes": 62
+              },
+              "2026-07-24": {
+                "mediana": -0.5,
+                "media": -0.45,
+                "desvio": 0.16,
+                "min": -1.0,
+                "max": 0.0,
+                "respondentes": 59
+              }
+            },
+            "latest_mediana": -0.5,
+            "prev_mediana": -0.5,
+            "four_weeks_mediana": -0.5,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.0,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "estavel",
+            "min_global": -1.0,
+            "max_global": 0.0,
+            "respondentes": 60
+          },
+          {
+            "id": "Dívida líquida do setor público_2026",
+            "indicador": "Dívida líquida do setor público",
+            "nome": "Dívida Líquida do Setor Público",
+            "categoria": "Setor Público & Fiscal",
+            "unidade": "% PIB",
+            "ref_year": "2026",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 69.9,
+                "media": 70.0,
+                "desvio": 1.091,
+                "min": 67.2,
+                "max": 73.9,
+                "respondentes": 53
+              },
+              "2026-08-21": {
+                "mediana": 69.9,
+                "media": 70.01,
+                "desvio": 1.049,
+                "min": 67.2,
+                "max": 73.9,
+                "respondentes": 57
+              },
+              "2026-08-14": {
+                "mediana": 69.9,
+                "media": 70.01,
+                "desvio": 1.044,
+                "min": 67.2,
+                "max": 73.9,
+                "respondentes": 57
+              },
+              "2026-08-07": {
+                "mediana": 69.9,
+                "media": 70.0,
+                "desvio": 1.033,
+                "min": 67.2,
+                "max": 73.9,
+                "respondentes": 59
+              },
+              "2026-07-31": {
+                "mediana": 69.9,
+                "media": 69.97,
+                "desvio": 1.132,
+                "min": 66.0,
+                "max": 73.9,
+                "respondentes": 58
+              },
+              "2026-07-24": {
+                "mediana": 69.8,
+                "media": 69.9,
+                "desvio": 1.138,
+                "min": 66.0,
+                "max": 73.0,
+                "respondentes": 55
+              }
+            },
+            "latest_mediana": 69.9,
+            "prev_mediana": 69.9,
+            "four_weeks_mediana": 69.9,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.0,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "estavel",
+            "min_global": 66.0,
+            "max_global": 73.9,
+            "respondentes": 53
+          }
+        ],
+        "2027": [
+          {
+            "id": "IPCA_2027",
+            "indicador": "IPCA",
+            "nome": "IPCA (Índice de Preços ao Consumidor Amplo)",
+            "categoria": "Preços & Inflação",
+            "unidade": "% a.a.",
+            "ref_year": "2027",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 4.28,
+                "media": 4.29,
+                "desvio": 0.412,
+                "min": 3.17,
+                "max": 6.0,
+                "respondentes": 145
+              },
+              "2026-08-21": {
+                "mediana": 4.25,
+                "media": 4.27,
+                "desvio": 0.404,
+                "min": 3.17,
+                "max": 6.0,
+                "respondentes": 148
+              },
+              "2026-08-14": {
+                "mediana": 4.24,
+                "media": 4.25,
+                "desvio": 0.408,
+                "min": 3.17,
+                "max": 6.0,
+                "respondentes": 148
+              },
+              "2026-08-07": {
+                "mediana": 4.22,
+                "media": 4.24,
+                "desvio": 0.412,
+                "min": 3.17,
+                "max": 6.0,
+                "respondentes": 149
+              },
+              "2026-07-31": {
+                "mediana": 4.22,
+                "media": 4.25,
+                "desvio": 0.423,
+                "min": 3.17,
+                "max": 6.0,
+                "respondentes": 150
+              },
+              "2026-07-24": {
+                "mediana": 4.22,
+                "media": 4.25,
+                "desvio": 0.421,
+                "min": 3.17,
+                "max": 6.0,
+                "respondentes": 148
+              }
+            },
+            "latest_mediana": 4.28,
+            "prev_mediana": 4.25,
+            "four_weeks_mediana": 4.22,
+            "delta_1sem": 0.03,
+            "delta_4sem": 0.06,
+            "tendencia_1sem": "alta",
+            "tendencia_4sem": "alta",
+            "min_global": 3.17,
+            "max_global": 6.0,
+            "respondentes": 145
+          },
+          {
+            "id": "Selic_2027",
+            "indicador": "Selic",
+            "nome": "Taxa Selic Meta (Fim de Período)",
+            "categoria": "Taxas de Juros & Câmbio",
+            "unidade": "% a.a.",
+            "ref_year": "2027",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 12.0,
+                "media": 12.06,
+                "desvio": 0.776,
+                "min": 9.75,
+                "max": 14.0,
+                "respondentes": 140
+              },
+              "2026-08-21": {
+                "mediana": 12.0,
+                "media": 12.08,
+                "desvio": 0.772,
+                "min": 9.75,
+                "max": 14.0,
+                "respondentes": 142
+              },
+              "2026-08-14": {
+                "mediana": 12.0,
+                "media": 12.1,
+                "desvio": 0.784,
+                "min": 9.75,
+                "max": 14.0,
+                "respondentes": 145
+              },
+              "2026-08-07": {
+                "mediana": 12.0,
+                "media": 12.09,
+                "desvio": 0.818,
+                "min": 9.5,
+                "max": 14.0,
+                "respondentes": 147
+              },
+              "2026-07-31": {
+                "mediana": 12.0,
+                "media": 12.1,
+                "desvio": 0.826,
+                "min": 9.5,
+                "max": 14.0,
+                "respondentes": 147
+              },
+              "2026-07-24": {
+                "mediana": 12.0,
+                "media": 12.08,
+                "desvio": 0.86,
+                "min": 9.75,
+                "max": 14.25,
+                "respondentes": 144
+              }
+            },
+            "latest_mediana": 12.0,
+            "prev_mediana": 12.0,
+            "four_weeks_mediana": 12.0,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.0,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "estavel",
+            "min_global": 9.5,
+            "max_global": 14.25,
+            "respondentes": 140
+          },
+          {
+            "id": "Câmbio_2027",
+            "indicador": "Câmbio",
+            "nome": "Câmbio USD/BRL (Fim de Período)",
+            "categoria": "Taxas de Juros & Câmbio",
+            "unidade": "R$/US$",
+            "ref_year": "2027",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 5.3,
+                "media": 5.27,
+                "desvio": 0.183,
+                "min": 4.7,
+                "max": 5.68,
+                "respondentes": 115
+              },
+              "2026-08-21": {
+                "mediana": 5.3,
+                "media": 5.26,
+                "desvio": 0.18,
+                "min": 4.7,
+                "max": 5.6,
+                "respondentes": 117
+              },
+              "2026-08-14": {
+                "mediana": 5.29,
+                "media": 5.26,
+                "desvio": 0.187,
+                "min": 4.7,
+                "max": 5.82,
+                "respondentes": 118
+              },
+              "2026-08-07": {
+                "mediana": 5.28,
+                "media": 5.26,
+                "desvio": 0.191,
+                "min": 4.7,
+                "max": 5.82,
+                "respondentes": 118
+              },
+              "2026-07-31": {
+                "mediana": 5.28,
+                "media": 5.26,
+                "desvio": 0.189,
+                "min": 4.7,
+                "max": 5.82,
+                "respondentes": 118
+              },
+              "2026-07-24": {
+                "mediana": 5.29,
+                "media": 5.26,
+                "desvio": 0.186,
+                "min": 4.7,
+                "max": 5.82,
+                "respondentes": 116
+              }
+            },
+            "latest_mediana": 5.3,
+            "prev_mediana": 5.3,
+            "four_weeks_mediana": 5.28,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.02,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "alta",
+            "min_global": 4.7,
+            "max_global": 5.82,
+            "respondentes": 115
+          },
+          {
+            "id": "PIB Total_2027",
+            "indicador": "PIB Total",
+            "nome": "PIB Total (Crescimento Real)",
+            "categoria": "Atividade Econômica",
+            "unidade": "% a.a.",
+            "ref_year": "2027",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 1.5,
+                "media": 1.5,
+                "desvio": 0.358,
+                "min": 0.67,
+                "max": 2.5,
+                "respondentes": 109
+              },
+              "2026-08-21": {
+                "mediana": 1.5,
+                "media": 1.52,
+                "desvio": 0.37,
+                "min": 0.67,
+                "max": 2.5,
+                "respondentes": 114
+              },
+              "2026-08-14": {
+                "mediana": 1.5,
+                "media": 1.56,
+                "desvio": 0.364,
+                "min": 0.7,
+                "max": 2.5,
+                "respondentes": 114
+              },
+              "2026-08-07": {
+                "mediana": 1.52,
+                "media": 1.57,
+                "desvio": 0.366,
+                "min": 0.7,
+                "max": 2.5,
+                "respondentes": 116
+              },
+              "2026-07-31": {
+                "mediana": 1.57,
+                "media": 1.59,
+                "desvio": 0.365,
+                "min": 0.7,
+                "max": 2.5,
+                "respondentes": 116
+              },
+              "2026-07-24": {
+                "mediana": 1.6,
+                "media": 1.62,
+                "desvio": 0.367,
+                "min": 0.8,
+                "max": 2.5,
+                "respondentes": 113
+              }
+            },
+            "latest_mediana": 1.5,
+            "prev_mediana": 1.5,
+            "four_weeks_mediana": 1.57,
+            "delta_1sem": 0.0,
+            "delta_4sem": -0.07,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "queda",
+            "min_global": 0.67,
+            "max_global": 2.5,
+            "respondentes": 109
+          },
+          {
+            "id": "IGP-M_2027",
+            "indicador": "IGP-M",
+            "nome": "IGP-M (Índice Geral de Preços do Mercado)",
+            "categoria": "Preços & Inflação",
+            "unidade": "% a.a.",
+            "ref_year": "2027",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 4.1,
+                "media": 4.14,
+                "desvio": 0.819,
+                "min": 1.78,
+                "max": 7.09,
+                "respondentes": 61
+              },
+              "2026-08-21": {
+                "mediana": 4.09,
+                "media": 4.09,
+                "desvio": 0.728,
+                "min": 1.78,
+                "max": 6.3,
+                "respondentes": 58
+              },
+              "2026-08-14": {
+                "mediana": 4.1,
+                "media": 4.1,
+                "desvio": 0.711,
+                "min": 1.83,
+                "max": 5.9,
+                "respondentes": 59
+              },
+              "2026-08-07": {
+                "mediana": 4.14,
+                "media": 4.12,
+                "desvio": 0.687,
+                "min": 1.83,
+                "max": 5.9,
+                "respondentes": 59
+              },
+              "2026-07-31": {
+                "mediana": 4.16,
+                "media": 4.13,
+                "desvio": 0.683,
+                "min": 1.83,
+                "max": 5.9,
+                "respondentes": 60
+              },
+              "2026-07-24": {
+                "mediana": 4.16,
+                "media": 4.12,
+                "desvio": 0.695,
+                "min": 1.83,
+                "max": 5.9,
+                "respondentes": 60
+              }
+            },
+            "latest_mediana": 4.1,
+            "prev_mediana": 4.09,
+            "four_weeks_mediana": 4.16,
+            "delta_1sem": 0.01,
+            "delta_4sem": -0.06,
+            "tendencia_1sem": "alta",
+            "tendencia_4sem": "queda",
+            "min_global": 1.78,
+            "max_global": 7.09,
+            "respondentes": 61
+          },
+          {
+            "id": "Resultado primário_2027",
+            "indicador": "Resultado primário",
+            "nome": "Resultado Primário (% do PIB)",
+            "categoria": "Setor Público & Fiscal",
+            "unidade": "% PIB",
+            "ref_year": "2027",
+            "valores": {
+              "2026-08-28": {
+                "mediana": -0.4,
+                "media": -0.36,
+                "desvio": 0.265,
+                "min": -1.0,
+                "max": 0.5,
+                "respondentes": 60
+              },
+              "2026-08-21": {
+                "mediana": -0.4,
+                "media": -0.36,
+                "desvio": 0.252,
+                "min": -1.0,
+                "max": 0.5,
+                "respondentes": 62
+              },
+              "2026-08-14": {
+                "mediana": -0.4,
+                "media": -0.35,
+                "desvio": 0.25,
+                "min": -1.0,
+                "max": 0.5,
+                "respondentes": 62
+              },
+              "2026-08-07": {
+                "mediana": -0.4,
+                "media": -0.35,
+                "desvio": 0.252,
+                "min": -1.0,
+                "max": 0.5,
+                "respondentes": 62
+              },
+              "2026-07-31": {
+                "mediana": -0.4,
+                "media": -0.35,
+                "desvio": 0.243,
+                "min": -1.0,
+                "max": 0.5,
+                "respondentes": 61
+              },
+              "2026-07-24": {
+                "mediana": -0.4,
+                "media": -0.34,
+                "desvio": 0.251,
+                "min": -1.0,
+                "max": 0.5,
+                "respondentes": 58
+              }
+            },
+            "latest_mediana": -0.4,
+            "prev_mediana": -0.4,
+            "four_weeks_mediana": -0.4,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.0,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "estavel",
+            "min_global": -1.0,
+            "max_global": 0.5,
+            "respondentes": 60
+          },
+          {
+            "id": "Dívida líquida do setor público_2027",
+            "indicador": "Dívida líquida do setor público",
+            "nome": "Dívida Líquida do Setor Público",
+            "categoria": "Setor Público & Fiscal",
+            "unidade": "% PIB",
+            "ref_year": "2027",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 73.6,
+                "media": 73.72,
+                "desvio": 1.984,
+                "min": 68.0,
+                "max": 78.24,
+                "respondentes": 53
+              },
+              "2026-08-21": {
+                "mediana": 73.54,
+                "media": 73.75,
+                "desvio": 1.983,
+                "min": 68.0,
+                "max": 78.31,
+                "respondentes": 56
+              },
+              "2026-08-14": {
+                "mediana": 73.4,
+                "media": 73.68,
+                "desvio": 2.013,
+                "min": 68.0,
+                "max": 78.31,
+                "respondentes": 56
+              },
+              "2026-08-07": {
+                "mediana": 73.4,
+                "media": 73.69,
+                "desvio": 2.016,
+                "min": 68.0,
+                "max": 78.31,
+                "respondentes": 58
+              },
+              "2026-07-31": {
+                "mediana": 73.4,
+                "media": 73.67,
+                "desvio": 2.07,
+                "min": 67.0,
+                "max": 78.31,
+                "respondentes": 57
+              },
+              "2026-07-24": {
+                "mediana": 73.4,
+                "media": 73.62,
+                "desvio": 2.137,
+                "min": 67.0,
+                "max": 78.31,
+                "respondentes": 54
+              }
+            },
+            "latest_mediana": 73.6,
+            "prev_mediana": 73.54,
+            "four_weeks_mediana": 73.4,
+            "delta_1sem": 0.06,
+            "delta_4sem": 0.2,
+            "tendencia_1sem": "alta",
+            "tendencia_4sem": "alta",
+            "min_global": 67.0,
+            "max_global": 78.31,
+            "respondentes": 53
+          }
+        ],
+        "2028": [
+          {
+            "id": "IPCA_2028",
+            "indicador": "IPCA",
+            "nome": "IPCA (Índice de Preços ao Consumidor Amplo)",
+            "categoria": "Preços & Inflação",
+            "unidade": "% a.a.",
+            "ref_year": "2028",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 3.8,
+                "media": 3.83,
+                "desvio": 0.469,
+                "min": 3.0,
+                "max": 6.0,
+                "respondentes": 118
+              },
+              "2026-08-21": {
+                "mediana": 3.8,
+                "media": 3.83,
+                "desvio": 0.471,
+                "min": 3.0,
+                "max": 6.0,
+                "respondentes": 120
+              },
+              "2026-08-14": {
+                "mediana": 3.8,
+                "media": 3.83,
+                "desvio": 0.467,
+                "min": 3.0,
+                "max": 6.0,
+                "respondentes": 122
+              },
+              "2026-08-07": {
+                "mediana": 3.8,
+                "media": 3.81,
+                "desvio": 0.48,
+                "min": 3.0,
+                "max": 6.0,
+                "respondentes": 121
+              },
+              "2026-07-31": {
+                "mediana": 3.8,
+                "media": 3.83,
+                "desvio": 0.49,
+                "min": 3.0,
+                "max": 6.0,
+                "respondentes": 121
+              },
+              "2026-07-24": {
+                "mediana": 3.8,
+                "media": 3.82,
+                "desvio": 0.477,
+                "min": 2.93,
+                "max": 6.0,
+                "respondentes": 122
+              }
+            },
+            "latest_mediana": 3.8,
+            "prev_mediana": 3.8,
+            "four_weeks_mediana": 3.8,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.0,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "estavel",
+            "min_global": 2.93,
+            "max_global": 6.0,
+            "respondentes": 118
+          },
+          {
+            "id": "Selic_2028",
+            "indicador": "Selic",
+            "nome": "Taxa Selic Meta (Fim de Período)",
+            "categoria": "Taxas de Juros & Câmbio",
+            "unidade": "% a.a.",
+            "ref_year": "2028",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 10.5,
+                "media": 10.56,
+                "desvio": 0.974,
+                "min": 8.0,
+                "max": 14.0,
+                "respondentes": 117
+              },
+              "2026-08-21": {
+                "mediana": 10.5,
+                "media": 10.61,
+                "desvio": 0.994,
+                "min": 8.0,
+                "max": 14.0,
+                "respondentes": 116
+              },
+              "2026-08-14": {
+                "mediana": 10.5,
+                "media": 10.62,
+                "desvio": 0.995,
+                "min": 8.0,
+                "max": 14.0,
+                "respondentes": 120
+              },
+              "2026-08-07": {
+                "mediana": 10.5,
+                "media": 10.65,
+                "desvio": 1.012,
+                "min": 8.0,
+                "max": 14.0,
+                "respondentes": 122
+              },
+              "2026-07-31": {
+                "mediana": 10.5,
+                "media": 10.64,
+                "desvio": 1.031,
+                "min": 8.0,
+                "max": 14.0,
+                "respondentes": 122
+              },
+              "2026-07-24": {
+                "mediana": 10.5,
+                "media": 10.62,
+                "desvio": 1.0,
+                "min": 8.0,
+                "max": 13.75,
+                "respondentes": 122
+              }
+            },
+            "latest_mediana": 10.5,
+            "prev_mediana": 10.5,
+            "four_weeks_mediana": 10.5,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.0,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "estavel",
+            "min_global": 8.0,
+            "max_global": 14.0,
+            "respondentes": 117
+          },
+          {
+            "id": "Câmbio_2028",
+            "indicador": "Câmbio",
+            "nome": "Câmbio USD/BRL (Fim de Período)",
+            "categoria": "Taxas de Juros & Câmbio",
+            "unidade": "R$/US$",
+            "ref_year": "2028",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 5.3,
+                "media": 5.3,
+                "desvio": 0.247,
+                "min": 4.45,
+                "max": 6.0,
+                "respondentes": 83
+              },
+              "2026-08-21": {
+                "mediana": 5.3,
+                "media": 5.29,
+                "desvio": 0.236,
+                "min": 4.45,
+                "max": 6.0,
+                "respondentes": 83
+              },
+              "2026-08-14": {
+                "mediana": 5.3,
+                "media": 5.28,
+                "desvio": 0.238,
+                "min": 4.45,
+                "max": 6.0,
+                "respondentes": 84
+              },
+              "2026-08-07": {
+                "mediana": 5.3,
+                "media": 5.28,
+                "desvio": 0.239,
+                "min": 4.45,
+                "max": 6.0,
+                "respondentes": 85
+              },
+              "2026-07-31": {
+                "mediana": 5.3,
+                "media": 5.28,
+                "desvio": 0.243,
+                "min": 4.45,
+                "max": 6.0,
+                "respondentes": 87
+              },
+              "2026-07-24": {
+                "mediana": 5.3,
+                "media": 5.26,
+                "desvio": 0.226,
+                "min": 4.45,
+                "max": 5.9,
+                "respondentes": 86
+              }
+            },
+            "latest_mediana": 5.3,
+            "prev_mediana": 5.3,
+            "four_weeks_mediana": 5.3,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.0,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "estavel",
+            "min_global": 4.45,
+            "max_global": 6.0,
+            "respondentes": 83
+          },
+          {
+            "id": "PIB Total_2028",
+            "indicador": "PIB Total",
+            "nome": "PIB Total (Crescimento Real)",
+            "categoria": "Atividade Econômica",
+            "unidade": "% a.a.",
+            "ref_year": "2028",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 1.98,
+                "media": 1.87,
+                "desvio": 0.371,
+                "min": 0.5,
+                "max": 2.8,
+                "respondentes": 81
+              },
+              "2026-08-21": {
+                "mediana": 1.98,
+                "media": 1.87,
+                "desvio": 0.37,
+                "min": 0.5,
+                "max": 2.8,
+                "respondentes": 82
+              },
+              "2026-08-14": {
+                "mediana": 1.89,
+                "media": 1.87,
+                "desvio": 0.35,
+                "min": 1.0,
+                "max": 2.8,
+                "respondentes": 84
+              },
+              "2026-08-07": {
+                "mediana": 2.0,
+                "media": 1.88,
+                "desvio": 0.348,
+                "min": 1.0,
+                "max": 2.8,
+                "respondentes": 85
+              },
+              "2026-07-31": {
+                "mediana": 2.0,
+                "media": 1.89,
+                "desvio": 0.346,
+                "min": 1.0,
+                "max": 2.8,
+                "respondentes": 87
+              },
+              "2026-07-24": {
+                "mediana": 2.0,
+                "media": 1.89,
+                "desvio": 0.36,
+                "min": 1.0,
+                "max": 2.8,
+                "respondentes": 86
+              }
+            },
+            "latest_mediana": 1.98,
+            "prev_mediana": 1.98,
+            "four_weeks_mediana": 2.0,
+            "delta_1sem": 0.0,
+            "delta_4sem": -0.02,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "queda",
+            "min_global": 0.5,
+            "max_global": 2.8,
+            "respondentes": 81
+          },
+          {
+            "id": "IGP-M_2028",
+            "indicador": "IGP-M",
+            "nome": "IGP-M (Índice Geral de Preços do Mercado)",
+            "categoria": "Preços & Inflação",
+            "unidade": "% a.a.",
+            "ref_year": "2028",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 3.92,
+                "media": 3.99,
+                "desvio": 0.752,
+                "min": 1.5,
+                "max": 6.97,
+                "respondentes": 53
+              },
+              "2026-08-21": {
+                "mediana": 3.92,
+                "media": 3.99,
+                "desvio": 0.76,
+                "min": 1.5,
+                "max": 6.97,
+                "respondentes": 52
+              },
+              "2026-08-14": {
+                "mediana": 3.93,
+                "media": 4.04,
+                "desvio": 0.692,
+                "min": 2.75,
+                "max": 6.97,
+                "respondentes": 52
+              },
+              "2026-08-07": {
+                "mediana": 3.93,
+                "media": 4.02,
+                "desvio": 0.63,
+                "min": 2.75,
+                "max": 6.97,
+                "respondentes": 51
+              },
+              "2026-07-31": {
+                "mediana": 3.96,
+                "media": 4.02,
+                "desvio": 0.629,
+                "min": 2.75,
+                "max": 6.97,
+                "respondentes": 52
+              },
+              "2026-07-24": {
+                "mediana": 3.96,
+                "media": 4.02,
+                "desvio": 0.631,
+                "min": 2.75,
+                "max": 6.97,
+                "respondentes": 52
+              }
+            },
+            "latest_mediana": 3.92,
+            "prev_mediana": 3.92,
+            "four_weeks_mediana": 3.96,
+            "delta_1sem": 0.0,
+            "delta_4sem": -0.04,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "queda",
+            "min_global": 1.5,
+            "max_global": 6.97,
+            "respondentes": 53
+          },
+          {
+            "id": "Resultado primário_2028",
+            "indicador": "Resultado primário",
+            "nome": "Resultado Primário (% do PIB)",
+            "categoria": "Setor Público & Fiscal",
+            "unidade": "% PIB",
+            "ref_year": "2028",
+            "valores": {
+              "2026-08-28": {
+                "mediana": -0.22,
+                "media": -0.19,
+                "desvio": 0.32,
+                "min": -0.8,
+                "max": 1.0,
+                "respondentes": 55
+              },
+              "2026-08-21": {
+                "mediana": -0.22,
+                "media": -0.19,
+                "desvio": 0.312,
+                "min": -0.7,
+                "max": 1.0,
+                "respondentes": 55
+              },
+              "2026-08-14": {
+                "mediana": -0.22,
+                "media": -0.18,
+                "desvio": 0.315,
+                "min": -0.7,
+                "max": 1.0,
+                "respondentes": 54
+              },
+              "2026-08-07": {
+                "mediana": -0.23,
+                "media": -0.18,
+                "desvio": 0.317,
+                "min": -0.7,
+                "max": 1.0,
+                "respondentes": 54
+              },
+              "2026-07-31": {
+                "mediana": -0.25,
+                "media": -0.18,
+                "desvio": 0.318,
+                "min": -0.7,
+                "max": 1.0,
+                "respondentes": 54
+              },
+              "2026-07-24": {
+                "mediana": -0.25,
+                "media": -0.18,
+                "desvio": 0.317,
+                "min": -0.7,
+                "max": 1.0,
+                "respondentes": 53
+              }
+            },
+            "latest_mediana": -0.22,
+            "prev_mediana": -0.22,
+            "four_weeks_mediana": -0.25,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.03,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "alta",
+            "min_global": -0.8,
+            "max_global": 1.0,
+            "respondentes": 55
+          },
+          {
+            "id": "Dívida líquida do setor público_2028",
+            "indicador": "Dívida líquida do setor público",
+            "nome": "Dívida Líquida do Setor Público",
+            "categoria": "Setor Público & Fiscal",
+            "unidade": "% PIB",
+            "ref_year": "2028",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 76.42,
+                "media": 76.94,
+                "desvio": 3.273,
+                "min": 67.0,
+                "max": 85.0,
+                "respondentes": 49
+              },
+              "2026-08-21": {
+                "mediana": 76.42,
+                "media": 77.02,
+                "desvio": 3.301,
+                "min": 67.0,
+                "max": 85.0,
+                "respondentes": 50
+              },
+              "2026-08-14": {
+                "mediana": 76.4,
+                "media": 77.01,
+                "desvio": 3.331,
+                "min": 67.0,
+                "max": 85.0,
+                "respondentes": 49
+              },
+              "2026-08-07": {
+                "mediana": 76.4,
+                "media": 77.05,
+                "desvio": 3.291,
+                "min": 67.0,
+                "max": 85.0,
+                "respondentes": 51
+              },
+              "2026-07-31": {
+                "mediana": 76.4,
+                "media": 77.02,
+                "desvio": 3.345,
+                "min": 66.0,
+                "max": 85.0,
+                "respondentes": 51
+              },
+              "2026-07-24": {
+                "mediana": 76.4,
+                "media": 76.92,
+                "desvio": 3.39,
+                "min": 66.0,
+                "max": 85.0,
+                "respondentes": 50
+              }
+            },
+            "latest_mediana": 76.42,
+            "prev_mediana": 76.42,
+            "four_weeks_mediana": 76.4,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.02,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "alta",
+            "min_global": 66.0,
+            "max_global": 85.0,
+            "respondentes": 49
+          }
+        ],
+        "2029": [
+          {
+            "id": "IPCA_2029",
+            "indicador": "IPCA",
+            "nome": "IPCA (Índice de Preços ao Consumidor Amplo)",
+            "categoria": "Preços & Inflação",
+            "unidade": "% a.a.",
+            "ref_year": "2029",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 3.5,
+                "media": 3.69,
+                "desvio": 0.478,
+                "min": 3.0,
+                "max": 6.0,
+                "respondentes": 110
+              },
+              "2026-08-21": {
+                "mediana": 3.5,
+                "media": 3.7,
+                "desvio": 0.478,
+                "min": 3.0,
+                "max": 6.0,
+                "respondentes": 112
+              },
+              "2026-08-14": {
+                "mediana": 3.5,
+                "media": 3.69,
+                "desvio": 0.476,
+                "min": 3.0,
+                "max": 6.0,
+                "respondentes": 114
+              },
+              "2026-08-07": {
+                "mediana": 3.5,
+                "media": 3.68,
+                "desvio": 0.484,
+                "min": 3.0,
+                "max": 6.0,
+                "respondentes": 114
+              },
+              "2026-07-31": {
+                "mediana": 3.5,
+                "media": 3.68,
+                "desvio": 0.481,
+                "min": 3.0,
+                "max": 6.0,
+                "respondentes": 114
+              },
+              "2026-07-24": {
+                "mediana": 3.5,
+                "media": 3.69,
+                "desvio": 0.502,
+                "min": 2.93,
+                "max": 6.0,
+                "respondentes": 115
+              }
+            },
+            "latest_mediana": 3.5,
+            "prev_mediana": 3.5,
+            "four_weeks_mediana": 3.5,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.0,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "estavel",
+            "min_global": 2.93,
+            "max_global": 6.0,
+            "respondentes": 110
+          },
+          {
+            "id": "Selic_2029",
+            "indicador": "Selic",
+            "nome": "Taxa Selic Meta (Fim de Período)",
+            "categoria": "Taxas de Juros & Câmbio",
+            "unidade": "% a.a.",
+            "ref_year": "2029",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 10.0,
+                "media": 10.22,
+                "desvio": 1.002,
+                "min": 8.0,
+                "max": 14.0,
+                "respondentes": 108
+              },
+              "2026-08-21": {
+                "mediana": 10.0,
+                "media": 10.25,
+                "desvio": 1.051,
+                "min": 8.0,
+                "max": 14.0,
+                "respondentes": 110
+              },
+              "2026-08-14": {
+                "mediana": 10.0,
+                "media": 10.26,
+                "desvio": 1.053,
+                "min": 8.0,
+                "max": 14.0,
+                "respondentes": 112
+              },
+              "2026-08-07": {
+                "mediana": 10.0,
+                "media": 10.25,
+                "desvio": 1.043,
+                "min": 8.0,
+                "max": 14.0,
+                "respondentes": 113
+              },
+              "2026-07-31": {
+                "mediana": 10.0,
+                "media": 10.25,
+                "desvio": 1.043,
+                "min": 8.0,
+                "max": 14.0,
+                "respondentes": 113
+              },
+              "2026-07-24": {
+                "mediana": 10.0,
+                "media": 10.22,
+                "desvio": 0.991,
+                "min": 8.0,
+                "max": 13.75,
+                "respondentes": 112
+              }
+            },
+            "latest_mediana": 10.0,
+            "prev_mediana": 10.0,
+            "four_weeks_mediana": 10.0,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.0,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "estavel",
+            "min_global": 8.0,
+            "max_global": 14.0,
+            "respondentes": 108
+          },
+          {
+            "id": "Câmbio_2029",
+            "indicador": "Câmbio",
+            "nome": "Câmbio USD/BRL (Fim de Período)",
+            "categoria": "Taxas de Juros & Câmbio",
+            "unidade": "R$/US$",
+            "ref_year": "2029",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 5.36,
+                "media": 5.36,
+                "desvio": 0.25,
+                "min": 4.5,
+                "max": 6.2,
+                "respondentes": 78
+              },
+              "2026-08-21": {
+                "mediana": 5.36,
+                "media": 5.35,
+                "desvio": 0.237,
+                "min": 4.5,
+                "max": 6.0,
+                "respondentes": 77
+              },
+              "2026-08-14": {
+                "mediana": 5.36,
+                "media": 5.34,
+                "desvio": 0.242,
+                "min": 4.5,
+                "max": 6.0,
+                "respondentes": 77
+              },
+              "2026-08-07": {
+                "mediana": 5.37,
+                "media": 5.34,
+                "desvio": 0.239,
+                "min": 4.5,
+                "max": 6.0,
+                "respondentes": 78
+              },
+              "2026-07-31": {
+                "mediana": 5.39,
+                "media": 5.34,
+                "desvio": 0.244,
+                "min": 4.5,
+                "max": 6.0,
+                "respondentes": 80
+              },
+              "2026-07-24": {
+                "mediana": 5.37,
+                "media": 5.32,
+                "desvio": 0.23,
+                "min": 4.5,
+                "max": 5.9,
+                "respondentes": 79
+              }
+            },
+            "latest_mediana": 5.36,
+            "prev_mediana": 5.36,
+            "four_weeks_mediana": 5.39,
+            "delta_1sem": 0.0,
+            "delta_4sem": -0.03,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "queda",
+            "min_global": 4.5,
+            "max_global": 6.2,
+            "respondentes": 78
+          },
+          {
+            "id": "PIB Total_2029",
+            "indicador": "PIB Total",
+            "nome": "PIB Total (Crescimento Real)",
+            "categoria": "Atividade Econômica",
+            "unidade": "% a.a.",
+            "ref_year": "2029",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 2.0,
+                "media": 1.97,
+                "desvio": 0.314,
+                "min": 1.0,
+                "max": 2.8,
+                "respondentes": 75
+              },
+              "2026-08-21": {
+                "mediana": 2.0,
+                "media": 1.95,
+                "desvio": 0.315,
+                "min": 1.0,
+                "max": 2.8,
+                "respondentes": 77
+              },
+              "2026-08-14": {
+                "mediana": 2.0,
+                "media": 1.95,
+                "desvio": 0.301,
+                "min": 1.0,
+                "max": 2.8,
+                "respondentes": 79
+              },
+              "2026-08-07": {
+                "mediana": 2.0,
+                "media": 1.95,
+                "desvio": 0.299,
+                "min": 1.0,
+                "max": 2.8,
+                "respondentes": 81
+              },
+              "2026-07-31": {
+                "mediana": 2.0,
+                "media": 1.96,
+                "desvio": 0.295,
+                "min": 1.0,
+                "max": 2.8,
+                "respondentes": 83
+              },
+              "2026-07-24": {
+                "mediana": 2.0,
+                "media": 1.96,
+                "desvio": 0.309,
+                "min": 1.0,
+                "max": 2.8,
+                "respondentes": 82
+              }
+            },
+            "latest_mediana": 2.0,
+            "prev_mediana": 2.0,
+            "four_weeks_mediana": 2.0,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.0,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "estavel",
+            "min_global": 1.0,
+            "max_global": 2.8,
+            "respondentes": 75
+          },
+          {
+            "id": "IGP-M_2029",
+            "indicador": "IGP-M",
+            "nome": "IGP-M (Índice Geral de Preços do Mercado)",
+            "categoria": "Preços & Inflação",
+            "unidade": "% a.a.",
+            "ref_year": "2029",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 3.83,
+                "media": 3.87,
+                "desvio": 0.51,
+                "min": 2.56,
+                "max": 5.9,
+                "respondentes": 49
+              },
+              "2026-08-21": {
+                "mediana": 3.83,
+                "media": 3.87,
+                "desvio": 0.514,
+                "min": 2.56,
+                "max": 5.9,
+                "respondentes": 48
+              },
+              "2026-08-14": {
+                "mediana": 3.85,
+                "media": 3.84,
+                "desvio": 0.429,
+                "min": 2.56,
+                "max": 5.0,
+                "respondentes": 47
+              },
+              "2026-08-07": {
+                "mediana": 3.85,
+                "media": 3.84,
+                "desvio": 0.425,
+                "min": 2.56,
+                "max": 5.0,
+                "respondentes": 48
+              },
+              "2026-07-31": {
+                "mediana": 3.9,
+                "media": 3.84,
+                "desvio": 0.423,
+                "min": 2.56,
+                "max": 5.0,
+                "respondentes": 49
+              },
+              "2026-07-24": {
+                "mediana": 3.9,
+                "media": 3.84,
+                "desvio": 0.423,
+                "min": 2.56,
+                "max": 5.0,
+                "respondentes": 49
+              }
+            },
+            "latest_mediana": 3.83,
+            "prev_mediana": 3.83,
+            "four_weeks_mediana": 3.9,
+            "delta_1sem": 0.0,
+            "delta_4sem": -0.07,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "queda",
+            "min_global": 2.56,
+            "max_global": 5.9,
+            "respondentes": 49
+          },
+          {
+            "id": "Resultado primário_2029",
+            "indicador": "Resultado primário",
+            "nome": "Resultado Primário (% do PIB)",
+            "categoria": "Setor Público & Fiscal",
+            "unidade": "% PIB",
+            "ref_year": "2029",
+            "valores": {
+              "2026-08-28": {
+                "mediana": -0.15,
+                "media": -0.07,
+                "desvio": 0.416,
+                "min": -0.7,
+                "max": 1.5,
+                "respondentes": 51
+              },
+              "2026-08-21": {
+                "mediana": -0.15,
+                "media": -0.07,
+                "desvio": 0.404,
+                "min": -0.7,
+                "max": 1.5,
+                "respondentes": 51
+              },
+              "2026-08-14": {
+                "mediana": -0.12,
+                "media": -0.02,
+                "desvio": 0.414,
+                "min": -0.7,
+                "max": 1.5,
+                "respondentes": 50
+              },
+              "2026-08-07": {
+                "mediana": -0.12,
+                "media": -0.02,
+                "desvio": 0.416,
+                "min": -0.7,
+                "max": 1.5,
+                "respondentes": 50
+              },
+              "2026-07-31": {
+                "mediana": -0.15,
+                "media": -0.03,
+                "desvio": 0.415,
+                "min": -0.7,
+                "max": 1.5,
+                "respondentes": 50
+              },
+              "2026-07-24": {
+                "mediana": -0.16,
+                "media": -0.02,
+                "desvio": 0.412,
+                "min": -0.7,
+                "max": 1.5,
+                "respondentes": 50
+              }
+            },
+            "latest_mediana": -0.15,
+            "prev_mediana": -0.15,
+            "four_weeks_mediana": -0.15,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.0,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "estavel",
+            "min_global": -0.7,
+            "max_global": 1.5,
+            "respondentes": 51
+          },
+          {
+            "id": "Dívida líquida do setor público_2029",
+            "indicador": "Dívida líquida do setor público",
+            "nome": "Dívida Líquida do Setor Público",
+            "categoria": "Setor Público & Fiscal",
+            "unidade": "% PIB",
+            "ref_year": "2029",
+            "valores": {
+              "2026-08-28": {
+                "mediana": 79.0,
+                "media": 79.27,
+                "desvio": 4.344,
+                "min": 65.0,
+                "max": 90.0,
+                "respondentes": 46
+              },
+              "2026-08-21": {
+                "mediana": 79.0,
+                "media": 79.4,
+                "desvio": 4.386,
+                "min": 65.0,
+                "max": 90.0,
+                "respondentes": 47
+              },
+              "2026-08-14": {
+                "mediana": 79.0,
+                "media": 79.39,
+                "desvio": 4.438,
+                "min": 65.0,
+                "max": 90.0,
+                "respondentes": 46
+              },
+              "2026-08-07": {
+                "mediana": 79.0,
+                "media": 79.49,
+                "desvio": 4.425,
+                "min": 65.0,
+                "max": 90.0,
+                "respondentes": 48
+              },
+              "2026-07-31": {
+                "mediana": 79.0,
+                "media": 79.48,
+                "desvio": 4.434,
+                "min": 65.0,
+                "max": 90.0,
+                "respondentes": 48
+              },
+              "2026-07-24": {
+                "mediana": 79.0,
+                "media": 79.4,
+                "desvio": 4.401,
+                "min": 65.0,
+                "max": 90.0,
+                "respondentes": 48
+              }
+            },
+            "latest_mediana": 79.0,
+            "prev_mediana": 79.0,
+            "four_weeks_mediana": 79.0,
+            "delta_1sem": 0.0,
+            "delta_4sem": 0.0,
+            "tendencia_1sem": "estavel",
+            "tendencia_4sem": "estavel",
+            "min_global": 65.0,
+            "max_global": 90.0,
+            "respondentes": 46
+          }
+        ]
+      },
+      "frequency": "Semanal (Divulgação às segundas-feiras, 08h30)",
+      "source": "Banco Central do Brasil — Relatório de Mercado Focus (Olinda OData API)",
+      "updated_at": "31/08/2026"
+    },
+    "summary_kpis": {
+      "selic": 14.0,
+      "ipca_12m": 4.44,
+      "usd_brl": 5.22,
+      "gross_debt": 81.93,
+      "net_debt": 68.48,
+      "ipp_geral_m": 0.48,
+      "ipp_geral_12m": 5.82,
+      "focus_ipca_2026": 5.01,
+      "focus_selic_2026": 13.75,
+      "focus_usd_2026": 5.2,
+      "focus_pib_2026": 1.92
+    }
+  },
+  "economy_sync_status": {
+    "agent_active": true,
+    "status": "synchronized",
+    "frequency": "Tempo Real (SGS / Focus)",
+    "last_sync": "02/09/2026 06:50",
+    "next_sync_estimated": "02/09/2026 12:00",
+    "series_count": 13,
+    "history": [
+      {
+        "timestamp": "02/09/2026 06:50",
+        "series_updated": 13,
+        "status": "SUCCESS"
+      },
+      {
+        "timestamp": "01/09/2026 18:00",
+        "series_updated": 13,
+        "status": "SUCCESS"
+      }
+    ]
+  },
+  "economy_diagnostic": {
+    "summary": "⚠️ **Falha na Execução do Agente (GEMINI / gemini-3.5-pro)**\n\nOcorreu um erro ao comunicar com a API do GEMINI:\n\n`{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"API key not valid. Please pass a valid API key.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"API_KEY_INVALID\",\n        \"domain\": \"googleapis.com\",\n        \"metadata\": {\n          \"service\": \"generativelanguage.googleapis.com\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.LocalizedMessage\",\n        \"locale\": \"en-US\",\n        \"message\": \"API key not valid. Please pass a valid API key.\"\n      }\n    ]\n  }\n}\n`\n\n👉 Por favor, verifique suas credenciais de API no topo direito.",
+    "kpis": {
+      "selic": 14.0,
+      "ipca_12m": 4.44,
+      "usd_brl": 5.22,
+      "gross_debt": 81.93,
+      "net_debt": 68.48,
+      "ipp_geral_m": 0.48,
+      "ipp_geral_12m": 5.82,
+      "focus_ipca_2026": 5.01,
+      "focus_selic_2026": 13.75,
+      "focus_usd_2026": 5.2,
+      "focus_pib_2026": 1.92
+    }
   }
 }
