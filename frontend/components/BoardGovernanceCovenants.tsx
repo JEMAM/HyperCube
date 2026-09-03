@@ -251,7 +251,28 @@ Chancelado digitalmente pelo Motor de Análise Autônoma HyperCube (${clientAiMo
       {/* Print Stylesheet embedded */}
       <style jsx global>{`
         @media print {
-          nav, header, aside, .no-print, button, .print-hide {
+          /* Hide EVERYTHING in body by default */
+          body * {
+            visibility: hidden !important;
+          }
+          /* Only make .print-area and its contents visible */
+          .print-area, .print-area * {
+            visibility: visible !important;
+          }
+          .print-area {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 8mm 12mm !important;
+            display: block !important;
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border: none !important;
+            box-shadow: none !important;
+          }
+          nav, header, aside, footer, .no-print, button, .print-hide, [data-explainer-guide], .explainer-guide {
             display: none !important;
           }
           body, html, #__next, main {
@@ -259,12 +280,6 @@ Chancelado digitalmente pelo Motor de Análise Autônoma HyperCube (${clientAiMo
             color: #0f172a !important;
             margin: 0 !important;
             padding: 0 !important;
-          }
-          .print-area {
-            display: block !important;
-            background: #ffffff !important;
-            color: #0f172a !important;
-            padding: 10mm 15mm !important;
           }
           .print-area * {
             color: #0f172a !important;

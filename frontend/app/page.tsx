@@ -791,7 +791,9 @@ function DashboardContent() {
           {viewMode === "GOVERNANCE" && (
             <div className="max-w-[1400px] mx-auto py-6 px-8">
               <BoardGovernanceCovenants />
-              <PageExplainerGuide pageKey="GOVERNANCE" />
+              <div className="no-print print:hidden">
+                <PageExplainerGuide pageKey="GOVERNANCE" />
+              </div>
             </div>
           )}
 

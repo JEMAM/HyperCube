@@ -608,7 +608,7 @@ export default function PageExplainerGuide({ pageKey }: PageExplainerGuideProps)
   return (
     <div className="w-full mt-10 font-sans animate-in fade-in duration-300">
       <div
-        className={`rounded-3xl border transition-all duration-300 overflow-hidden shadow-xl ${
+        className={`no-print print:hidden rounded-3xl border transition-all duration-300 overflow-hidden shadow-xl ${
           isDark
             ? "bg-[#0b1326] border-[#222a3d] hover:border-[#324060]"
             : "bg-white border-slate-200 hover:border-slate-300"
