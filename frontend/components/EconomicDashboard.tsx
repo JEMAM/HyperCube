@@ -183,21 +183,22 @@ function FormattedDiagnostic({ text, isDark, isEn }: { text: string; isDark: boo
       {/* Sections Cards */}
       <div className="space-y-3">
         {paragraphs.map((p, idx) => {
-          if (p.startsWith("###")) {
+          if (p.startsWith("---")) {
+            const clean = p.replace(/^---\s*/, "").trim();
             return (
-              <h3 key={idx} className="text-base font-extrabold tracking-tight bg-gradient-to-r from-sky-400 to-emerald-400 bg-clip-text text-transparent pt-1">
-                {p.replace(/###/g, "").trim()}
-              </h3>
+              <div key={idx} className="pt-2 border-t border-slate-800/40 text-[11px] text-slate-400 italic">
+                {renderMarkdownText(clean)}
+              </div>
             );
           }
 
-          // Numbered section header detection
-          const isHeader = p.startsWith("**1.") || p.startsWith("**2.") || p.startsWith("**3.") || p.startsWith("**4.") || p.startsWith("**5.") || p.startsWith("**6.");
+          // Numbered section header detection (supports ## 1., ###, or **1.)
+          const isHeader = p.startsWith("##") || p.startsWith("###") || /^\*\*[0-9]\./.test(p);
 
           if (isHeader) {
             const lines = p.split("\n");
-            const titleLine = lines[0];
-            const contentLines = lines.slice(1);
+            const rawTitle = lines[0].replace(/^#+\s*/, "").replace(/\*\*/g, "").trim();
+            const contentLines = lines.slice(1).filter(l => l.trim().length > 0);
 
             return (
               <div
@@ -209,21 +210,21 @@ function FormattedDiagnostic({ text, isDark, isEn }: { text: string; isDark: boo
                 }`}
               >
                 <div className="font-bold text-sky-400 text-xs sm:text-sm mb-2 flex items-center gap-2">
-                  {idx === 1 && <FileText className="w-4 h-4 text-emerald-400" />}
-                  {idx === 2 && <TrendingUp className="w-4 h-4 text-sky-400" />}
-                  {idx === 3 && <Scale className="w-4 h-4 text-purple-400" />}
-                  {idx === 4 && <ShieldAlert className="w-4 h-4 text-rose-400" />}
-                  {idx === 5 && <Award className="w-4 h-4 text-amber-400" />}
-                  {idx === 6 && <Sparkles className="w-4 h-4 text-emerald-400" />}
-                  <span>{titleLine.replace(/\*\*/g, "")}</span>
+                  {idx === 0 && <FileText className="w-4 h-4 text-emerald-400" />}
+                  {idx === 1 && <TrendingUp className="w-4 h-4 text-sky-400" />}
+                  {idx === 2 && <Scale className="w-4 h-4 text-purple-400" />}
+                  {idx === 3 && <ShieldAlert className="w-4 h-4 text-rose-400" />}
+                  {idx === 4 && <Award className="w-4 h-4 text-amber-400" />}
+                  {idx >= 5 && <Sparkles className="w-4 h-4 text-emerald-400" />}
+                  <span>{rawTitle}</span>
                 </div>
 
-                <div className="space-y-1.5 leading-relaxed text-xs sm:text-sm pl-1">
+                <div className="space-y-2 leading-relaxed text-xs sm:text-sm pl-1">
                   {contentLines.map((line, lIdx) => {
                     const cleanLine = line.replace(/^\-\s*/, "• ");
                     return (
                       <div key={lIdx} className={cleanLine.startsWith("•") ? "pl-2 font-medium" : ""}>
-                        {cleanLine}
+                        {renderMarkdownText(cleanLine)}
                       </div>
                     );
                   })}
@@ -239,12 +240,37 @@ function FormattedDiagnostic({ text, isDark, isEn }: { text: string; isDark: boo
                 isDark ? "bg-slate-900/60 border-slate-800 text-slate-300" : "bg-slate-50 border-slate-200 text-slate-700"
               }`}
             >
-              {p}
+              {renderMarkdownText(p)}
             </div>
           );
         })}
       </div>
     </div>
+  );
+}
+
+function renderMarkdownText(line: string) {
+  const parts = line.split(/(\*\*.*?\*\*|\*.*?\*)/g);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part.startsWith("**") && part.endsWith("**")) {
+          return (
+            <strong key={i} className="font-bold text-slate-900 dark:text-white">
+              {part.slice(2, -2)}
+            </strong>
+          );
+        }
+        if (part.startsWith("*") && part.endsWith("*")) {
+          return (
+            <em key={i} className="italic text-slate-400 dark:text-slate-400 font-medium">
+              {part.slice(1, -1)}
+            </em>
+          );
+        }
+        return part;
+      })}
+    </>
   );
 }
 
