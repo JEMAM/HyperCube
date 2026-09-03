@@ -575,8 +575,16 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
 
     let list = [...CVM_COMPANIES];
     if (sector && sector !== "all") {
-      const secNorm = sector.toLowerCase().trim();
-      list = list.filter(c => c.setor.toLowerCase().includes(secNorm) || secNorm.includes(c.setor.toLowerCase()));
+      const cleanSec = (s: string) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+      const targetClean = cleanSec(sector);
+      list = list.filter(c => {
+        const cClean = cleanSec(c.setor);
+        return cClean === targetClean || cClean.includes(targetClean) || targetClean.includes(cClean) ||
+          (targetClean.includes("educa") && cClean.includes("educa")) ||
+          (targetClean.includes("energia") && cClean.includes("energia")) ||
+          (targetClean.includes("transp") && cClean.includes("transp")) ||
+          (targetClean.includes("constru") && cClean.includes("constru"));
+      });
     }
     if (search && search.trim()) {
       const term = search.toLowerCase().trim();

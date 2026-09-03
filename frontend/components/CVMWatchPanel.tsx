@@ -104,29 +104,77 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
   const [watchStatus, setWatchStatus] = useState<any>(null);
   const [runningWatchdog, setRunningWatchdog] = useState<boolean>(false);
 
-function cleanSector(s: string): string {
-  return (s || "")
+function canonicalizeSectorName(s: string): string {
+  if (!s) return "outros";
+  const norm = (s || "")
+    .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // remove accents
-    .replace(/[^a-zA-Z0-9]/g, "")    // remove non-alphanumeric, spaces, and replacement chars
-    .toLowerCase();
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+
+  if (norm.includes("educa") || norm.includes("ensino")) return "educacao";
+  if (norm.includes("eletric") || norm.includes("energia")) return "energia_eletrica";
+  if (norm.includes("constru") || norm.includes("imobili")) return "construcao_civil";
+  if (norm.includes("comerc") || norm.includes("varejo") || norm.includes("atacado") || norm.includes("lojas")) return "comercio";
+  if (norm.includes("aero") || norm.includes("materialdetransporte")) return "transporte_aero";
+  if (norm.includes("transporte") || norm.includes("logist")) return "transporte_logistica";
+  if (norm.includes("banco")) return "bancos";
+  if (norm.includes("petrol") || norm.includes("gas") || norm.includes("combust")) return "petroleo_gas";
+  if (norm.includes("telecom")) return "telecom";
+  if (norm.includes("aliment") || norm.includes("bebid")) return "alimentos_bebidas";
+  if (norm.includes("medic") || norm.includes("hospit") || norm.includes("saude")) return "saude";
+  if (norm.includes("metalurg") || norm.includes("siderurg")) return "metalurgia";
+  if (norm.includes("maquin") || norm.includes("equip") || norm.includes("veicul") || norm.includes("motores")) return "maquinas_veiculos";
+  if (norm.includes("textil") || norm.includes("vestu")) return "textil";
+  if (norm.includes("agric") || norm.includes("acucar") || norm.includes("alcool") || norm.includes("cana")) return "agricultura";
+  if (norm.includes("farmac") || norm.includes("higien") || norm.includes("medicamento")) return "farmaceutico";
+  if (norm.includes("miner") || norm.includes("extrac")) return "mineracao";
+  if (norm.includes("securit")) return "securitizacao";
+  if (norm.includes("segur") || norm.includes("corretor")) return "seguros";
+  if (norm.includes("hosped") || norm.includes("turis") || norm.includes("hotel") || norm.includes("viagens")) return "turismo";
+  if (norm.includes("brinq") || norm.includes("lazer")) return "lazer";
+  if (norm.includes("papel") || norm.includes("celul")) return "papel_celulose";
+  if (norm.includes("intermediac")) return "intermediacao";
+  if (norm.includes("arrend")) return "arrendamento";
+  if (norm.includes("bolsa") || norm.includes("capitais")) return "bolsa";
+  if (norm.includes("embalag")) return "embalagens";
+  if (norm.includes("reflorest")) return "reflorestamento";
+  if (norm.includes("saneam") || norm.includes("agua") || norm.includes("esgoto")) return "saneamento";
+  if (norm.includes("credito")) return "credito";
+  if (norm.includes("comunic") || norm.includes("informat")) return "comunicacao";
+  if (norm.includes("petroquim") || norm.includes("borracha")) return "petroquimicos";
+
+  return norm;
 }
 
 function matchSector(sec1: string, sec2: string): boolean {
   if (!sec1 || !sec2) return false;
-  const s1 = cleanSector(sec1);
-  const s2 = cleanSector(sec2);
-  if (s1 === s2 || s1.includes(s2) || s2.includes(s1)) return true;
-  // Prefix comparison for truncated or encoded strings
-  const minLen = Math.min(s1.length, s2.length, 7);
-  return minLen >= 5 && s1.slice(0, minLen) === s2.slice(0, minLen);
+  if (sec1 === sec2) return true;
+  const c1 = canonicalizeSectorName(sec1);
+  const c2 = canonicalizeSectorName(sec2);
+  if (c1 === c2) return true;
+  return c1.includes(c2) || c2.includes(c1);
 }
 
   // Synchronous and immediate company list filtering based on sector and search term
   const filteredCompanies = useMemo(() => {
     let list = allCompanies;
     if (selectedSector && selectedSector !== "all") {
-      list = list.filter((c) => matchSector(c.setor, selectedSector));
+      const matchExactOrCanon = list.filter((c) => matchSector(c.setor, selectedSector));
+      if (matchExactOrCanon.length > 0) {
+        list = matchExactOrCanon;
+      } else {
+        // Fallback: substring matching across denomination or sector
+        const term = selectedSector.toLowerCase().slice(0, 5);
+        const subList = list.filter((c) =>
+          (c.setor || "").toLowerCase().includes(term) ||
+          (c.denom_social || "").toLowerCase().includes(term) ||
+          (c.nome_pregao || "").toLowerCase().includes(term)
+        );
+        if (subList.length > 0) {
+          list = subList;
+        }
+      }
     }
     if (searchTerm && searchTerm.trim()) {
       const term = searchTerm.toLowerCase().trim();
@@ -767,11 +815,17 @@ function matchSector(sec1: string, sec2: string): boolean {
                   isDark ? "bg-slate-800 border-slate-700 text-slate-100" : "bg-slate-50 border-slate-300 text-slate-900"
                 }`}
               >
-                {filteredCompanies.map((c, idx) => (
-                  <option key={`cvm_${c.cod_cvm}_${c.codigo_cvm_str || idx}`} value={c.cod_cvm}>
-                    {c.nome_pregao} — {c.denom_social} (CVM {c.codigo_cvm_str})
+                {filteredCompanies.length === 0 ? (
+                  <option value="" disabled>
+                    {isEn ? "No companies in this sector" : "Nenhuma companhia encontrada neste setor"}
                   </option>
-                ))}
+                ) : (
+                  filteredCompanies.map((c, idx) => (
+                    <option key={`cvm_${c.cod_cvm}_${c.codigo_cvm_str || idx}`} value={c.cod_cvm}>
+                      {c.nome_pregao} — {c.denom_social} (CVM {c.codigo_cvm_str})
+                    </option>
+                  ))
+                )}
               </select>
               <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-3 pointer-events-none" />
             </div>
