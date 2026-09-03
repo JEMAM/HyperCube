@@ -127,14 +127,23 @@ function DashboardContent() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Listen for tab navigation triggered by background agent notifications
+  const [isGovernanceReportMode, setIsGovernanceReportMode] = useState<boolean>(false);
+
   useEffect(() => {
     const handleNavTab = (e: any) => {
       if (e?.detail) {
         setViewMode(e.detail);
       }
     };
+    const handleGovReport = (e: any) => {
+      setIsGovernanceReportMode(!!e?.detail?.isReport);
+    };
     window.addEventListener("hypercube_navigate_tab", handleNavTab);
-    return () => window.removeEventListener("hypercube_navigate_tab", handleNavTab);
+    window.addEventListener("hypercube_gov_report_toggle", handleGovReport);
+    return () => {
+      window.removeEventListener("hypercube_navigate_tab", handleNavTab);
+      window.removeEventListener("hypercube_gov_report_toggle", handleGovReport);
+    };
   }, []);
 
   // Pipeline execution progress for Visão Geral & Ingestão
@@ -791,9 +800,11 @@ function DashboardContent() {
           {viewMode === "GOVERNANCE" && (
             <div className="max-w-[1400px] mx-auto py-6 px-8">
               <BoardGovernanceCovenants />
-              <div className="no-print print:hidden">
-                <PageExplainerGuide pageKey="GOVERNANCE" />
-              </div>
+              {!isGovernanceReportMode && (
+                <div className="no-print print:hidden">
+                  <PageExplainerGuide pageKey="GOVERNANCE" />
+                </div>
+              )}
             </div>
           )}
 

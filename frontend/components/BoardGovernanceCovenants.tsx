@@ -98,6 +98,21 @@ export default function BoardGovernanceCovenants() {
     }
   }, []);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("hypercube_gov_report_toggle", {
+          detail: { isReport: activeTab === "REPORT" }
+        })
+      );
+      if (activeTab === "REPORT") {
+        document.body.classList.add("in-governance-report");
+      } else {
+        document.body.classList.remove("in-governance-report");
+      }
+    }
+  }, [activeTab]);
+
   const fetchData = async (comp?: string) => {
     const cid = (comp && comp !== "aguardando_upload") ? comp : "empresa_cliente";
     setLoading(true);
