@@ -20,11 +20,13 @@ export interface AgentTaskStatus {
   question: string;
   status: "running" | "completed" | "error";
   answer?: string | null;
+  result?: string | null;
   error_message?: string | null;
   created_at: number;
   completed_at?: number | null;
   company_name?: string;
   notified?: boolean;
+  elapsed_seconds?: number;
 }
 
 interface AgentExecutionContextType {
@@ -102,13 +104,23 @@ export function AgentExecutionProvider({ children }: { children: React.ReactNode
     }
   }, [activeTasks]);
 
-  // Background poller for any running tasks
+  const getEffectiveBaseUrl = () => {
+    if (typeof window !== "undefined") {
+      const host = window.location.hostname;
+      if (host === "localhost" || host === "127.0.0.1") {
+        return apiBaseUrlRef.current || "http://127.0.0.1:8000";
+      }
+      return ""; // Cloud / Vercel: use relative path to same origin
+    }
+    return apiBaseUrlRef.current || "";
+  };
+
   useEffect(() => {
     const runningTasks = Object.values(activeTasks).filter((t) => t.status === "running");
     if (runningTasks.length === 0) return;
 
     const interval = setInterval(async () => {
-      const currentUrl = apiBaseUrlRef.current || "http://127.0.0.1:8000";
+      const currentUrl = getEffectiveBaseUrl();
 
       for (const task of runningTasks) {
         try {
@@ -122,7 +134,6 @@ export function AgentExecutionProvider({ children }: { children: React.ReactNode
           if (res.ok) {
             const data: AgentTaskStatus = await res.json();
             if (data.status === "completed" || data.status === "error") {
-              // Task finished!
               setActiveTasks((prev) => ({
                 ...prev,
                 [task.task_id]: {
@@ -131,12 +142,13 @@ export function AgentExecutionProvider({ children }: { children: React.ReactNode
                 },
               }));
 
-              // Update chat history
               const agentType = task.agent_type;
+              const resultText = data.result || data.answer || "Análise concluída.";
+
               const newMsg: ChatMessage = {
                 q: task.question,
                 a: data.status === "completed" 
-                  ? (data.answer || "") 
+                  ? resultText 
                   : `⚠️ ${isEn ? "Agent execution error" : "Erro na execução do agente"}: ${data.error_message || ""}`,
                 timestamp: Date.now(),
                 taskId: task.task_id,
@@ -145,7 +157,6 @@ export function AgentExecutionProvider({ children }: { children: React.ReactNode
 
               setChatLogs((prev) => {
                 const currentList = prev[agentType] || [];
-                // Avoid duplicating message if taskId already exists
                 if (currentList.some((m) => m.taskId === task.task_id)) {
                   return prev;
                 }
@@ -161,25 +172,23 @@ export function AgentExecutionProvider({ children }: { children: React.ReactNode
                 };
               });
 
-              // Show completion toast
               setNotificationToast({
                 ...data,
                 notified: true,
               });
             }
           }
-        } catch {
-          // Keep polling next cycle
+        } catch (err) {
+          console.warn(`Polling failed for task ${task.task_id}:`, err);
         }
       }
-    }, 1500);
+    }, 2000);
 
     return () => clearInterval(interval);
-  }, [activeTasks, isEn]);
+  }, [activeTasks]);
 
-  // Submit a task to the background runner
   const submitTask = async (agentType: AgentType, question: string, extra: any = {}): Promise<string> => {
-    const currentUrl = apiBaseUrlRef.current || "http://127.0.0.1:8000";
+    const currentUrl = getEffectiveBaseUrl();
     const company = activeCompanyRef.current;
 
     let clientKey = "";
@@ -218,7 +227,49 @@ export function AgentExecutionProvider({ children }: { children: React.ReactNode
 
       if (res.ok) {
         const data = await res.json();
-        taskId = data.task_id;
+        taskId = data.task_id || taskId;
+
+        if (data.status === "completed" && (data.answer || data.result)) {
+          const finalAnswer = data.answer || data.result;
+          const completedTask: AgentTaskStatus = {
+            task_id: taskId,
+            agent_type: agentType,
+            question: question.trim(),
+            status: "completed",
+            result: finalAnswer,
+            created_at: Date.now() / 1000,
+            elapsed_seconds: data.elapsed_ms ? data.elapsed_ms / 1000 : 1.1,
+            company_name: company.name,
+            notified: true,
+          };
+
+          setActiveTasks((prev) => ({
+            ...prev,
+            [taskId]: completedTask,
+          }));
+
+          const newMsg: ChatMessage = {
+            q: question.trim(),
+            a: finalAnswer,
+            timestamp: Date.now(),
+            taskId: taskId,
+            company: company.name,
+          };
+
+          setChatLogs((prev) => {
+            const currentList = prev[agentType] || [];
+            const updated = [...currentList, newMsg];
+            try {
+              localStorage.setItem(`hypercube_agent_chats_${agentType}`, JSON.stringify(updated));
+            } catch {}
+            return {
+              ...prev,
+              [agentType]: updated,
+            };
+          });
+
+          return taskId;
+        }
       }
     } catch (e) {
       console.warn("Direct task submission fallback:", e);
