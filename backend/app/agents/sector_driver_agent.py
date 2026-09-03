@@ -549,19 +549,29 @@ class SectorDriverAgent:
     company business models and compile causal driver plans tailored to its exact sector.
     """
 
-    def __init__(self, model_name: Optional[str] = None, api_key: Optional[str] = None):
-        self.model_name = model_name or os.getenv("HYPERCUBE_AI_MODEL", "Gemini 3.7 Flash")
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY", "") or os.getenv("GOOGLE_API_KEY", "")
+    def __init__(self, model_name: Optional[str] = None, api_key: Optional[str] = None, provider: Optional[str] = None):
+        from backend.app.services.ai_config_db import ai_config_db
+        active_db = ai_config_db.get_active_config()
+        self.provider = (provider or os.getenv("HYPERCUBE_AI_PROVIDER") or active_db.get("provider", "groq")).lower().strip()
+        self.model_name = model_name or os.getenv("HYPERCUBE_AI_MODEL") or active_db.get("model", "llama-3.3-70b-versatile")
+        self.api_key = api_key or os.getenv(f"{self.provider.upper()}_API_KEY", "") or active_db.get("api_key", "")
         self.gemini_model = None
+        self.ai_model = None
 
-        if self.api_key:
-            try:
+        try:
+            if self.provider == "groq" and self.api_key:
+                self.ai_model = Groq(id=self.model_name, api_key=self.api_key)
+            elif self.provider == "gemini" and self.api_key:
                 resolved_id = "gemini-2.0-flash"
                 if "1.5" in self.model_name:
                     resolved_id = "gemini-1.5-flash"
-                self.gemini_model = Gemini(id=resolved_id, api_key=self.api_key)
-            except Exception as e:
-                print(f"[SectorDriverAgent] Warning initializing Gemini: {e}")
+                self.ai_model = Gemini(id=resolved_id, api_key=self.api_key)
+            elif self.provider == "openai" and self.api_key:
+                self.ai_model = OpenAIChat(id=self.model_name, api_key=self.api_key)
+            elif self.provider == "ollama":
+                self.ai_model = Ollama(id=self.model_name, host=self.api_key or "http://localhost:11434")
+        except Exception as e:
+            print(f"[SectorDriverAgent] Warning initializing AI model ({self.provider}/{self.model_name}): {e}")
 
     def analyze_and_build(
         self,
@@ -576,11 +586,12 @@ class SectorDriverAgent:
         detected_sector_key = detect_sector_by_company(company_id, company_name, ticker, sector_hint)
         base_data = SECTOR_CATALOG.get(detected_sector_key, SECTOR_CATALOG["MANUFACTURING"])
 
-        # Attempt Gemini enhancement if client configured LLM
-        gemini_enhanced = False
+        # Attempt AI enhancement if client configured LLM
+        ai_enhanced = False
         executive_rationale = base_data["reasoning"]
 
-        if self.gemini_model:
+        active_llm = self.ai_model or self.gemini_model
+        if active_llm:
             try:
                 prompt = (
                     f"Você é um CFO Especialista em Planejamento por Drivers e Análise Setorial da B3 e CVM.\n"
@@ -590,7 +601,7 @@ class SectorDriverAgent:
                     f"Destaque o impacto na DRE (margem e despesas com pessoal) e na consistência do balanço patrimonial."
                 )
                 agent = Agent(
-                    model=self.gemini_model,
+                    model=active_llm,
                     instructions="Você é o Agente Agno Setorial FP&A do HyperCube. Seja analítico, formal e preciso nos padrões contábeis IFRS/CPC.",
                     markdown=True
                 )

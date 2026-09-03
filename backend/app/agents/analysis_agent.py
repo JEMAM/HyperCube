@@ -97,7 +97,7 @@ class AnalysisAgent:
     Provides executive summaries explaining scenario simulation impacts across any reporting periods using LLMs.
     """
     def __init__(self, config: Optional[Dict[str, str]] = None):
-        self.config = config or {"provider": "gemini", "model": "gemini-3.5-pro", "api_key": ""}
+        self.config = config or {"provider": "groq", "model": "llama-3.3-70b-versatile", "api_key": ""}
 
     def _get_model_instance(self):
         provider = self.config.get("provider", "groq").lower()

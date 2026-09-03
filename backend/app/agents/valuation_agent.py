@@ -84,7 +84,7 @@ class ValuationAgent:
     """
 
     def __init__(self, config: Optional[Dict[str, str]] = None):
-        self.config = config or {"provider": "gemini", "model": "gemini-2.0-flash", "api_key": ""}
+        self.config = config or {"provider": "groq", "model": "llama-3.3-70b-versatile", "api_key": ""}
 
     def _get_model_instance(self):
         """Builds Agno model instance based on runtime config."""

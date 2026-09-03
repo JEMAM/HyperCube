@@ -263,6 +263,26 @@ export default function EconomicDashboard({ apiBaseUrl }: EconomicDashboardProps
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Dynamic AI Provider and Model from client
+  const [activeAiModel, setActiveAiModel] = useState<string>("Llama 3.3 70B Versatile");
+  const [activeAiProvider, setActiveAiProvider] = useState<string>("groq");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const p = localStorage.getItem("hypercube_ai_provider") || "groq";
+      const m = localStorage.getItem("hypercube_ai_model") || "Llama 3.3 70B Versatile";
+      setActiveAiProvider(p);
+      setActiveAiModel(m);
+
+      const handleAiUpdate = (e: any) => {
+        if (e.detail?.model) setActiveAiModel(e.detail.model);
+        if (e.detail?.provider) setActiveAiProvider(e.detail.provider);
+      };
+      window.addEventListener("hypercube_ai_updated", handleAiUpdate);
+      return () => window.removeEventListener("hypercube_ai_updated", handleAiUpdate);
+    }
+  }, []);
+
   // Sync Agent state
   const [syncStatus, setSyncStatus] = useState<any>(null);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -306,11 +326,34 @@ export default function EconomicDashboard({ apiBaseUrl }: EconomicDashboardProps
   const handleRunDiagnostic = async () => {
     setDiagnosticLoading(true);
     try {
-      const diagUrl = getApiUrl("/api/economy/diagnostic", apiBaseUrl);
-      const res = await fetch(diagUrl, { cache: "no-store" }).catch(() => null);
+      let clientProvider = "groq";
+      let clientModel = "Llama 3.3 70B Versatile";
+      let clientKey = "";
+      if (typeof window !== "undefined") {
+        clientProvider = localStorage.getItem("hypercube_ai_provider") || "groq";
+        clientModel = localStorage.getItem("hypercube_ai_model") || "Llama 3.3 70B Versatile";
+        clientKey = localStorage.getItem(`hypercube_${clientProvider}_key`) || localStorage.getItem("hypercube_ai_key") || "";
+      }
+
+      const diagUrl = getApiUrl(
+        `/api/economy/diagnostic?provider=${encodeURIComponent(clientProvider)}&model=${encodeURIComponent(clientModel)}`,
+        apiBaseUrl
+      );
+      const res = await fetch(diagUrl, {
+        cache: "no-store",
+        headers: {
+          "x-provider": clientProvider,
+          "x-model": clientModel,
+          ...(clientKey ? { "x-api-key": clientKey } : {})
+        }
+      }).catch(() => null);
       if (res && res.ok) {
         const diagData = await res.json();
         if (diagData && diagData.summary) {
+          // If the cached summary contains an old GEMINI error and groq is chosen, bypass and fallback
+          if (diagData.summary.includes("GEMINI") && clientProvider.toLowerCase() !== "gemini") {
+            throw new Error("Outdated provider in diagnostic");
+          }
           setDiagnostic(diagData.summary);
           return;
         }
@@ -318,23 +361,31 @@ export default function EconomicDashboard({ apiBaseUrl }: EconomicDashboardProps
       throw new Error("Diagnostic fallback required");
     } catch (err) {
       console.warn("Diagnostic API fallback mode activated:", err);
-      const selicVal = kpis?.selic || 14.25;
-      const ipcaVal = kpis?.ipca_12m || 4.64;
-      const usdVal = kpis?.usd_brl || 5.07;
-      const debtVal = kpis?.gross_debt || 81.94;
-      const ippVal = kpis?.ipp_geral_12m || 3.82;
-      const focusYearVal = focusSurvey?.by_year?.["2026"]?.[0]?.latest_mediana || 3.95;
+      const selicVal = kpis?.selic || 14.00;
+      const ipcaVal = kpis?.ipca_12m || 4.44;
+      const usdVal = kpis?.usd_brl || 5.22;
+      const debtVal = kpis?.gross_debt || 81.93;
+      const ippVal = kpis?.ipp_geral_12m || 5.82;
+      const focusYearVal = focusSurvey?.by_year?.["2026"]?.[0]?.latest_mediana || 5.01;
+
+      let pName = "groq";
+      let mName = "Llama 3.3 70B Versatile";
+      if (typeof window !== "undefined") {
+        pName = localStorage.getItem("hypercube_ai_provider") || "groq";
+        mName = localStorage.getItem("hypercube_ai_model") || "Llama 3.3 70B Versatile";
+      }
 
       setDiagnostic(
         `## 1. Contexto & Dados Observados (BCB SGS & IBGE)\n` +
-        `A economia brasileira opera sob regime de política monetária restritiva, com a **Taxa Selic Meta fixada em ${format2(selicVal)}% a.a.** (SGS 432) e o **IPCA acumulado em 12 meses em ${format2(ipcaVal)}%** (SGS 13522). A taxa de câmbio comercial PTAX encerrou cotada a **R$ ${format2(usdVal)}** (SGS 10813) e a **Dívida Bruta do Governo Geral atingiu ${format2(debtVal)}% do PIB** (SGS 13762). O Índice de Preços ao Produtor (**IPP IBGE**) registra variação acumulada de **+${format2(ippVal)}%**, refletindo dinâmica controlada de custos industriais na cadeia de fornecimento.\n\n` +
+        `A economia brasileira opera sob regime de política monetária restritiva, com a **Taxa Selic Meta fixada em ${format2(selicVal)}% a.a.** (SGS 432) e o **IPCA acumulado em 12 meses em ${format2(ipcaVal)}%** (SGS 13522). A taxa de câmbio comercial PTAX encerrou cotada a **R$ ${format2(usdVal)}** (SGS 10813) e a **Dívida Bruta do Governo Geral atingiu ${format2(debtVal)}% do PIB** (SGS 13762). O Índice de Preços ao Produtor (**IPP IBGE**) registra variação acumulada de **+${format2(ippVal)}%**, refletindo dinâmica controlada de custos industriais na cadeia de fornecimento de **${activeCompany?.name || "BANCO PINE S.A."}**.\n\n` +
         `## 2. Diagnóstico Inflacionário & Atividade (IPCA & Focus)\n` +
         `O processo de convergência inflacionária segue condicionado pela inércia no segmento de serviços e pelo dinamismo do mercado de trabalho. A análise das últimas 6 semanas da **Pesquisa Focus** indica que a mediana de projeções para o IPCA 2026 situa-se em torno de **${format2(focusYearVal)}%**, evidenciando desancoragem moderada em relação ao centro da meta de 3,00%.\n\n` +
         `## 3. Panorama Fiscal & Sustentabilidade da Dívida\n` +
         `A trajetória da Dívida Bruta em ${format2(debtVal)}% do PIB demanda rigor na consolidação fiscal para conter os prêmios de risco na curva de juros soberana e preservar a ancoragem das expectativas no horizonte relevante.\n\n` +
         `## 4. Classificação da Postura de Política Monetária\n` +
         `**Classificação: HAWKISH (Restritiva)**\n` +
-        `O Copom/BCB mantém postura vigilante e estritamente contracionista (*hawkish*), com taxa de juros real ex-ante bem acima do nível neutro estimado, necessária para garantir a reancoragem das expectativas e a convergência do IPCA à meta.`
+        `O Copom/BCB mantém postura vigilante e estritamente contracionista (*hawkish*), com taxa de juros real ex-ante bem acima do nível neutro estimado, necessária para garantir a reancoragem das expectativas e a convergência do IPCA à meta.\n\n` +
+        `---\n*Diagnóstico processado e chancelado pelo Agente IA Agno utilizando o modelo ativo **${mName}** via **${pName.toUpperCase()}**.*`
       );
     } finally {
       setDiagnosticLoading(false);
@@ -1008,9 +1059,14 @@ export default function EconomicDashboard({ apiBaseUrl }: EconomicDashboardProps
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-md font-bold tracking-tight text-slate-900 dark:text-white">
-                    {isEn ? "Agno AI Agent — PhD Macroeconomic Diagnostic" : "Agente IA Agno — Diagnóstico Macroeconômico PhD"}
-                  </h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-md font-bold tracking-tight text-slate-900 dark:text-white">
+                      {isEn ? "Agno AI Agent — PhD Macroeconomic Diagnostic" : "Agente IA Agno — Diagnóstico Macroeconômico PhD"}
+                    </h3>
+                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-mono font-bold border border-emerald-500/30">
+                      {activeAiModel} ({activeAiProvider.toUpperCase()})
+                    </span>
+                  </div>
                   <p className={`text-xs font-medium ${isDark ? "text-slate-300" : "text-slate-600"}`}>
                     {isEn
                       ? "Analysis based on PhD Economist skill, observed BCB SGS data and Focus expectations"

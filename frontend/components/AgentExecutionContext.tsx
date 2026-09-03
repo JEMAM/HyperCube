@@ -183,11 +183,11 @@ export function AgentExecutionProvider({ children }: { children: React.ReactNode
     const company = activeCompanyRef.current;
 
     let clientKey = "";
-    let clientProvider = "gemini";
-    let clientModel = "";
+    let clientProvider = "groq";
+    let clientModel = "Llama 3.3 70B Versatile";
     if (typeof window !== "undefined") {
-      clientProvider = localStorage.getItem("hypercube_ai_provider") || "gemini";
-      clientModel = localStorage.getItem("hypercube_ai_model") || "";
+      clientProvider = localStorage.getItem("hypercube_ai_provider") || "groq";
+      clientModel = localStorage.getItem("hypercube_ai_model") || "Llama 3.3 70B Versatile";
       clientKey = localStorage.getItem(`hypercube_${clientProvider}_key`) || localStorage.getItem("hypercube_ai_key") || "";
     }
 
