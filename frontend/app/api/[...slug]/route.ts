@@ -807,16 +807,20 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
 
   // 8. Statements (DRA, DMPL, DVA, NE)
   if (path === "statements/dra") {
-    return NextResponse.json(sessionStore.getStatement("DRA"));
+    const companyId = req.nextUrl.searchParams.get("company_id") || undefined;
+    return NextResponse.json(sessionStore.getStatement("DRA", companyId));
   }
   if (path === "statements/dmpl") {
-    return NextResponse.json(sessionStore.getStatement("DMPL"));
+    const companyId = req.nextUrl.searchParams.get("company_id") || undefined;
+    return NextResponse.json(sessionStore.getStatement("DMPL", companyId));
   }
   if (path === "statements/dva") {
-    return NextResponse.json(sessionStore.getStatement("DVA"));
+    const companyId = req.nextUrl.searchParams.get("company_id") || undefined;
+    return NextResponse.json(sessionStore.getStatement("DVA", companyId));
   }
   if (path === "statements/ne") {
-    return NextResponse.json(sessionStore.getStatement("NE"));
+    const companyId = req.nextUrl.searchParams.get("company_id") || undefined;
+    return NextResponse.json(sessionStore.getStatement("NE", companyId));
   }
 
   // 9. Multidim Dimensions & Query

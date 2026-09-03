@@ -31,7 +31,8 @@ export default function DMPLPanel({ onNavigate }: DMPLPanelProps) {
   const fetchDmpl = async () => {
     setLoading(true);
     try {
-      const url = getApiUrl("/api/statements/dmpl", apiBaseUrl);
+      const companyQuery = activeCompany?.id ? `?company_id=${encodeURIComponent(activeCompany.id)}` : "";
+      const url = getApiUrl(`/api/statements/dmpl${companyQuery}`, apiBaseUrl);
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();

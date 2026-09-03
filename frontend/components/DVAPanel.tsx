@@ -33,7 +33,8 @@ export default function DVAPanel({ onNavigate }: DVAPanelProps) {
   const fetchDva = async () => {
     setLoading(true);
     try {
-      const url = getApiUrl("/api/statements/dva", apiBaseUrl);
+      const companyQuery = activeCompany?.id ? `?company_id=${encodeURIComponent(activeCompany.id)}` : "";
+      const url = getApiUrl(`/api/statements/dva${companyQuery}`, apiBaseUrl);
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();

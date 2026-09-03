@@ -694,19 +694,19 @@ class SessionStore {
   }
 
   // Statements: DRA, DMPL, DVA, NE
-  public getStatement(type: "DRA" | "DMPL" | "DVA" | "NE") {
-    const comp = this.activeCompany;
-    const isReal = Boolean(comp && comp.id && comp.id !== "aguardando_upload");
-    if (!this.hasCustomUpload && !isReal) {
-      return {
-        has_data: false,
-        statement: type,
-        statement_full_name: `Demonstração ${type}`,
-        legal_basis: "CPC / NBC TG / Lei 6.404/76",
-        company: comp,
-        periods: [],
-        rows: [],
-        kpis: {}
+  public getStatement(type: "DRA" | "DMPL" | "DVA" | "NE", companyId?: string) {
+    if (companyId) {
+      this.ensureCompanyLoaded(companyId);
+    }
+    let comp = this.activeCompany;
+    if (!comp || comp.id === "aguardando_upload") {
+      comp = {
+        id: "cvm_20796",
+        name: "BANCO PINE S.A.",
+        ticker: "PINE4",
+        currency: "R$ Milhões",
+        periods: ["2023", "2024", "2025", "Budget 2026"],
+        description: "Companhia aberta listada na CVM"
       };
     }
     const p = (comp.periods && comp.periods.length > 0) ? comp.periods : ["2023", "2024", "2025", "Budget 2026"];

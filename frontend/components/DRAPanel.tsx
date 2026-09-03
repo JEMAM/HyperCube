@@ -33,7 +33,8 @@ export default function DRAPanel({ onNavigate }: DRAPanelProps) {
   const fetchDra = async () => {
     setLoading(true);
     try {
-      const url = getApiUrl("/api/statements/dra", apiBaseUrl);
+      const companyQuery = activeCompany?.id ? `?company_id=${encodeURIComponent(activeCompany.id)}` : "";
+      const url = getApiUrl(`/api/statements/dra${companyQuery}`, apiBaseUrl);
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
