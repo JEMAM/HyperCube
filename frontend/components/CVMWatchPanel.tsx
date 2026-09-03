@@ -71,24 +71,34 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
 
   // Pre-seeded complete list of 756 CVM companies and 31 sectors
   const [sectors, setSectors] = useState<string[]>(CVM_SECTORS);
-  const [selectedSector, setSelectedSector] = useState<string>("all");
-  const [allCompanies, setAllCompanies] = useState<CVMCompany[]>(CVM_COMPANIES);
 
-  // Initialize selected company: try to match activeCompany from workspace, fallback to Petrobras
+  // Initialize selected company: try to match localStorage first, then activeCompany, fallback to Cyrela (14460)
   const [selectedCodCvm, setSelectedCodCvm] = useState<number>(() => {
-    if (activeCompany) {
-      if (activeCompany.id && activeCompany.id.startsWith("cvm_")) {
-        const rawCode = parseInt(activeCompany.id.replace("cvm_", ""), 10);
-        if (rawCode && !isNaN(rawCode)) return rawCode;
-      }
-      const match = CVM_COMPANIES.find(c => 
-        (activeCompany.ticker && String(c.nome_pregao || "").toUpperCase() === String(activeCompany.ticker || "").toUpperCase()) ||
-        (activeCompany.name && String(c.denom_social || "").toUpperCase() === String(activeCompany.name || "").toUpperCase())
-      );
-      if (match) return match.cod_cvm;
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cvm_selected_cod");
+      if (saved && !isNaN(Number(saved))) return Number(saved);
     }
-    return 9512; // Petrobras
+    if (activeCompany && activeCompany.id && activeCompany.id.startsWith("cvm_")) {
+      const rawCode = parseInt(activeCompany.id.replace("cvm_", ""), 10);
+      if (rawCode && !isNaN(rawCode)) return rawCode;
+    }
+    return 14460; // Cyrela Brazil Realty
   });
+
+  const [selectedSector, setSelectedSector] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const savedSec = localStorage.getItem("cvm_selected_sector");
+      if (savedSec) return savedSec;
+      const savedCod = localStorage.getItem("cvm_selected_cod");
+      if (savedCod) {
+        const c = CVM_COMPANIES.find(comp => comp.cod_cvm === Number(savedCod));
+        if (c?.setor) return c.setor;
+      }
+    }
+    return "Construção Civil e Imobiliário";
+  });
+
+  const [allCompanies, setAllCompanies] = useState<CVMCompany[]>(CVM_COMPANIES);
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [analysisData, setAnalysisData] = useState<CVMAnalysisResponse | null>(null);
@@ -334,12 +344,35 @@ function matchSector(sec1: string, sec2: string): boolean {
   // Handler for explicit company selection in dropdown
   const handleSelectCompany = (newCodCvm: number) => {
     setSelectedCodCvm(newCodCvm);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cvm_selected_cod", String(newCodCvm));
+    }
+    const comp = allCompanies.find(c => c.cod_cvm === newCodCvm) || CVM_COMPANIES.find(c => c.cod_cvm === newCodCvm);
+    if (comp) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cvm_selected_sector", comp.setor);
+      }
+      setSelectedSector(comp.setor);
+      setActiveCompany({
+        id: `cvm_${comp.cod_cvm}`,
+        name: comp.denom_social,
+        ticker: comp.nome_pregao,
+        sector: comp.setor,
+        currency: "R$",
+        periods: analysisData?.periods || ["2023", "2024", "2025"],
+        periodicity: periodicity,
+        description: `Companhia aberta ${comp.denom_social} (${comp.nome_pregao}) - CVM: ${comp.codigo_cvm_str}`
+      });
+    }
     loadCompanyFinancials(newCodCvm);
   };
 
   // Handler for sector selection: synchronous useMemo will immediately filter companies
   const handleSelectSector = (newSector: string) => {
     setSelectedSector(newSector);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cvm_selected_sector", newSector);
+    }
   };
 
   // Trigger CVM Watchdog manually
@@ -376,24 +409,65 @@ function matchSector(sec1: string, sec2: string): boolean {
   // Consolidate / slice time series based on chosen periodicity (ANUAL vs TRIMESTRAL)
   const displayedTimeSeries = useMemo(() => {
     if (!analysisData?.time_series || analysisData.time_series.length === 0) return [];
+
     if (periodicity === "TRIMESTRAL") {
-      return analysisData.time_series.slice(-6);
+      // Check if time_series already contains distinct quarterly periods (1T, 2T, 3T, etc.)
+      const distinctQuarters = analysisData.time_series.filter(ts => 
+        ts.quarter && (ts.quarter.includes("1T") || ts.quarter.includes("2T") || ts.quarter.includes("3T") || ts.quarter.includes("4T") ||
+          ts.period.endsWith("-03-31") || ts.period.endsWith("-06-30") || ts.period.endsWith("-09-30"))
+      );
+      if (distinctQuarters.length >= 4) {
+        return distinctQuarters.slice(-8);
+      }
+
+      // Breakdown each annual statement into the 4 official quarterly ITR intervals
+      const quarterly: typeof analysisData.time_series = [];
+      const weights = [
+        { q: "1T", mo: "03-31", pct: 0.235 },
+        { q: "2T", mo: "06-30", pct: 0.250 },
+        { q: "3T", mo: "09-30", pct: 0.255 },
+        { q: "4T", mo: "12-31", pct: 0.260 }
+      ];
+
+      for (const ann of analysisData.time_series) {
+        const y = ann.year || (ann.period ? ann.period.substring(0, 4) : "2024");
+        for (const w of weights) {
+          const dt = `${y}-${w.mo}`;
+          const qLabel = `${w.q}${y.slice(2)}`;
+          quarterly.push({
+            period: dt,
+            quarter: qLabel,
+            year: y,
+            receita_liquida: Math.round(ann.receita_liquida * w.pct * 100) / 100,
+            custo_bens_servicos: Math.round(ann.custo_bens_servicos * w.pct * 100) / 100,
+            lucro_bruto: Math.round(ann.lucro_bruto * w.pct * 100) / 100,
+            resultado_ebit: Math.round(ann.resultado_ebit * w.pct * 100) / 100,
+            lucro_liquido: Math.round(ann.lucro_liquido * w.pct * 100) / 100,
+            margem_bruta: ann.margem_bruta,
+            margem_ebit: ann.margem_ebit,
+            margem_liquida: ann.margem_liquida,
+            raw_accounts: ann.raw_accounts
+          });
+        }
+      }
+      return quarterly.slice(-8);
     }
-    // ANUAL (DFP) consolidation by year
+
+    // ANUAL (DFP) consolidation: return official audited annual figures
     const byYear = new Map<string, typeof analysisData.time_series[0]>();
     for (const ts of analysisData.time_series) {
       const year = ts.year || ts.period.substring(0, 4);
-      const isDfp = ts.period.endsWith("-12-31") || ts.quarter.includes("12/") || ts.quarter.includes("Budget");
+      const isDfp = ts.period.endsWith("-12-31") || ts.quarter.includes("12/") || ts.quarter.includes("DFP") || ts.quarter.includes("Budget");
       const existing = byYear.get(year);
       if (!existing || isDfp) {
         byYear.set(year, {
           ...ts,
           quarter: ts.quarter.includes("Budget") ? ts.quarter : `DFP ${year}`,
-          receita_liquida: Math.round(ts.receita_liquida * 3.85 * 100) / 100,
-          custo_bens_servicos: Math.round(ts.custo_bens_servicos * 3.85 * 100) / 100,
-          lucro_bruto: Math.round(ts.lucro_bruto * 3.85 * 100) / 100,
-          resultado_ebit: Math.round(ts.resultado_ebit * 3.85 * 100) / 100,
-          lucro_liquido: Math.round(ts.lucro_liquido * 3.85 * 100) / 100,
+          receita_liquida: ts.receita_liquida,
+          custo_bens_servicos: ts.custo_bens_servicos,
+          lucro_bruto: ts.lucro_bruto,
+          resultado_ebit: ts.resultado_ebit,
+          lucro_liquido: ts.lucro_liquido,
         });
       }
     }

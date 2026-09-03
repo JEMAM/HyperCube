@@ -13,6 +13,7 @@ export interface ActiveCompany {
   periods: string[];
   periodicity?: "ANUAL" | "TRIMESTRAL";
   description: string;
+  sector?: string;
 }
 
 export interface ActiveConnection {

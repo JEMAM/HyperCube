@@ -470,6 +470,27 @@ function DashboardContent() {
                 </button>
               )}
             </div>
+
+            {/* Header Active Company Badge */}
+            <div
+              onClick={() => setViewMode("CVM")}
+              className={`hidden sm:flex items-center gap-2 px-3 py-1 rounded-xl border transition cursor-pointer select-none ${
+                isDark
+                  ? "bg-slate-800/80 border-slate-700 hover:border-cyan-500/50 hover:bg-slate-800 text-slate-200"
+                  : "bg-white border-slate-200 hover:border-cyan-400 hover:bg-slate-50 text-slate-800 shadow-xs"
+              }`}
+              title="Clique para abrir CVM Watch"
+            >
+              <Building2 className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-[11px] font-bold text-slate-400 hidden md:inline">
+                {language === "en" ? "Analysis:" : "Análise:"}
+              </span>
+              <span className="text-xs font-black truncate max-w-[220px] text-cyan-400 dark:text-cyan-300">
+                {activeCompany.name && activeCompany.name !== "Aguardando Upload ou CVM Watch"
+                  ? (activeCompany.ticker || activeCompany.name)
+                  : "CYRE3 (Cyrela)"}
+              </span>
+            </div>
           </div>
 
           {/* Right: Health, Config, Theme & User Profile */}
@@ -672,6 +693,56 @@ function DashboardContent() {
             })}
           </nav>
         </div>
+
+        {/* Tier 3: Global Persistent Active Company Banner across ALL Pages */}
+        <div className={`px-4 sm:px-6 py-2 border-t flex flex-wrap items-center justify-between gap-3 transition-colors ${
+            isDark ? "bg-[#040e1d] border-[#14335a]/80" : "bg-gradient-to-r from-cyan-50/90 via-sky-50/80 to-emerald-50/90 border-cyan-200/90"
+          }`}>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-500 to-emerald-500 flex items-center justify-center text-white shadow-xs flex-shrink-0">
+                <Building2 className="w-4 h-4" />
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] uppercase font-black tracking-widest text-cyan-500 dark:text-cyan-400">
+                  {language === "en" ? "Company in Active Analysis:" : "Empresa em Análise Ativa:"}
+                </span>
+                <span className={`text-xs sm:text-sm font-black px-2.5 py-0.5 rounded-lg border shadow-xs ${
+                  isDark
+                    ? "bg-cyan-950/80 text-cyan-200 border-cyan-700/80"
+                    : "bg-white text-cyan-950 border-cyan-300 font-extrabold"
+                }`}>
+                  {activeCompany.name && activeCompany.name !== "Aguardando Upload ou CVM Watch"
+                    ? activeCompany.name
+                    : "CYRELA BRAZIL REALTY S.A.EMPREEND E PART"}
+                </span>
+                {activeCompany.ticker && (
+                  <span className={`text-xs font-mono font-black px-2 py-0.5 rounded-md ${
+                    isDark ? "bg-slate-800 text-slate-200 border border-slate-700" : "bg-slate-200 text-slate-800"
+                  }`}>
+                    {activeCompany.ticker}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>{activeCompany.periodicity === "TRIMESTRAL" ? "Trimestral (ITR)" : "Anual (DFP)"}</span>
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setViewMode("CVM")}
+                className={`px-3 py-1 rounded-lg text-xs font-bold border transition cursor-pointer flex items-center gap-1.5 shadow-2xs ${
+                  isDark
+                    ? "bg-slate-800 border-cyan-700/60 hover:bg-slate-700 text-cyan-300 hover:text-white"
+                    : "bg-white border-cyan-300 hover:bg-cyan-50 text-cyan-900 font-extrabold"
+                }`}
+                title="Abrir painel CVM Watch para analisar dados detalhados ou trocar de companhia"
+              >
+                <span>{language === "en" ? "Change / Inspect in CVM Watch →" : "Trocar / Ver no CVM Watch →"}</span>
+              </button>
+            </div>
+          </div>
       </header>
 
       {/* Main Workspace Frame (Full Width) */}
