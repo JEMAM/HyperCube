@@ -24,7 +24,8 @@ import {
   Sparkles,
   PieChart,
   BarChart3,
-  HelpCircle
+  HelpCircle,
+  Bot
 } from "lucide-react";
 import { usePreferences, getApiUrl } from "./PreferencesContext";
 
@@ -136,6 +137,56 @@ export default function OperationalDriverPlanning() {
     }
   };
 
+  const [clientAiModel, setClientAiModel] = useState<string>("Llama 3.3 70B Versatile");
+  const [adaptingSector, setAdaptingSector] = useState<boolean>(false);
+
+  useEffect(() => {
+    const updateModel = () => {
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("hypercube_ai_model") || "Llama 3.3 70B Versatile";
+        setClientAiModel(saved);
+      }
+    };
+    updateModel();
+    window.addEventListener("hypercube_ai_updated", updateModel);
+    window.addEventListener("storage", updateModel);
+    return () => {
+      window.removeEventListener("hypercube_ai_updated", updateModel);
+      window.removeEventListener("storage", updateModel);
+    };
+  }, []);
+
+  const adaptToSectorWithAI = async () => {
+    setAdaptingSector(true);
+    setError(null);
+    try {
+      const url = getApiUrl("/api/financials/planning/drivers/generate-sector", apiBaseUrl);
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          company_id: activeCompany?.id || "empresa_cliente",
+          company_name: activeCompany?.name || "Empresa Cliente",
+          ticker: activeCompany?.ticker || "",
+          sector_hint: (activeCompany as any)?.sector || ""
+        })
+      });
+      if (!res.ok) throw new Error("Falha ao gerar direcionadores setoriais com IA");
+      const data = await res.json();
+      setSimulationResult(data);
+      if (data.workforce_summary?.departments) {
+        setDepartments(data.workforce_summary.departments);
+      }
+      if (data.capex_summary?.projects) {
+        setCapexProjects(data.capex_summary.projects);
+      }
+    } catch (err: any) {
+      setError(err.message || "Erro ao consultar agente de setor");
+    } finally {
+      setAdaptingSector(false);
+    }
+  };
+
   useEffect(() => {
     fetchBaseline(activeCompany?.id);
   }, [activeCompany?.id, apiBaseUrl]);
@@ -242,6 +293,48 @@ export default function OperationalDriverPlanning() {
     return `${sign}R$ ${abs.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} M`;
   };
 
+  const renderCategoryOptions = () => {
+    const sec = simulationResult?.sector_id || "BANKING";
+    if (sec === "BANKING") {
+      return (
+        <>
+          <option value="OPERATIONS">Despesas com Pessoal & Agências (Bancos)</option>
+          <option value="SALES">Despesas de Captação & Comerciais</option>
+          <option value="ADMIN">Despesas SG&A (G&A Corporativo)</option>
+          <option value="RD">Tecnologia Bancária, Pix & Segurança</option>
+        </>
+      );
+    }
+    if (sec === "REAL_ESTATE") {
+      return (
+        <>
+          <option value="OPERATIONS">Custos de Imóveis Vendidos (Canteiro / Obras)</option>
+          <option value="SALES">Despesas Comerciais & Stands</option>
+          <option value="ADMIN">Despesas SG&A (G&A Corporativo)</option>
+          <option value="RD">Novos Negócios & Estudos Landbank</option>
+        </>
+      );
+    }
+    if (sec === "RETAIL") {
+      return (
+        <>
+          <option value="OPERATIONS">Custos / Despesas de Lojas Físicas & CDs</option>
+          <option value="SALES">Despesas com Vendas e Marketing</option>
+          <option value="ADMIN">Despesas SG&A (G&A Corporativo)</option>
+          <option value="RD">E-commerce & Plataforma Omnichannel</option>
+        </>
+      );
+    }
+    return (
+      <>
+        <option value="OPERATIONS">Custos Industriais / CPV (Fábrica)</option>
+        <option value="SALES">Despesas de Vendas e Canais</option>
+        <option value="ADMIN">Despesas SG&A (G&A Corporativo)</option>
+        <option value="RD">P&D / Engenharia de Processos</option>
+      </>
+    );
+  };
+
   const workforce = simulationResult?.workforce_summary;
   const capex = simulationResult?.capex_summary;
   const threeStmt = simulationResult?.three_statement;
@@ -293,6 +386,29 @@ export default function OperationalDriverPlanning() {
               </div>
             </div>
 
+            {/* Sector AI Badge */}
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/30">
+              <Bot className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <div className="flex flex-col">
+                <span className="text-[9px] font-extrabold uppercase tracking-widest text-emerald-400">
+                  Agente Setorial ({clientAiModel})
+                </span>
+                <span className="text-xs font-black text-slate-800 dark:text-white">
+                  {simulationResult?.sector_name || "Bancos & Intermediação Financeira"}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={adaptToSectorWithAI}
+              disabled={adaptingSector}
+              className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-teal-600 hover:to-emerald-600 text-white text-xs font-black shadow-lg hover:shadow-xl transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              title={`Adaptar estrutura de headcount e capex ao setor econômico usando ${clientAiModel}`}
+            >
+              <Sparkles className={`w-3.5 h-3.5 ${adaptingSector ? "animate-spin" : ""}`} />
+              <span>{adaptingSector ? "Analisando..." : `Adaptar ao Setor (${clientAiModel})`}</span>
+            </button>
+
             <button
               onClick={runSimulation}
               disabled={simulating || (!simulationResult && (!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload"))}
@@ -312,6 +428,24 @@ export default function OperationalDriverPlanning() {
             </button>
           </div>
         </div>
+
+        {/* Sector AI Rationale Box */}
+        {simulationResult?.executive_rationale && (
+          <div className="mt-4 p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex items-start gap-3">
+            <Bot className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-xs font-black text-emerald-400 flex items-center gap-2">
+                <span>Racional Setorial C-Level • {simulationResult.sector_name}</span>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono">
+                  {clientAiModel}
+                </span>
+              </p>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                {simulationResult.executive_rationale}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Empty state banner when no company is loaded */}
         {(!simulationResult && (!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload")) && (
@@ -507,10 +641,7 @@ export default function OperationalDriverPlanning() {
                             onChange={(e) => handleDepartmentChange(idx, "category", e.target.value)}
                             className="bg-slate-100 dark:bg-[#0b1326] border border-slate-200 dark:border-[#222a3d] rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer"
                           >
-                            <option value="OPERATIONS">Custos / CMV (Fábrica)</option>
-                            <option value="SALES">Despesas de Vendas</option>
-                            <option value="ADMIN">Despesas SG&A (G&A)</option>
-                            <option value="RD">P&D / Inovação (SG&A)</option>
+                            {renderCategoryOptions()}
                           </select>
                         </td>
                         <td className="p-3.5 text-right font-mono">
@@ -1028,10 +1159,7 @@ export default function OperationalDriverPlanning() {
                     onChange={(e) => setNewDept({ ...newDept, category: e.target.value })}
                     className="w-full mt-1 p-2.5 rounded-xl border bg-slate-50 dark:bg-[#0b1326] border-slate-300 dark:border-[#222a3d] focus:outline-none"
                   >
-                    <option value="OPERATIONS">Custos / CMV (Fábrica)</option>
-                    <option value="SALES">Despesas de Vendas</option>
-                    <option value="ADMIN">Despesas SG&A (G&A)</option>
-                    <option value="RD">P&D / Inovação (SG&A)</option>
+                    {renderCategoryOptions()}
                   </select>
                 </div>
                 <div>

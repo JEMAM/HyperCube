@@ -57,14 +57,21 @@ export default function ThemeLanguageToggle() {
       .then((r) => (r.ok ? r.json() : null))
       .then((cfg) => {
         if (!cfg) return;
-        if (cfg.model) {
+        const localSavedModel = typeof window !== "undefined" ? localStorage.getItem("hypercube_ai_model") : null;
+        const localSavedProvider = typeof window !== "undefined" ? localStorage.getItem("hypercube_ai_provider") : null;
+        if (localSavedModel) {
+          setCurrentModel(localSavedModel);
+        } else if (cfg.model) {
           setCurrentModel(cfg.model);
         }
-        if (cfg.provider) {
+        if (localSavedProvider) {
+          setActiveProvider(localSavedProvider);
+        } else if (cfg.provider) {
           setActiveProvider(cfg.provider);
         }
         if (typeof cfg.has_key === "boolean") {
-          setIsActive(cfg.has_key);
+          const hasLocalKey = Boolean(typeof window !== "undefined" && (localStorage.getItem("hypercube_ai_key") || localStorage.getItem(`hypercube_${localSavedProvider || "groq"}_key`)));
+          setIsActive(cfg.has_key || hasLocalKey);
         }
       })
       .catch(() => {});

@@ -187,117 +187,393 @@ function buildMultidimDimensions(comp: any) {
 }
 
 function buildDriverPlanningData(comp: any) {
+  const cName = (comp.name || comp.id || "").toLowerCase();
+  const cTicker = (comp.ticker || "").toLowerCase();
+  const cSector = (comp.sector || "").toLowerCase();
+  const combined = `${cName} ${cTicker} ${cSector} ${comp.id || ""}`;
+
+  const aiConfig = sessionStore.getAiConfig();
+
+  // Detect sector
+  let sectorId = "MANUFACTURING";
+  let sectorName = "Indústria, Manufatura & Bens de Capital";
+  let executiveRationale = "Estrutura industrial voltada à eficiência fabril e gestão de chão de fábrica.";
+
+  if (combined.includes("pine") || combined.includes("banco") || combined.includes("bank") || combined.includes("financeir") || combined.includes("daycoval") || combined.includes("20796") || combined.includes("credito")) {
+    sectorId = "BANKING";
+    sectorName = "Bancos & Intermediação Financeira";
+    executiveRationale = "Instituições financeiras e bancos múltiplos não possuem chão de fábrica nem CMV industrial. A operação é intensiva em capital intelectual (Mesa de Operações, Crédito & Risco, Corporate Banking) e sistemas de Core Banking de missão crítica.";
+  } else if (combined.includes("cyrela") || combined.includes("eztec") || combined.includes("mrv") || combined.includes("direcional") || combined.includes("even") || combined.includes("imobiliari") || combined.includes("construcao")) {
+    sectorId = "REAL_ESTATE";
+    sectorName = "Construção Civil & Incorporação Imobiliária";
+    executiveRationale = "Incorporadoras e construtoras organizam sua força de trabalho em canteiros de obras (Custos de Imóveis Vendidos), stands de vendas e prospecção de landbank.";
+  } else if (combined.includes("bahia") || combined.includes("magalu") || combined.includes("varejo") || combined.includes("renner") || combined.includes("lojas") || combined.includes("carrefour") || combined.includes("assai")) {
+    sectorId = "RETAIL";
+    sectorName = "Varejo, E-commerce & Distribuição";
+    executiveRationale = "Empresas de varejo e consumo distribuem pessoal entre lojas físicas de atendimento e centros de distribuição last-mile com Capex focado em reformas e automação logística.";
+  } else if (combined.includes("taesa") || combined.includes("cpfl") || combined.includes("energia") || combined.includes("eletrobras") || combined.includes("sabesp") || combined.includes("sanepar")) {
+    sectorId = "ENERGY_UTILITIES";
+    sectorName = "Energia Elétrica & Utilities";
+    executiveRationale = "Concessões reguladas de infraestrutura operam com foco em manutenção de linhas e subestações, com Capex regulatório remunerado pela Aneel.";
+  }
+
+  let departments = [];
+  let capexProjects = [];
+
+  if (sectorId === "BANKING") {
+    departments = [
+      {
+        department_id: "mesa_operacoes",
+        department_name: "Mesa de Operações & Tesouraria",
+        category: "OPERATIONS",
+        accounting_destination: "Despesas Administrativas e de Pessoal",
+        current_headcount: 35,
+        hiring_plan: 5,
+        attrition_rate_pct: 3.0,
+        avg_salary_monthly: 16500.0,
+        avg_benefits_monthly: 3200.0,
+        fgts_pct: 8.0,
+        inss_patronal_pct: 20.0,
+        sistema_s_rat_pct: 8.8,
+        provisao_13_ferias_pct: 19.44
+      },
+      {
+        department_id: "credito_risco",
+        department_name: "Crédito, Underwriting & Risco de Mercado",
+        category: "OPERATIONS",
+        accounting_destination: "Despesas Administrativas e de Pessoal",
+        current_headcount: 28,
+        hiring_plan: 4,
+        attrition_rate_pct: 2.5,
+        avg_salary_monthly: 13800.0,
+        avg_benefits_monthly: 2800.0,
+        fgts_pct: 8.0,
+        inss_patronal_pct: 20.0,
+        sistema_s_rat_pct: 8.8,
+        provisao_13_ferias_pct: 19.44
+      },
+      {
+        department_id: "corporate_banking",
+        department_name: "Corporate Banking & Middle Market",
+        category: "SALES",
+        accounting_destination: "Despesas de Captação e Comerciais",
+        current_headcount: 30,
+        hiring_plan: 6,
+        attrition_rate_pct: 4.0,
+        avg_salary_monthly: 15000.0,
+        avg_benefits_monthly: 3000.0,
+        fgts_pct: 8.0,
+        inss_patronal_pct: 20.0,
+        sistema_s_rat_pct: 8.8,
+        provisao_13_ferias_pct: 19.44
+      },
+      {
+        department_id: "tech_corebanking",
+        department_name: "Tecnologia Bancária, Open Finance & Pix",
+        category: "RD",
+        accounting_destination: "Despesas de Tecnologia & Desenvolvimento",
+        current_headcount: 24,
+        hiring_plan: 5,
+        attrition_rate_pct: 3.5,
+        avg_salary_monthly: 14500.0,
+        avg_benefits_monthly: 2600.0,
+        fgts_pct: 8.0,
+        inss_patronal_pct: 20.0,
+        sistema_s_rat_pct: 8.8,
+        provisao_13_ferias_pct: 19.44
+      },
+      {
+        department_id: "compliance_juridico",
+        department_name: "Compliance, Jurídico & Controladoria",
+        category: "ADMIN",
+        accounting_destination: "Despesas SG&A (G&A Corporativo)",
+        current_headcount: 18,
+        hiring_plan: 2,
+        attrition_rate_pct: 2.0,
+        avg_salary_monthly: 12500.0,
+        avg_benefits_monthly: 2400.0,
+        fgts_pct: 8.0,
+        inss_patronal_pct: 20.0,
+        sistema_s_rat_pct: 8.8,
+        provisao_13_ferias_pct: 19.44
+      }
+    ];
+
+    capexProjects = [
+      {
+        project_id: "proj_core_banking",
+        project_name: "Modernização de Plataforma Core Banking & Nuvem Híbrida",
+        asset_category: "SOFTWARE",
+        total_investment: 14500000.0,
+        useful_life_years: 5,
+        residual_value_pct: 0.0,
+        start_year: 2026,
+        is_active: true
+      },
+      {
+        project_id: "proj_cyber_ai",
+        project_name: "Cibersegurança Bancária & Detecção de Fraudes por IA",
+        asset_category: "SOFTWARE",
+        total_investment: 6800000.0,
+        useful_life_years: 4,
+        residual_value_pct: 0.0,
+        start_year: 2026,
+        is_active: true
+      },
+      {
+        project_id: "proj_hubs_corp",
+        project_name: "Infraestrutura de Hubs Corporativos & Atendimento Digital",
+        asset_category: "BUILDINGS",
+        total_investment: 4200000.0,
+        useful_life_years: 15,
+        residual_value_pct: 10.0,
+        start_year: 2026,
+        is_active: true
+      }
+    ];
+  } else if (sectorId === "REAL_ESTATE") {
+    departments = [
+      {
+        department_id: "obras_engenharia",
+        department_name: "Engenharia Civil & Gestão de Canteiros",
+        category: "OPERATIONS",
+        accounting_destination: "Custos de Imóveis Vendidos (Obras)",
+        current_headcount: 55,
+        hiring_plan: 8,
+        attrition_rate_pct: 4.5,
+        avg_salary_monthly: 8500.0,
+        avg_benefits_monthly: 1800.0,
+        fgts_pct: 8.0,
+        inss_patronal_pct: 20.0,
+        sistema_s_rat_pct: 8.8,
+        provisao_13_ferias_pct: 19.44
+      },
+      {
+        department_id: "vendas_incorporacao",
+        department_name: "Comercial de Lançamentos & Vendas",
+        category: "SALES",
+        accounting_destination: "Despesas Comerciais & Stands",
+        current_headcount: 25,
+        hiring_plan: 4,
+        attrition_rate_pct: 5.0,
+        avg_salary_monthly: 9200.0,
+        avg_benefits_monthly: 2000.0,
+        fgts_pct: 8.0,
+        inss_patronal_pct: 20.0,
+        sistema_s_rat_pct: 8.8,
+        provisao_13_ferias_pct: 19.44
+      },
+      {
+        department_id: "novos_negocios",
+        department_name: "Novos Negócios, Terrenos & Projetos",
+        category: "RD",
+        accounting_destination: "Despesas com Estudos & Landbank",
+        current_headcount: 14,
+        hiring_plan: 2,
+        attrition_rate_pct: 2.0,
+        avg_salary_monthly: 13500.0,
+        avg_benefits_monthly: 2400.0,
+        fgts_pct: 8.0,
+        inss_patronal_pct: 20.0,
+        sistema_s_rat_pct: 8.8,
+        provisao_13_ferias_pct: 19.44
+      },
+      {
+        department_id: "admin_controladoria",
+        department_name: "Administração, Finanças & Repasse Imobiliário",
+        category: "ADMIN",
+        accounting_destination: "Despesas SG&A (G&A Corporativo)",
+        current_headcount: 16,
+        hiring_plan: 2,
+        attrition_rate_pct: 2.5,
+        avg_salary_monthly: 10500.0,
+        avg_benefits_monthly: 2100.0,
+        fgts_pct: 8.0,
+        inss_patronal_pct: 20.0,
+        sistema_s_rat_pct: 8.8,
+        provisao_13_ferias_pct: 19.44
+      }
+    ];
+
+    capexProjects = [
+      {
+        project_id: "proj_canteiro_equip",
+        project_name: "Parque de Gruas, Fôrmas & Equipamentos de Construção",
+        asset_category: "MACHINERY",
+        total_investment: 12500000.0,
+        useful_life_years: 8,
+        residual_value_pct: 10.0,
+        start_year: 2026,
+        is_active: true
+      },
+      {
+        project_id: "proj_bim_cloud",
+        project_name: "Plataforma BIM 3D & Digital Twin de Engenharia",
+        asset_category: "SOFTWARE",
+        total_investment: 3800000.0,
+        useful_life_years: 5,
+        residual_value_pct: 0.0,
+        start_year: 2026,
+        is_active: true
+      },
+      {
+        project_id: "proj_stands_hub",
+        project_name: "Hubs de Experiência e Stands Conceito de Lançamento",
+        asset_category: "BUILDINGS",
+        total_investment: 5200000.0,
+        useful_life_years: 10,
+        residual_value_pct: 5.0,
+        start_year: 2026,
+        is_active: true
+      }
+    ];
+  } else {
+    // Default manufacturing / diversified
+    departments = [
+      {
+        department_id: "ops_fabril",
+        department_name: "Operações Industriais & Chão de Fábrica",
+        category: "OPERATIONS",
+        accounting_destination: "Custos dos Produtos Vendidos (CPV)",
+        current_headcount: 45,
+        hiring_plan: 6,
+        attrition_rate_pct: 4.0,
+        avg_salary_monthly: 6500.0,
+        avg_benefits_monthly: 1500.0,
+        fgts_pct: 8.0,
+        inss_patronal_pct: 20.0,
+        sistema_s_rat_pct: 8.8,
+        provisao_13_ferias_pct: 19.44
+      },
+      {
+        department_id: "sales_corp",
+        department_name: "Vendas Corporativas & Canais",
+        category: "SALES",
+        accounting_destination: "Despesas Comerciais & Vendas",
+        current_headcount: 20,
+        hiring_plan: 3,
+        attrition_rate_pct: 5.0,
+        avg_salary_monthly: 9500.0,
+        avg_benefits_monthly: 2000.0,
+        fgts_pct: 8.0,
+        inss_patronal_pct: 20.0,
+        sistema_s_rat_pct: 8.8,
+        provisao_13_ferias_pct: 19.44
+      },
+      {
+        department_id: "admin_fin",
+        department_name: "Administrativo & Controladoria",
+        category: "ADMIN",
+        accounting_destination: "Despesas SG&A (G&A Corporativo)",
+        current_headcount: 12,
+        hiring_plan: 1,
+        attrition_rate_pct: 2.0,
+        avg_salary_monthly: 11000.0,
+        avg_benefits_monthly: 2200.0,
+        fgts_pct: 8.0,
+        inss_patronal_pct: 20.0,
+        sistema_s_rat_pct: 8.8,
+        provisao_13_ferias_pct: 19.44
+      },
+      {
+        department_id: "tech_rd",
+        department_name: "Engenharia de Processos & Inovação",
+        category: "RD",
+        accounting_destination: "Despesas com P&D e Engenharia",
+        current_headcount: 8,
+        hiring_plan: 2,
+        attrition_rate_pct: 2.5,
+        avg_salary_monthly: 14000.0,
+        avg_benefits_monthly: 2500.0,
+        fgts_pct: 8.0,
+        inss_patronal_pct: 20.0,
+        sistema_s_rat_pct: 8.8,
+        provisao_13_ferias_pct: 19.44
+      }
+    ];
+
+    capexProjects = [
+      {
+        project_id: "proj_modernizacao",
+        project_name: "Modernização e Automação Industrial",
+        asset_category: "MACHINERY",
+        total_investment: 8500000.0,
+        useful_life_years: 10,
+        residual_value_pct: 5.0,
+        start_year: 2026,
+        is_active: true
+      },
+      {
+        project_id: "proj_digital",
+        project_name: "Transformação Digital & ERP Cloud",
+        asset_category: "SOFTWARE",
+        total_investment: 4200000.0,
+        useful_life_years: 5,
+        residual_value_pct: 0.0,
+        start_year: 2026,
+        is_active: true
+      },
+      {
+        project_id: "proj_expansao",
+        project_name: "Expansão de Capacidade Logística",
+        asset_category: "BUILDINGS",
+        total_investment: 5800000.0,
+        useful_life_years: 25,
+        residual_value_pct: 10.0,
+        start_year: 2026,
+        is_active: true
+      }
+    ];
+  }
+
+  // Calculate consolidated totals
+  const totalHeadcount = departments.reduce((acc, d) => acc + d.current_headcount, 0);
+  const totalHiring = departments.reduce((acc, d) => acc + d.hiring_plan, 0);
+  const totalTurnover = departments.reduce((acc, d) => acc + Math.floor(d.current_headcount * (d.attrition_rate_pct / 100)), 0);
+  const totalFinalHeadcount = totalHeadcount + totalHiring - totalTurnover;
+
+  let totalPayrollAnnual = 0;
+  for (const d of departments) {
+    const finalHc = d.current_headcount + d.hiring_plan - Math.floor(d.current_headcount * (d.attrition_rate_pct / 100));
+    const monthlyBase = finalHc * d.avg_salary_monthly;
+    const totalChargesPct = d.fgts_pct + d.inss_patronal_pct + d.sistema_s_rat_pct + d.provisao_13_ferias_pct;
+    const charges = (monthlyBase * 12) * (totalChargesPct / 100);
+    const benefits = finalHc * d.avg_benefits_monthly * 12;
+    const cost = Math.round((monthlyBase * 12) + charges + benefits);
+    (d as any).total_annual_cost = cost;
+    totalPayrollAnnual += cost;
+  }
+
+  const totalCapexVal = capexProjects.reduce((acc, p) => acc + (p.is_active ? p.total_investment : 0), 0);
+
   return {
     status: "success",
     company_id: comp.id || "empresa",
     company_name: comp.name || "Empresa Cliente",
     ticker: comp.ticker || "CLIENTE",
+    sector_id: sectorId,
+    sector_name: sectorName,
+    executive_rationale: executiveRationale,
+    ai_model_used: aiConfig.model,
+    ai_provider: aiConfig.provider,
     workforce_summary: {
-      total_headcount: 85,
-      total_final_headcount: 85,
-      net_additions: 12,
-      net_headcount_growth: 12,
-      total_annual_cost: 14250000.0,
-      total_workforce_cost_annual: 14250000.0,
-      cost_cpv: 8200000.0,
-      cost_sales: 3450000.0,
-      cost_admin: 2600000.0,
-      departments: [
-        {
-          department_id: "ops_fabril",
-          department_name: "Operações & Chão de Fábrica",
-          category: "OPERATIONS",
-          current_headcount: 45,
-          hiring_plan: 6,
-          attrition_rate_pct: 4.0,
-          avg_salary_monthly: 6500.0,
-          avg_benefits_monthly: 1500.0,
-          fgts_pct: 8.0,
-          inss_patronal_pct: 20.0,
-          sistema_s_rat_pct: 8.8,
-          provisao_13_ferias_pct: 19.44
-        },
-        {
-          department_id: "sales_corp",
-          department_name: "Vendas Corporativas & Canais",
-          category: "SALES",
-          current_headcount: 20,
-          hiring_plan: 3,
-          attrition_rate_pct: 5.0,
-          avg_salary_monthly: 9500.0,
-          avg_benefits_monthly: 2000.0,
-          fgts_pct: 8.0,
-          inss_patronal_pct: 20.0,
-          sistema_s_rat_pct: 8.8,
-          provisao_13_ferias_pct: 19.44
-        },
-        {
-          department_id: "admin_fin",
-          department_name: "Administrativo & Controladoria",
-          category: "ADMIN",
-          current_headcount: 12,
-          hiring_plan: 1,
-          attrition_rate_pct: 2.0,
-          avg_salary_monthly: 11000.0,
-          avg_benefits_monthly: 2200.0,
-          fgts_pct: 8.0,
-          inss_patronal_pct: 20.0,
-          sistema_s_rat_pct: 8.8,
-          provisao_13_ferias_pct: 19.44
-        },
-        {
-          department_id: "tech_rd",
-          department_name: "Engenharia & Tecnologia",
-          category: "RD",
-          current_headcount: 8,
-          hiring_plan: 2,
-          attrition_rate_pct: 2.5,
-          avg_salary_monthly: 14000.0,
-          avg_benefits_monthly: 2500.0,
-          fgts_pct: 8.0,
-          inss_patronal_pct: 20.0,
-          sistema_s_rat_pct: 8.8,
-          provisao_13_ferias_pct: 19.44
-        }
-      ]
+      total_headcount: totalHeadcount,
+      total_final_headcount: totalFinalHeadcount,
+      net_additions: totalHiring - totalTurnover,
+      net_headcount_growth: totalHiring - totalTurnover,
+      total_annual_cost: totalPayrollAnnual,
+      total_workforce_cost_annual: totalPayrollAnnual,
+      cost_cpv: Math.round(departments.filter(d => d.category === "OPERATIONS").reduce((acc, d: any) => acc + d.total_annual_cost, 0)),
+      cost_sales: Math.round(departments.filter(d => d.category === "SALES").reduce((acc, d: any) => acc + d.total_annual_cost, 0)),
+      cost_admin: Math.round(departments.filter(d => d.category === "ADMIN" || d.category === "RD").reduce((acc, d: any) => acc + d.total_annual_cost, 0)),
+      departments: departments
     },
     capex_summary: {
-      total_active_projects: 3,
-      total_active_capex: 18.5,
-      total_capex_budget: 18500000.0,
-      annual_depreciation_impact: 1.92,
-      projects: [
-        {
-          project_id: "proj_modernizacao",
-          project_name: "Modernização e Automação Industrial",
-          asset_category: "MACHINERY",
-          total_investment: 8500000.0,
-          useful_life_years: 10,
-          residual_value_pct: 5.0,
-          start_year: 2026,
-          is_active: true
-        },
-        {
-          project_id: "proj_digital",
-          project_name: "Transformação Digital & ERP Cloud",
-          asset_category: "SOFTWARE",
-          total_investment: 4200000.0,
-          useful_life_years: 5,
-          residual_value_pct: 0.0,
-          start_year: 2026,
-          is_active: true
-        },
-        {
-          project_id: "proj_expansao",
-          project_name: "Expansão de Capacidade Logística",
-          asset_category: "BUILDINGS",
-          total_investment: 5800000.0,
-          useful_life_years: 25,
-          residual_value_pct: 10.0,
-          start_year: 2026,
-          is_active: true
-        }
-      ]
+      total_active_projects: capexProjects.length,
+      total_active_capex: Math.round(totalCapexVal / 1000000 * 10) / 10,
+      total_capex_budget: totalCapexVal,
+      annual_depreciation_impact: Math.round(capexProjects.reduce((acc, p) => acc + (p.total_investment / p.useful_life_years), 0) / 1000000 * 100) / 100,
+      projects: capexProjects
     },
     closed_loop_delta: {
       active_balance_ok: true,
@@ -976,18 +1252,9 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
     });
   }
 
-  // 17. LLM Config (Secure BYOK Mock)
+  // 17. LLM Config (Dynamic Client Chosen Model)
   if (path === "config/llm" || path === "config") {
-    return NextResponse.json({
-      provider: "gemini",
-      model: "Gemini 3.7 Flash",
-      api_key: "",
-      api_key_masked: "",
-      saved_keys: { gemini: "", groq: "", openai: "", anthropic: "", ollama: "http://localhost:11434" },
-      has_key: true,
-      is_active: true,
-      custom_file_uploaded: sessionStore.hasUploaded()
-    });
+    return NextResponse.json(sessionStore.getAiConfig());
   }
 
   // 18. Agent Task Status
@@ -1258,12 +1525,25 @@ export async function POST(req: NextRequest, context: { params: Promise<{ slug: 
     });
   }
 
-  // Config LLM save (stateless BYOK mock)
+  // Sector Drivers On-Demand Generation
+  if (path === "financials/planning/drivers/generate-sector") {
+    const comp = sessionStore.getActiveCompany();
+    const data = buildDriverPlanningData(comp);
+    return NextResponse.json(data);
+  }
+
+  // Config LLM save (Dynamic Client Chosen Model)
   if (path === "config/llm" || path === "config") {
+    sessionStore.setAiConfig(body);
+    const activeCfg = sessionStore.getAiConfig();
     return NextResponse.json({
       status: "success",
-      message: "Configurações BYOK aplicadas com sucesso localmente.",
-      saved_keys: {}
+      message: `Configuração da IA atualizada com sucesso para ${activeCfg.model} (${activeCfg.provider.toUpperCase()}).`,
+      provider: activeCfg.provider,
+      model: activeCfg.model,
+      saved_keys: activeCfg.saved_keys,
+      has_key: activeCfg.has_key,
+      is_active: activeCfg.is_active
     });
   }
 

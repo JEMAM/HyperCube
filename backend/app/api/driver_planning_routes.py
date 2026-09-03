@@ -56,20 +56,40 @@ class DriverSimulateRequest(BaseModel):
     payout_pct_override: Optional[float] = Field(default=None, description="Optional override for dividend payout %")
 
 
+class SectorGenerateRequest(BaseModel):
+    company_id: str = "cvm_20796"
+    company_name: Optional[str] = "BANCO PINE S.A."
+    ticker: Optional[str] = "PINE4"
+    sector_hint: Optional[str] = ""
+
+
 @router.get("")
 def get_driver_planning_baseline(
-    company_id: str = Query(default="klabin", description="Company ID (vale, petrobras, klabin, weg, banco_do_brasil)")
+    company_id: str = Query(default="klabin", description="Company ID (vale, petrobras, klabin, weg, cvm_20796, cyrela, etc.)")
 ) -> Dict[str, Any]:
     """
     Returns the baseline operational driver model (Workforce Headcount + Capex Projects),
     including summaries and causal 3-statement integration for the requested company.
     """
     norm_id = company_id.lower().strip()
-    if norm_id not in COMPANIES_METADATA:
-        norm_id = "klabin"
-
     engine = get_driver_planning_engine(company_id=norm_id)
     return engine.simulate_integrated_financials()
+
+
+@router.post("/generate-sector")
+def generate_sector_drivers(req: SectorGenerateRequest) -> Dict[str, Any]:
+    """
+    Invokes the SectorDriverAgent with Gemini to classify company sector
+    and generate tailored departments and capex assets.
+    """
+    from backend.app.agents.sector_driver_agent import SectorDriverAgent
+    agent = SectorDriverAgent()
+    return agent.analyze_and_build(
+        company_id=req.company_id,
+        company_name=req.company_name or req.company_id,
+        ticker=req.ticker or "",
+        sector_hint=req.sector_hint or ""
+    )
 
 
 @router.post("/simulate")
@@ -79,8 +99,6 @@ def simulate_driver_planning(req: DriverSimulateRequest) -> Dict[str, Any]:
     Returns the recomputed workforce summary, capex depreciation schedule, and closed-loop 3-statement model.
     """
     norm_id = req.company_id.lower().strip()
-    if norm_id not in COMPANIES_METADATA:
-        norm_id = "klabin"
 
     hc_dicts = [p.model_dump() for p in req.headcount_plans]
     cx_dicts = [p.model_dump() for p in req.capex_projects]

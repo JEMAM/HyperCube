@@ -25,6 +25,45 @@ class SessionStore {
   private hasCustomUpload: boolean = false;
   private customFilename: string = "";
   private uploadCount: number = 0;
+  private aiConfig: {
+    provider: string;
+    model: string;
+    api_key: string;
+    saved_keys: Record<string, string>;
+  } = {
+    provider: "groq",
+    model: "llama-3.3-70b-versatile",
+    api_key: "",
+    saved_keys: { gemini: "", groq: "", openai: "", anthropic: "", ollama: "http://localhost:11434" }
+  };
+
+  public getAiConfig() {
+    const hasKey = this.aiConfig.provider === "ollama" 
+      ? true 
+      : Boolean(this.aiConfig.api_key || this.aiConfig.saved_keys[this.aiConfig.provider] || process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY);
+    return {
+      provider: this.aiConfig.provider,
+      model: this.aiConfig.model,
+      api_key: "",
+      api_key_masked: this.aiConfig.api_key ? "••••••••" : "",
+      saved_keys: this.aiConfig.saved_keys,
+      has_key: hasKey,
+      is_active: hasKey,
+      custom_file_uploaded: this.hasCustomUpload
+    };
+  }
+
+  public setAiConfig(cfg: any) {
+    if (cfg.provider) this.aiConfig.provider = cfg.provider;
+    if (cfg.model) this.aiConfig.model = cfg.model;
+    if (cfg.api_key) {
+      this.aiConfig.api_key = cfg.api_key;
+      this.aiConfig.saved_keys[this.aiConfig.provider] = cfg.api_key;
+    }
+    if (cfg.saved_keys && typeof cfg.saved_keys === "object") {
+      this.aiConfig.saved_keys = { ...this.aiConfig.saved_keys, ...cfg.saved_keys };
+    }
+  }
 
   public getActiveCompany(): CompanyInfo {
     return this.activeCompany;

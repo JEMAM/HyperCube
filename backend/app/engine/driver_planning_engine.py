@@ -127,35 +127,31 @@ class CapexProject:
 
 def get_default_headcount_plans(company_id: str = "klabin") -> List[DepartmentHeadcountPlan]:
     """Provides calibrated baseline workforce plans by sector and company scale."""
-    if company_id == "petrobras":
+    from backend.app.agents.sector_driver_agent import detect_sector_by_company, SECTOR_CATALOG
+
+    cid = company_id.lower().strip()
+    if cid == "petrobras":
         return [
             DepartmentHeadcountPlan("ops", "Refino, Exploração & Produção", "OPERATIONS", 24000, 850, 3.0, 14500.0, 2600.0),
             DepartmentHeadcountPlan("sales", "Comercialização & Logística de Combustíveis", "SALES", 4500, 180, 4.0, 11500.0, 2200.0),
             DepartmentHeadcountPlan("rd", "Cenpes & Transição Energética", "RD", 3200, 140, 2.5, 16000.0, 2800.0),
             DepartmentHeadcountPlan("admin", "Finanças, Governança & Jurídico", "ADMIN", 5800, 120, 3.5, 12800.0, 2300.0),
         ]
-    elif company_id == "vale":
+    elif cid == "vale":
         return [
             DepartmentHeadcountPlan("ops", "Operações de Mineração & Pelotização", "OPERATIONS", 38000, 1200, 3.5, 9800.0, 2100.0),
             DepartmentHeadcountPlan("sales", "Vendas Globais & Frete Marítimo", "SALES", 3100, 110, 4.0, 12500.0, 2400.0),
             DepartmentHeadcountPlan("rd", "Tecnologia Mineral & Descarbonização", "RD", 2400, 95, 2.0, 14500.0, 2500.0),
             DepartmentHeadcountPlan("admin", "Sustentabilidade, G&A & Finanças", "ADMIN", 6500, 150, 3.0, 11200.0, 2200.0),
         ]
-    elif company_id == "weg":
+    elif cid == "weg":
         return [
             DepartmentHeadcountPlan("ops", "Fábricas de Motores & Automação", "OPERATIONS", 28500, 1400, 4.0, 6800.0, 1600.0),
             DepartmentHeadcountPlan("sales", "Engenharia de Aplicação & Vendas", "SALES", 4200, 260, 3.5, 9200.0, 1900.0),
             DepartmentHeadcountPlan("rd", "P&D / Motores de Alta Eficiência", "RD", 3100, 180, 2.5, 11800.0, 2100.0),
             DepartmentHeadcountPlan("admin", "Controladoria, TI & Gente", "ADMIN", 3800, 110, 3.0, 8400.0, 1700.0),
         ]
-    elif company_id == "banco_do_brasil":
-        return [
-            DepartmentHeadcountPlan("ops", "Agências & Atendimento Agro/PJ", "OPERATIONS", 52000, 1800, 4.0, 8900.0, 2400.0),
-            DepartmentHeadcountPlan("sales", "Mercado de Capitais & Vendas Corporativas", "SALES", 9500, 450, 4.5, 14200.0, 2700.0),
-            DepartmentHeadcountPlan("rd", "Banco Digital, IA & Engenharia de TI", "RD", 8200, 620, 3.0, 15500.0, 2800.0),
-            DepartmentHeadcountPlan("admin", "Risco, Compliance & Diretoria", "ADMIN", 12500, 380, 3.2, 12000.0, 2500.0),
-        ]
-    else:  # Klabin S.A.
+    elif cid == "klabin":
         return [
             DepartmentHeadcountPlan("ops", "Operações Florestais & Fábricas de Papel", "OPERATIONS", 11200, 450, 3.2, 7200.0, 1750.0),
             DepartmentHeadcountPlan("sales", "Comercial de Embalagens & Celulose", "SALES", 1850, 95, 4.0, 9600.0, 2050.0),
@@ -163,10 +159,40 @@ def get_default_headcount_plans(company_id: str = "klabin") -> List[DepartmentHe
             DepartmentHeadcountPlan("admin", "Administração, Finanças & RH", "ADMIN", 1950, 80, 3.0, 8900.0, 1850.0),
         ]
 
+    # Dynamic Sector Detection for any other company (e.g. Banco Pine, Cyrela, etc.)
+    comp_meta = COMPANIES_METADATA.get(cid, {})
+    comp_name = comp_meta.get("name", cid)
+    comp_ticker = comp_meta.get("ticker", "")
+    comp_sector = comp_meta.get("sector", "")
+
+    detected_sector = detect_sector_by_company(cid, comp_name, comp_ticker, comp_sector)
+    sector_info = SECTOR_CATALOG.get(detected_sector, SECTOR_CATALOG["BANKING"] if ("pine" in cid or "banco" in cid or "20796" in cid) else SECTOR_CATALOG["MANUFACTURING"])
+
+    return [
+        DepartmentHeadcountPlan(
+            department_id=d["department_id"],
+            department_name=d["department_name"],
+            category=d.get("category", "OPERATIONS"),
+            current_headcount=d["current_headcount"],
+            hiring_plan=d["hiring_plan"],
+            attrition_rate_pct=d.get("attrition_rate_pct", 3.0),
+            avg_salary_monthly=d["avg_salary_monthly"],
+            avg_benefits_monthly=d.get("avg_benefits_monthly", 2000.0),
+            fgts_pct=d.get("fgts_pct", 8.0),
+            inss_patronal_pct=d.get("inss_patronal_pct", 20.0),
+            sistema_s_rat_pct=d.get("sistema_s_rat_pct", 8.8),
+            provisao_13_ferias_pct=d.get("provisao_13_ferias_pct", 19.44)
+        )
+        for d in sector_info["departments"]
+    ]
+
 
 def get_default_capex_projects(company_id: str = "klabin") -> List[CapexProject]:
     """Provides calibrated baseline capex investments by sector and company scale."""
-    if company_id == "petrobras":
+    from backend.app.agents.sector_driver_agent import detect_sector_by_company, SECTOR_CATALOG
+
+    cid = company_id.lower().strip()
+    if cid == "petrobras":
         return [
             CapexProject("p1", "FPSO Búzios & Mero (Pré-Sal)", "MACHINERY", 42000.0, 15, 5.0, 2026),
             CapexProject("p2", "Sistemas de Exploração Submarina", "MACHINERY", 18500.0, 10, 0.0, 2026),
@@ -174,7 +200,7 @@ def get_default_capex_projects(company_id: str = "klabin") -> List[CapexProject]
             CapexProject("p4", "Digital Twin & HPC Petróleo e Gás", "SOFTWARE", 4500.0, 5, 0.0, 2026),
             CapexProject("p5", "Frota de Apoio Marítimo e Dutos", "VEHICLES", 5500.0, 8, 10.0, 2026),
         ]
-    elif company_id == "vale":
+    elif cid == "vale":
         return [
             CapexProject("p1", "Expansão de Minas & Pelotização (S11D)", "MACHINERY", 18500.0, 12, 5.0, 2026),
             CapexProject("p2", "Ferrovia Carajás / Vitória-Minas (Frota)", "VEHICLES", 9200.0, 10, 10.0, 2026),
@@ -182,21 +208,14 @@ def get_default_capex_projects(company_id: str = "klabin") -> List[CapexProject]
             CapexProject("p4", "Projetos de Briquete e Descarbonização", "MACHINERY", 6500.0, 10, 5.0, 2026),
             CapexProject("p5", "Automação e Caminhões Autônomos", "SOFTWARE", 2400.0, 5, 0.0, 2026),
         ]
-    elif company_id == "weg":
+    elif cid == "weg":
         return [
             CapexProject("p1", "Nova Fábrica de Motores Elétricos no México", "BUILDINGS", 1200.0, 25, 15.0, 2026),
             CapexProject("p2", "Maquinário de Usinagem & Estamparia de Alta Precisão", "MACHINERY", 1650.0, 10, 5.0, 2026),
             CapexProject("p3", "Linha de Montagem de Sistemas BESS & Baterias", "MACHINERY", 950.0, 10, 5.0, 2026),
             CapexProject("p4", "Modernização da Infraestrutura Cloud & SAP S/4HANA", "SOFTWARE", 420.0, 5, 0.0, 2026),
         ]
-    elif company_id == "banco_do_brasil":
-        return [
-            CapexProject("p1", "Infraestrutura de Nuvem Híbrida & Mainframe", "SOFTWARE", 2800.0, 5, 0.0, 2026),
-            CapexProject("p2", "Data Centers Seguros & Cibersegurança IA", "SOFTWARE", 1450.0, 5, 0.0, 2026),
-            CapexProject("p3", "Remodelação de Agências e Hubs de Negócios", "BUILDINGS", 850.0, 15, 10.0, 2026),
-            CapexProject("p4", "Plataforma Open Finance & Pix Automático", "SOFTWARE", 500.0, 3, 0.0, 2026),
-        ]
-    else:  # Klabin S.A.
+    elif cid == "klabin":
         return [
             CapexProject("p1", "Projeto Puma II - Máquina de Papel Kraftliner MP28", "MACHINERY", 2850.0, 15, 5.0, 2026),
             CapexProject("p2", "Silvicultura de Precisão e Máquinas Florestais", "MACHINERY", 1200.0, 8, 10.0, 2026),
@@ -204,6 +223,29 @@ def get_default_capex_projects(company_id: str = "klabin") -> List[CapexProject]
             CapexProject("p4", "Frota de Caminhões Pesados com Telemetria", "VEHICLES", 850.0, 6, 12.0, 2026),
             CapexProject("p5", "Software de Otimização Logística & SAP", "SOFTWARE", 450.0, 5, 0.0, 2026),
         ]
+
+    # Dynamic Sector Detection for any other company (e.g. Banco Pine, Cyrela, etc.)
+    comp_meta = COMPANIES_METADATA.get(cid, {})
+    comp_name = comp_meta.get("name", cid)
+    comp_ticker = comp_meta.get("ticker", "")
+    comp_sector = comp_meta.get("sector", "")
+
+    detected_sector = detect_sector_by_company(cid, comp_name, comp_ticker, comp_sector)
+    sector_info = SECTOR_CATALOG.get(detected_sector, SECTOR_CATALOG["BANKING"] if ("pine" in cid or "banco" in cid or "20796" in cid) else SECTOR_CATALOG["MANUFACTURING"])
+
+    return [
+        CapexProject(
+            project_id=p["project_id"],
+            project_name=p["project_name"],
+            asset_category=p.get("asset_category", "MACHINERY"),
+            total_investment=float(p["total_investment"]) / 1000.0 if float(p["total_investment"]) > 100000 else float(p["total_investment"]),
+            useful_life_years=int(p.get("useful_life_years", 10)),
+            residual_value_pct=float(p.get("residual_value_pct", 5.0)),
+            start_year=int(p.get("start_year", 2026)),
+            is_active=bool(p.get("is_active", True))
+        )
+        for p in sector_info["capex_projects"]
+    ]
 
 
 class DriverPlanningEngine:
