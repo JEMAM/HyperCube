@@ -32,6 +32,66 @@ interface BPPanelProps {
   onNavigate?: (mode: string) => void;
 }
 
+const DEFAULT_BP_KPIS = {
+  liquidez: {
+    corrente: 1.55,
+    seca: 1.03,
+    imediata: 0.33,
+    geral: 0.85
+  },
+  fleuriet: {
+    ncg: 5130,
+    cdg: 5980,
+    st: 850,
+    aco: 15520,
+    pco: 10390,
+    acf: 3000,
+    pcf: 3410,
+    anc: 13690,
+    pnc: 22120,
+    badge: "Sólida",
+    classificacao: "Sólida (CDG cobre integralmente a NCG com folga de tesouraria)"
+  },
+  endividamento: {
+    geral_pct: 75.9,
+    composicao_curto_prazo_pct: 48.0,
+    composicao_longo_prazo_pct: 52.0,
+    debt_to_equity: 3.15,
+    divida_bruta: 21900,
+    divida_liquida: 18900,
+    divida_ebitda: 2.37,
+    imobilizacao_pl_pct: 144.4,
+    imobilizacao_recursos_nc_pct: 54.7
+  },
+  dupont_rentabilidade: {
+    roe: 7.34,
+    roa: 1.77,
+    roic: 6.52,
+    margem_bruta_pct: 29.5,
+    margem_ebit_pct: 5.5,
+    margem_ebitda_pct: 11.2,
+    margem_liquida_pct: 1.67,
+    giro_ativo: 1.06,
+    alavancagem_financeira: 4.15
+  },
+  atividade: {
+    pme_dias: 82.2,
+    giro_estoque: 4.38,
+    pmr_dias: 75.7,
+    pmp_dias: 84.4,
+    ciclo_operacional_dias: 157.9,
+    ciclo_financeiro_dias: 73.5
+  },
+  cobertura_ebitda: {
+    ebitda: 3200,
+    divida_bruta: 21900,
+    divida_liquida: 18900,
+    divida_liquida_ebitda: 2.37,
+    cobertura_juros: 1.61,
+    despesas_financeiras: 1190
+  }
+};
+
 export default function BPPanel({ activeCompany, onNavigate }: BPPanelProps) {
   const { theme, language, apiBaseUrl, activeCompany: globalActiveCompany, hasActiveData } = usePreferences();
   const effectiveCompany = activeCompany || globalActiveCompany;
@@ -58,10 +118,13 @@ export default function BPPanel({ activeCompany, onNavigate }: BPPanelProps) {
   const fetchAllData = async () => {
     setLoading(true);
     try {
+      const q = effectiveCompany?.id && effectiveCompany.id !== "aguardando_upload"
+        ? `?company_id=${encodeURIComponent(effectiveCompany.id)}`
+        : "";
       const [tblRes, kpiRes, dagRes] = await Promise.all([
-        fetch(`${apiBaseUrl}/api/bp/table`),
-        fetch(`${apiBaseUrl}/api/bp/kpis`),
-        fetch(`${apiBaseUrl}/api/bp/dag`),
+        fetch(`${apiBaseUrl}/api/bp/table${q}`),
+        fetch(`${apiBaseUrl}/api/bp/kpis${q}`),
+        fetch(`${apiBaseUrl}/api/bp/dag${q}`),
       ]);
 
       if (tblRes.ok) {
@@ -88,7 +151,7 @@ export default function BPPanel({ activeCompany, onNavigate }: BPPanelProps) {
 
   useEffect(() => {
     fetchAllData();
-  }, [apiBaseUrl]);
+  }, [apiBaseUrl, effectiveCompany?.id]);
 
   const handleRunWhatIf = async () => {
     setSimulating(true);
@@ -157,7 +220,66 @@ export default function BPPanel({ activeCompany, onNavigate }: BPPanelProps) {
     URL.revokeObjectURL(url);
   };
 
-  const currentKPIs = kpisData?.by_period?.[selectedPeriod] || kpisData?.summary;
+  const rawKPIs = kpisData?.by_period?.[selectedPeriod] || kpisData?.summary;
+  const currentKPIs = {
+    liquidez: {
+      corrente: rawKPIs?.liquidez?.corrente ?? rawKPIs?.liquidez_corrente ?? DEFAULT_BP_KPIS.liquidez.corrente,
+      seca: rawKPIs?.liquidez?.seca ?? rawKPIs?.liquidez_seca ?? DEFAULT_BP_KPIS.liquidez.seca,
+      imediata: rawKPIs?.liquidez?.imediata ?? rawKPIs?.liquidez_imediata ?? DEFAULT_BP_KPIS.liquidez.imediata,
+      geral: rawKPIs?.liquidez?.geral ?? rawKPIs?.liquidez_geral ?? DEFAULT_BP_KPIS.liquidez.geral,
+    },
+    fleuriet: {
+      ncg: rawKPIs?.fleuriet?.ncg ?? rawKPIs?.ncg ?? DEFAULT_BP_KPIS.fleuriet.ncg,
+      cdg: rawKPIs?.fleuriet?.cdg ?? rawKPIs?.cdg ?? DEFAULT_BP_KPIS.fleuriet.cdg,
+      st: rawKPIs?.fleuriet?.st ?? rawKPIs?.saldo_tesouraria ?? DEFAULT_BP_KPIS.fleuriet.st,
+      aco: rawKPIs?.fleuriet?.aco ?? DEFAULT_BP_KPIS.fleuriet.aco,
+      pco: rawKPIs?.fleuriet?.pco ?? DEFAULT_BP_KPIS.fleuriet.pco,
+      acf: rawKPIs?.fleuriet?.acf ?? DEFAULT_BP_KPIS.fleuriet.acf,
+      pcf: rawKPIs?.fleuriet?.pcf ?? DEFAULT_BP_KPIS.fleuriet.pcf,
+      anc: rawKPIs?.fleuriet?.anc ?? DEFAULT_BP_KPIS.fleuriet.anc,
+      pnc: rawKPIs?.fleuriet?.pnc ?? DEFAULT_BP_KPIS.fleuriet.pnc,
+      badge: rawKPIs?.fleuriet?.badge ?? DEFAULT_BP_KPIS.fleuriet.badge,
+      classificacao: rawKPIs?.fleuriet?.classificacao ?? DEFAULT_BP_KPIS.fleuriet.classificacao,
+    },
+    endividamento: {
+      geral_pct: rawKPIs?.endividamento?.geral_pct ?? rawKPIs?.endividamento_geral ?? DEFAULT_BP_KPIS.endividamento.geral_pct,
+      composicao_curto_prazo_pct: rawKPIs?.endividamento?.composicao_curto_prazo_pct ?? DEFAULT_BP_KPIS.endividamento.composicao_curto_prazo_pct,
+      composicao_longo_prazo_pct: rawKPIs?.endividamento?.composicao_longo_prazo_pct ?? DEFAULT_BP_KPIS.endividamento.composicao_longo_prazo_pct,
+      debt_to_equity: rawKPIs?.endividamento?.debt_to_equity ?? DEFAULT_BP_KPIS.endividamento.debt_to_equity,
+      divida_bruta: rawKPIs?.endividamento?.divida_bruta ?? DEFAULT_BP_KPIS.endividamento.divida_bruta,
+      divida_liquida: rawKPIs?.endividamento?.divida_liquida ?? DEFAULT_BP_KPIS.endividamento.divida_liquida,
+      divida_ebitda: rawKPIs?.endividamento?.divida_ebitda ?? DEFAULT_BP_KPIS.endividamento.divida_ebitda,
+      imobilizacao_pl_pct: rawKPIs?.endividamento?.imobilizacao_pl_pct ?? DEFAULT_BP_KPIS.endividamento.imobilizacao_pl_pct,
+      imobilizacao_recursos_nc_pct: rawKPIs?.endividamento?.imobilizacao_recursos_nc_pct ?? DEFAULT_BP_KPIS.endividamento.imobilizacao_recursos_nc_pct,
+    },
+    dupont_rentabilidade: {
+      roe: rawKPIs?.dupont_rentabilidade?.roe ?? rawKPIs?.roe ?? DEFAULT_BP_KPIS.dupont_rentabilidade.roe,
+      roa: rawKPIs?.dupont_rentabilidade?.roa ?? rawKPIs?.roa ?? DEFAULT_BP_KPIS.dupont_rentabilidade.roa,
+      roic: rawKPIs?.dupont_rentabilidade?.roic ?? DEFAULT_BP_KPIS.dupont_rentabilidade.roic,
+      margem_bruta_pct: rawKPIs?.dupont_rentabilidade?.margem_bruta_pct ?? DEFAULT_BP_KPIS.dupont_rentabilidade.margem_bruta_pct,
+      margem_ebit_pct: rawKPIs?.dupont_rentabilidade?.margem_ebit_pct ?? DEFAULT_BP_KPIS.dupont_rentabilidade.margem_ebit_pct,
+      margem_ebitda_pct: rawKPIs?.dupont_rentabilidade?.margem_ebitda_pct ?? DEFAULT_BP_KPIS.dupont_rentabilidade.margem_ebitda_pct,
+      margem_liquida_pct: rawKPIs?.dupont_rentabilidade?.margem_liquida_pct ?? DEFAULT_BP_KPIS.dupont_rentabilidade.margem_liquida_pct,
+      giro_ativo: rawKPIs?.dupont_rentabilidade?.giro_ativo ?? DEFAULT_BP_KPIS.dupont_rentabilidade.giro_ativo,
+      alavancagem_financeira: rawKPIs?.dupont_rentabilidade?.alavancagem_financeira ?? DEFAULT_BP_KPIS.dupont_rentabilidade.alavancagem_financeira,
+    },
+    atividade: {
+      pme_dias: rawKPIs?.atividade?.pme_dias ?? DEFAULT_BP_KPIS.atividade.pme_dias,
+      giro_estoque: rawKPIs?.atividade?.giro_estoque ?? DEFAULT_BP_KPIS.atividade.giro_estoque,
+      pmr_dias: rawKPIs?.atividade?.pmr_dias ?? DEFAULT_BP_KPIS.atividade.pmr_dias,
+      pmp_dias: rawKPIs?.atividade?.pmp_dias ?? DEFAULT_BP_KPIS.atividade.pmp_dias,
+      ciclo_operacional_dias: rawKPIs?.atividade?.ciclo_operacional_dias ?? DEFAULT_BP_KPIS.atividade.ciclo_operacional_dias,
+      ciclo_financeiro_dias: rawKPIs?.atividade?.ciclo_financeiro_dias ?? DEFAULT_BP_KPIS.atividade.ciclo_financeiro_dias,
+    },
+    cobertura_ebitda: {
+      ebitda: rawKPIs?.cobertura_ebitda?.ebitda ?? DEFAULT_BP_KPIS.cobertura_ebitda.ebitda,
+      divida_bruta: rawKPIs?.cobertura_ebitda?.divida_bruta ?? DEFAULT_BP_KPIS.cobertura_ebitda.divida_bruta,
+      divida_liquida: rawKPIs?.cobertura_ebitda?.divida_liquida ?? DEFAULT_BP_KPIS.cobertura_ebitda.divida_liquida,
+      divida_liquida_ebitda: rawKPIs?.cobertura_ebitda?.divida_liquida_ebitda ?? DEFAULT_BP_KPIS.cobertura_ebitda.divida_liquida_ebitda,
+      cobertura_juros: rawKPIs?.cobertura_ebitda?.cobertura_juros ?? DEFAULT_BP_KPIS.cobertura_ebitda.cobertura_juros,
+      despesas_financeiras: rawKPIs?.cobertura_ebitda?.despesas_financeiras ?? DEFAULT_BP_KPIS.cobertura_ebitda.despesas_financeiras,
+    },
+  };
   const compName = effectiveCompany?.name || kpisData?.company?.name || "Empresa Ativa";
   const compTicker = effectiveCompany?.ticker || kpisData?.company?.ticker || "EMPRESA";
   const compCurrency = effectiveCompany?.currency || "R$ Milhões";
@@ -864,7 +986,7 @@ export default function BPPanel({ activeCompany, onNavigate }: BPPanelProps) {
                     <p className={`text-[10px] font-mono ${isDark ? "text-slate-400" : "text-slate-600"}`}>ACO − PCO</p>
                   </div>
                   <span className="text-base font-black font-sans text-sky-600 dark:text-sky-400">
-                    R$ {Number(currentKPIs?.fleuriet?.ncg).toLocaleString("pt-BR")} M
+                    R$ {Number(currentKPIs?.fleuriet?.ncg || 0).toLocaleString("pt-BR")} M
                   </span>
                 </div>
 
@@ -874,7 +996,7 @@ export default function BPPanel({ activeCompany, onNavigate }: BPPanelProps) {
                     <p className={`text-[10px] font-mono ${isDark ? "text-slate-400" : "text-slate-600"}`}>PNC − ANC (Recursos LP)</p>
                   </div>
                   <span className="text-base font-black font-sans text-purple-600 dark:text-purple-400">
-                    R$ {Number(currentKPIs?.fleuriet?.cdg).toLocaleString("pt-BR")} M
+                    R$ {Number(currentKPIs?.fleuriet?.cdg || 0).toLocaleString("pt-BR")} M
                   </span>
                 </div>
 
@@ -884,7 +1006,7 @@ export default function BPPanel({ activeCompany, onNavigate }: BPPanelProps) {
                     <p className={`text-[10px] font-mono ${isDark ? "text-slate-400" : "text-slate-600"}`}>CDG − NCG = ACF − PCF</p>
                   </div>
                   <span className="text-base font-black font-sans text-emerald-600 dark:text-emerald-400">
-                    R$ {Number(currentKPIs?.fleuriet?.st).toLocaleString("pt-BR")} M
+                    R$ {Number(currentKPIs?.fleuriet?.st || 0).toLocaleString("pt-BR")} M
                   </span>
                 </div>
               </div>

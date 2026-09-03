@@ -60,17 +60,21 @@ DIRETRIZES FUNDAMENTAIS DA SKILL:
         key = self.config.get("api_key", "").strip()
         return bool(key)
 
-    def _run_with_timeout(self, func, timeout_sec: float = 4.0):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(func)
-            try:
-                return future.result(timeout=timeout_sec)
-            except concurrent.futures.TimeoutError:
-                print(f"BPAgent operation timed out after {timeout_sec}s")
-                return None
-            except Exception as e:
-                print(f"BPAgent execution error: {e}")
-                return None
+    def _run_with_timeout(self, func, timeout_sec: float = 2.0):
+        executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+        future = executor.submit(func)
+        try:
+            res = future.result(timeout=timeout_sec)
+            executor.shutdown(wait=False)
+            return res
+        except concurrent.futures.TimeoutError:
+            print(f"BPAgent operation timed out after {timeout_sec}s")
+            executor.shutdown(wait=False, cancel_futures=True)
+            return None
+        except Exception as e:
+            print(f"BPAgent execution error: {e}")
+            executor.shutdown(wait=False)
+            return None
 
     def _get_model_instance(self):
         if not self._is_active():
