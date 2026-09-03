@@ -923,6 +923,55 @@ A geração operacional orçada de R$ 4.250 Milhões para 2026 apoia-se em marge
   };
 }
 
+async function callGroqChat(
+  messages: Array<{ role: string; content: string }>,
+  apiKey?: string,
+  modelRequested?: string
+): Promise<string | null> {
+  const cfg = sessionStore.getAiConfig();
+  const key = apiKey || cfg.saved_keys?.groq || process.env.GROQ_API_KEY || "";
+  if (!key || !key.startsWith("gsk_")) return null;
+
+  // Best available model on Groq
+  let targetModel = "openai/gpt-oss-120b";
+  if (modelRequested) {
+    const low = modelRequested.toLowerCase();
+    if (low.includes("qwen")) targetModel = "qwen/qwen3.8-27b";
+    else if (low.includes("compound")) targetModel = "groq/compound";
+    else targetModel = "openai/gpt-oss-120b";
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 9000);
+
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${key}`,
+        "Content-Type": "application/json",
+        "User-Agent": "HyperCube-Planner/1.0"
+      },
+      body: JSON.stringify({
+        model: targetModel,
+        messages,
+        temperature: 0.2,
+        max_tokens: 1200
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+
+    if (res.ok) {
+      const data = await res.json();
+      return data?.choices?.[0]?.message?.content || null;
+    }
+  } catch (err) {
+    console.warn("Groq fetch exception:", err);
+  }
+  return null;
+}
+
 function buildEconomicDiagnostic(comp: any, aiCfg: any) {
   const provider = (aiCfg?.provider || "groq").toUpperCase();
   const model = aiCfg?.model || "Llama 3.3 70B Versatile";
@@ -1389,11 +1438,40 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
     const queryModel = req.nextUrl.searchParams.get("model") || req.headers.get("x-model");
     const effectiveProvider = (queryProvider || aiCfg.provider || "groq").toLowerCase();
     const effectiveModel = queryModel || aiCfg.model || "Llama 3.3 70B Versatile";
+    const apiKey = req.headers.get("x-api-key") || aiCfg.saved_keys?.groq;
 
-    return NextResponse.json(buildEconomicDiagnostic(comp, {
+    const diag = buildEconomicDiagnostic(comp, {
       provider: effectiveProvider,
       model: effectiveModel
-    }));
+    });
+
+    if (effectiveProvider === "groq") {
+      const liveSummary = await callGroqChat(
+        [
+          {
+            role: "system",
+            content: `Você é o Agente Agno PhD Macroeconomista do HyperCube.
+Gere um parecer executivo rigoroso em 4 seções com títulos exatos:
+## 1. Contexto & Dados Observados (BCB SGS & IBGE)
+## 2. Diagnóstico Inflacionário & Atividade (IPCA & Focus)
+## 3. Panorama Fiscal & Sustentabilidade da Dívida
+## 4. Classificação da Postura de Política Monetária
+Dados macroeconômicos observados: Selic Meta 14,00% a.a. (SGS 432), IPCA acumulado 12m 4,44% (SGS 13522), Câmbio PTAX R$ 5,22 (SGS 10813), Dívida Bruta 81,93% do PIB (SGS 13762), Focus IPCA 2026 5,01%, Focus Selic 2026 13,75%.
+Companhia analisada no modelo: ${comp.name}.
+Na seção 4, classifique explicitamente como HAWKISH (Restritiva) fundamentando a taxa real ex-ante.`
+          },
+          { role: "user", content: "Gerar parecer e diagnóstico macroeconômico PhD atualizado." }
+        ],
+        apiKey,
+        effectiveModel
+      );
+
+      if (liveSummary && liveSummary.length > 80) {
+        diag.summary = `${liveSummary}\n\n---\n*Diagnóstico macroeconômico gerado em tempo real pelo Agente IA Agno via **GROQ** (${effectiveModel}).*`;
+      }
+    }
+
+    return NextResponse.json(diag);
   }
 
   if (path === "economy/focus") {
@@ -1735,10 +1813,28 @@ export async function POST(req: NextRequest, context: { params: Promise<{ slug: 
     const aiCfg = sessionStore.getAiConfig();
     const provider = (body.provider || aiCfg.provider || "groq").toUpperCase();
     const model = body.model || aiCfg.model || "Llama 3.3 70B Versatile";
+    const apiKey = body.api_key || req.headers.get("x-api-key") || aiCfg.saved_keys?.groq;
+
+    let liveReply: string | null = null;
+    if (provider === "GROQ") {
+      liveReply = await callGroqChat(
+        [
+          {
+            role: "system",
+            content: `Você é o Agente Agno FP&A do HyperCube. Analise com profundidade financeira para a empresa ${comp.name}. Responda de forma analítica e objetiva em 2 parágrafos.`
+          },
+          { role: "user", content: prompt }
+        ],
+        apiKey,
+        model
+      );
+    }
+
     return NextResponse.json({
-      reply: `[${model} via ${provider}] Analisei os indicadores contábeis da ${comp.name} para a sua consulta: "${prompt.slice(0, 80)}". O EBITDA projetado apresenta solidez operacional e a reconciliação entre DRE, DFC e Balanço Patrimonial permanece 100% equilibrada com zero discrepância (Δ = 0.00).`,
+      reply: liveReply || `[${model} via ${provider}] Analisei os indicadores contábeis da ${comp.name} para a sua consulta: "${prompt.slice(0, 80)}". O EBITDA projetado apresenta solidez operacional e a reconciliação entre DRE, DFC e Balanço Patrimonial permanece 100% equilibrada com zero discrepância (Δ = 0.00).`,
       ai_provider: provider,
       ai_model: model,
+      live_groq: Boolean(liveReply),
       elapsed_ms: 1.2
     });
   }
@@ -1757,13 +1853,34 @@ export async function POST(req: NextRequest, context: { params: Promise<{ slug: 
   if (path === "economy/chat") {
     const q = body.question || "";
     const aiCfg = sessionStore.getAiConfig();
+    const comp = sessionStore.getActiveCompany();
     const provider = (body.provider || aiCfg.provider || "groq").toUpperCase();
     const model = body.model || aiCfg.model || "Llama 3.3 70B Versatile";
+    const apiKey = body.api_key || req.headers.get("x-api-key") || aiCfg.saved_keys?.groq;
+
+    let liveAnswer: string | null = null;
+    if (provider === "GROQ") {
+      liveAnswer = await callGroqChat(
+        [
+          {
+            role: "system",
+            content: `Você é o Agente Agno PhD Macroeconomista do HyperCube.
+Dados macroeconômicos oficiais: Selic Meta 14,00% a.a., IPCA 12m 4,44%, PTAX R$ 5,22, Dívida Bruta 81,93% PIB, Focus IPCA 2026 5,01%, Focus Selic 2026 13,75%.
+Empresa em foco: ${comp.name}. Responda de forma analítica e clara em 2 parágrafos.`
+          },
+          { role: "user", content: q }
+        ],
+        apiKey,
+        model
+      );
+    }
+
     return NextResponse.json({
       question: q,
-      answer: `[${model} via ${provider}] Com base nas séries oficiais do Banco Central do Brasil (SGS 432, 13522 e 10813) e nas expectativas da Pesquisa Focus: a Taxa Selic Meta está em 14,00% a.a. e o IPCA acumulado em 12 meses encontra-se em 4,44%. O mercado projeta convergência para 13,75% até o fim de 2026, com taxa de câmbio estimada em R$ 5,20.`,
+      answer: liveAnswer || `[${model} via ${provider}] Com base nas séries oficiais do Banco Central do Brasil (SGS 432, 13522 e 10813) e nas expectativas da Pesquisa Focus: a Taxa Selic Meta está em 14,00% a.a. e o IPCA acumulado em 12 meses encontra-se em 4,44%. O mercado projeta convergência para 13,75% até o fim de 2026, com taxa de câmbio estimada em R$ 5,20 para ${comp.name}.`,
       ai_provider: provider,
-      ai_model: model
+      ai_model: model,
+      live_groq: Boolean(liveAnswer)
     });
   }
 
