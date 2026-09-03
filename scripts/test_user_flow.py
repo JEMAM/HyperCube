@@ -6,8 +6,9 @@ def test_flow():
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(viewport={"width": 1440, "height": 900})
         
-        print("1. Opening localhost:3000...")
-        page.goto("http://localhost:3000", wait_until="networkidle")
+        target_url = "https://hypercube-kappa.vercel.app/"
+        print(f"1. Opening {target_url}...")
+        page.goto(target_url, wait_until="networkidle")
         time.sleep(2)
         
         # Click Ir para o Aplicativo
@@ -25,11 +26,22 @@ def test_flow():
         cvm_btn.click()
         time.sleep(2)
         
-        # Select Cyrela in CVM Watch if not already selected
+        # Select Construção Civil e Imobiliário -> Cyrela
+        sector_select = page.locator('select').first
+        sector_options = sector_select.locator('option').all_inner_texts()
+        const_sec = next((o for o in sector_options if "Constru" in o), None)
+        if const_sec:
+            sector_select.select_option(label=const_sec)
+            time.sleep(1.5)
+            
         comp_select = page.locator('select').nth(1)
-        comp_text = comp_select.locator('option:checked').inner_text()
-        print("Initially selected company in dropdown:", comp_text)
-        
+        comp_options = comp_select.locator('option').all_inner_texts()
+        cyrela_opt = next((o for o in comp_options if "CYRELA" in o), None)
+        if cyrela_opt:
+            print(f"Selecting company: {cyrela_opt}")
+            comp_select.select_option(label=cyrela_opt)
+            time.sleep(2.5)
+            
         # Check Trimestral toggle
         itr_btn = page.locator('button:has-text("Trimestral (ITR)")').first
         if itr_btn.count() > 0:
@@ -40,13 +52,22 @@ def test_flow():
             print("Saved quarterly screenshot to artifacts/cyrela_quarterly_verified.png")
             
         # Navigate to another tab: DRE
-        dre_btn = page.locator('button:has-text("DRE")').first
+        dre_btn = page.locator('button:has-text("Demonstração DRE")').first
         if dre_btn.count() > 0:
             print("Navigating to DRE tab...")
             dre_btn.click()
             time.sleep(2)
             page.screenshot(path="artifacts/dre_tab_banner_verified.png")
             print("Saved DRE tab banner screenshot to artifacts/dre_tab_banner_verified.png")
+
+        # Navigate to another tab: DFC
+        dfc_btn = page.locator('button:has-text("Fluxo de Caixa (DFC)")').first
+        if dfc_btn.count() > 0:
+            print("Navigating to DFC tab...")
+            dfc_btn.click()
+            time.sleep(2)
+            page.screenshot(path="artifacts/dfc_tab_banner_verified.png")
+            print("Saved DFC tab banner screenshot to artifacts/dfc_tab_banner_verified.png")
             
         # Return to CVM Watch
         print("Returning to CVM Watch tab...")
@@ -55,7 +76,7 @@ def test_flow():
         time.sleep(2)
         
         comp_text_after = comp_select.locator('option:checked').inner_text()
-        print("Selected company after returning:", comp_text_after)
+        print("Selected company after returning to CVM Watch:", comp_text_after)
         page.screenshot(path="artifacts/cvm_persistent_verified.png")
         print("Saved persistence screenshot to artifacts/cvm_persistent_verified.png")
         

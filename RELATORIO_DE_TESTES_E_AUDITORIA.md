@@ -190,7 +190,43 @@ Em atendimento à solicitação do usuário (*"carregado qualquer empresa quando
 
 ---
 
-## 🏁 9. Conclusão da Auditoria
+## 🚀 10. Homologação do Despachador de Arquivos CVM Watch (Seleção em 3 Etapas e Envio Direto para Ingestão)
 
-A aplicação **HyperCube Engine** atende plenamente a todos os requisitos de acurácia matemática, performance reativa, qualidade de código, integração de dados da CVM, sincronização multi-empresa e raciocínio financeiro via IA Google Gemini. O sistema encontra-se homologado e 100% operacional em produção.
+Com a evolução do módulo CVM Watch, a interface foi simplificada para atuar como uma central inteligente de arquivos regulatórios e despacho em 3 etapas para ingestão multidimensional:
+
+1. **Etapa 1 — Seleção de Setor e Companhia Aberta:**
+   - Filtro inicial por Setor Econômico CVM (ex: *Construção Civil e Imobiliário*, *Bancos*, *Petróleo e Gás*, etc.).
+   - Combobox com contagem em tempo real de companhias ativas no setor e busca rápida por CNPJ/Ticker/Razão Social.
+   - Detecção canônica e ativação no estado global sem riscos de conflitos de acentuação/maiúsculas.
+
+2. **Etapa 2 — Seleção de Periodicidade e Arquivos Oficiais:**
+   - Alternância fluida entre **Demonstrações Financeiras Padronizadas (DFP Anual)** e **Informações Trimestrais (ITR Trimestral)**.
+   - Listagem dos demonstrativos regulatórios oficiais CVM:
+     - Balanço Patrimonial Ativo (BPA)
+     - Balanço Patrimonial Passivo (BPP)
+     - Demonstração do Resultado (DRE)
+     - Demonstração do Fluxo de Caixa Método Direto (DFC-MD)
+     - Demonstração do Fluxo de Caixa Método Indireto (DFC-MI)
+     - Demonstração do Valor Adicionado (DVA)
+     - Demonstração das Mutações do Patrimônio Líquido (DMPL)
+
+3. **Etapa 3 — Despacho Direto para Visão Geral & Ingestão:**
+   - Botão de ação direta: `Enviar demonstrações de [Companhia] para Visão Geral & Ingestão →`.
+   - Ao ser acionado:
+     - Registra a companhia selecionada globalmente no `PreferencesContext` e `localStorage`.
+     - Atualiza o banner de análise ativa no cabeçalho em todas as páginas da plataforma.
+     - Redireciona o usuário para a aba `Visão Geral & Ingestão`.
+     - Completa o pipeline de ingestão em **100%** com status verde e marca os 11 módulos contábeis como sincronizados (DRE, DFC, BP, DRA, DMPL, DVA, NE, Planejamento, Triângulo Contábil, Grafo DAG, Valuation).
+
+### 📸 Evidências de Teste E2E Automatizado (`scripts/test_new_cvm_watch.py`):
+- `artifacts/new_cvm_watch_annual.png`: Seleção de Cyrela e arquivos DFP anuais validados [PASS].
+- `artifacts/new_cvm_watch_quarterly.png`: Alternância para ITR trimestral com metadados regulatórios [PASS].
+- `artifacts/ingestion_redirect_verified.png`: Despacho e recepção com 100% de completude na Visão Geral & Ingestão [PASS].
+
+---
+
+## 🏁 11. Conclusão da Auditoria
+
+A aplicação **HyperCube Engine** atende plenamente a todos os requisitos de acurácia matemática, performance reativa, qualidade de código, integração de dados abertos da CVM, despacho automatizado de arquivos regulatórios, sincronização multi-empresa e raciocínio financeiro via IA Google Gemini. O sistema encontra-se homologado e 100% operacional em produção.
+
 
