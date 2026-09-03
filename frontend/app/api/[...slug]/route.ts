@@ -657,11 +657,15 @@ function simulateDriverPlanningData(comp: any, body: any) {
 }
 
 function buildGovernanceCovenants(comp: any) {
+  const compName = comp.name || "Empresa Cliente";
+  const ticker = comp.ticker || "CLIENTE";
+  const sector = comp.sector || "Setor Consolidado";
+  
   return {
     company_id: comp.id || "empresa",
-    company_name: comp.name || "Empresa Cliente",
-    ticker: comp.ticker || "CLIENTE",
-    sector: comp.sector || "Setor Consolidado",
+    company_name: compName,
+    ticker: ticker,
+    sector: sector,
     currency: "BRL",
     overall_status: "SAFE",
     headrooms: {
@@ -672,6 +676,72 @@ function buildGovernanceCovenants(comp: any) {
       current_ebitda: 3680000000.0,
       current_net_debt: 7912000000.0,
       current_cash: 2650000000.0
+    },
+    debt_breakdown: {
+      short_term_debt_brl: 1850000000.0,
+      long_term_debt_brl: 8712000000.0,
+      gross_debt_brl: 10562000000.0,
+      cash_and_equivalents_brl: 2650000000.0,
+      net_debt_brl: 7912000000.0,
+      avg_maturity_years: 4.8,
+      avg_cost_description: "CDI + 1.45% a.a.",
+      short_term_share_pct: 17.5,
+      long_term_share_pct: 82.5
+    },
+    ebitda_bridge: {
+      gross_revenue: 18200000000.0,
+      taxes_deductions: -2950000000.0,
+      net_revenue: 15250000000.0,
+      cogs_cpv: -8450000000.0,
+      gross_profit: 6800000000.0,
+      sga_expenses: -3120000000.0,
+      ebitda: 3680000000.0,
+      ebitda_margin_pct: 24.13
+    },
+    stress_scenarios: [
+      {
+        id: "base",
+        name: "Cenário Base (Orçado 2026)",
+        description: "Execução orçamentária normalizada conforme plano de negócios.",
+        ebitda_impact_pct: 0,
+        selic_delta_bps: 0,
+        leverage_ratio: 2.10,
+        headroom_brl: 2550000000.0,
+        headroom_pct: 40.0,
+        status: "SAFE",
+        classification: "Confortável (>15% folga)"
+      },
+      {
+        id: "mod_stress",
+        name: "Estresse Moderado (-10% EBITDA / +200 bps Selic)",
+        description: "Queda na demanda ou reajustes parciais de insumos e alta de juros.",
+        ebitda_impact_pct: -10,
+        selic_delta_bps: 200,
+        leverage_ratio: 2.33,
+        headroom_brl: 1850000000.0,
+        headroom_pct: 33.4,
+        status: "SAFE",
+        classification: "Confortável (>15% folga)"
+      },
+      {
+        id: "sev_stress",
+        name: "Estresse Severo / Choque (-20% EBITDA / +400 bps Selic)",
+        description: "Recessão setorial severa combinada a aperto monetário acentuado.",
+        ebitda_impact_pct: -20,
+        selic_delta_bps: 400,
+        leverage_ratio: 2.63,
+        headroom_brl: 980000000.0,
+        headroom_pct: 24.8,
+        status: "WATCH",
+        classification: "Atenção (5%–15% folga)"
+      }
+    ],
+    reconciliation: {
+      dre_closed: true,
+      dfc_closed: true,
+      bp_closed: true,
+      delta: 0.0,
+      status_label: "Consistência Contábil Fechada com Tolerância Zero (Δ = R$ 0,00)"
     },
     covenants: [
       {
@@ -685,7 +755,9 @@ function buildGovernanceCovenants(comp: any) {
         current_value: 2.15,
         is_compliant: true,
         buffer_pct: 38.6,
-        status: "SAFE"
+        status: "SAFE",
+        classification: "Confortável (>15% folga)",
+        action: "Manter execução do Capex com caixa operacional próprio."
       },
       {
         covenant_id: "interest_coverage_ratio",
@@ -698,7 +770,9 @@ function buildGovernanceCovenants(comp: any) {
         current_value: 4.85,
         is_compliant: true,
         buffer_pct: 142.5,
-        status: "SAFE"
+        status: "SAFE",
+        classification: "Confortável (>15% folga)",
+        action: "Monitorar alongamento do perfil de amortizações."
       },
       {
         covenant_id: "current_ratio",
@@ -711,7 +785,9 @@ function buildGovernanceCovenants(comp: any) {
         current_value: 1.66,
         is_compliant: true,
         buffer_pct: 38.3,
-        status: "SAFE"
+        status: "SAFE",
+        classification: "Confortável (>15% folga)",
+        action: "Preservar reserva em títulos públicos de liquidez imediata."
       },
       {
         covenant_id: "debt_to_equity",
@@ -724,6 +800,9 @@ function buildGovernanceCovenants(comp: any) {
         current_value: 0.85,
         is_compliant: true,
         buffer_pct: 43.3,
+        status: "SAFE",
+        classification: "Confortável (>15% folga)",
+        action: "Manter política de retenção mínima de 65% dos lucros."
       }
     ],
     timeline: [
@@ -735,7 +814,8 @@ function buildGovernanceCovenants(comp: any) {
         leverage_ratio: 2.35,
         covenant_limit: 3.5,
         is_compliant: true,
-        debt_headroom_brl: 2100000000.0
+        debt_headroom_brl: 2100000000.0,
+        status: "SAFE"
       },
       {
         quarter_id: "Q2_2025",
@@ -745,7 +825,8 @@ function buildGovernanceCovenants(comp: any) {
         leverage_ratio: 2.28,
         covenant_limit: 3.5,
         is_compliant: true,
-        debt_headroom_brl: 2250000000.0
+        debt_headroom_brl: 2250000000.0,
+        status: "SAFE"
       },
       {
         quarter_id: "Q3_2025",
@@ -755,7 +836,8 @@ function buildGovernanceCovenants(comp: any) {
         leverage_ratio: 2.20,
         covenant_limit: 3.5,
         is_compliant: true,
-        debt_headroom_brl: 2320000000.0
+        debt_headroom_brl: 2320000000.0,
+        status: "SAFE"
       },
       {
         quarter_id: "Q4_2025",
@@ -765,7 +847,8 @@ function buildGovernanceCovenants(comp: any) {
         leverage_ratio: 2.15,
         covenant_limit: 3.5,
         is_compliant: true,
-        debt_headroom_brl: 2400000000.0
+        debt_headroom_brl: 2400000000.0,
+        status: "SAFE"
       },
       {
         quarter_id: "Q1_2026",
@@ -775,7 +858,8 @@ function buildGovernanceCovenants(comp: any) {
         leverage_ratio: 2.10,
         covenant_limit: 3.5,
         is_compliant: true,
-        debt_headroom_brl: 2550000000.0
+        debt_headroom_brl: 2550000000.0,
+        status: "SAFE"
       }
     ]
   };
@@ -783,18 +867,33 @@ function buildGovernanceCovenants(comp: any) {
 
 function buildBoardMemo(comp: any) {
   const compName = comp.name || "Empresa Cliente";
+  const ticker = comp.ticker || "CLIENTE";
   const now = new Date();
   const dateStr = `${now.toLocaleDateString("pt-BR")} às ${now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+  const activeAi = sessionStore.getAiConfig();
   
   return {
     company_id: comp.id || "empresa",
     company_name: compName,
+    ticker: ticker,
     generated_at: dateStr,
+    ai_model: activeAi.model,
+    ai_provider: activeAi.provider,
+    metrics: {
+      ebitda_2026_budget: 4250000000.0,
+      ebitda_margin_2026_pct: 28.5,
+      leverage_ratio: 2.10,
+      covenant_limit: 3.50,
+      var_95_ebitda: 380000000.0,
+      net_debt_current: 7912000000.0,
+      cash_and_equivalents: 2650000000.0,
+      interest_coverage_ratio: 4.85
+    },
     memo_markdown: `# PARECER EXECUTIVO — CONSELHO DE ADMINISTRAÇÃO & COMITÊ DE AUDITORIA
 
 **Para:** Membros do Conselho de Administração (Board of Directors)  
-**De:** Agente Agno — Gabinete do CFO / Relações com Investidores  
-**Companhia:** ${compName} (${comp.ticker || "CVM"})  
+**De:** Gabinete do CFO / Relações com Investidores via Agente Autônomo (${activeAi.model})  
+**Companhia:** ${compName} (${ticker})  
 **Data de Emissão:** ${dateStr}  
 **Classificação:** Estritamente Confidencial — Governança Corporativa  
 
@@ -803,19 +902,24 @@ function buildBoardMemo(comp: any) {
 ### 1. SUMÁRIO EXECUTIVO & CONFORMIDADE REGULATÓRIA
 Avaliadas as demonstrações contábeis e a estrutura de capital de **${compName}**, atestamos que a companhia opera em **estrita observância a todas as cláusulas contratuais e covenants financeiros**, com classificação geral **CONFORME (SAFE)**.
 
-* **Alavancagem Financeira (Dívida Líquida / EBITDA):** Apurada em **2.15x**, preservando ampla folga de segurança contra o teto contratual de **3.50x** (folga de 38,6%).
+* **Alavancagem Financeira (Dívida Líquida / EBITDA):** Apurada em **2.15x**, preservando ampla folga de segurança contra o teto contratual de **3.50x** (folga de 38,6% / R$ 2.400 Milhões).
 * **Cobertura de Juros (EBITDA / Despesas Financeiras):** Índice apurado de **4.85x**, significativamente superior ao piso contratual exigido de **2.00x** (margem de segurança de 142,5%).
 * **Folga Nominal de EBITDA (Headroom):** A geração operacional de caixa pode recuar até **R$ 850 Milhões** sem que haja qualquer violação de covenants bancários ou de debêntures.
 * **Capacidade de Endividamento Adicional:** A companhia dispõe de capacidade de alavancagem para nova dívida de até **R$ 2.400 Milhões**, sem comprometer a classificação de risco (Rating Investment Grade).
 
 ---
 
-### 2. RECOMENDAÇÕES ESTRATÉGICAS DO DIRETOR FINANCEIRO (CFO)
+### 2. DECOMPOSIÇÃO OPERACIONAL (EBITDA BRIDGE) & SENSIBILIDADE
+A geração operacional orçada de R$ 4.250 Milhões para 2026 apoia-se em margem EBITDA de 28,5%. Em simulações de estresse severo (-20% de EBITDA e elevação de 400 bps na Selic), a alavancagem atinge no máximo 2.63x, permanecendo confortavelmente abaixo do teto contratual de 3.50x.
+
+---
+
+### 3. RECOMENDAÇÕES ESTRATÉGICAS DO DIRETOR FINANCEIRO (CFO)
 1. **Preservação de Liquidez:** Manter o Saldo de Tesouraria positivo e linha de crédito rotativo contratada como colchão de liquidez para amortizações de 2026/2027.
-2. **Plano de Investimentos (Capex):** O plano plurianual de automação industrial e modernização tecnológica pode ser executado integralmente com geração de caixa própria e financiamentos subsidiados.
+2. **Plano de Investimentos (Capex):** O plano plurianual de modernização e eficiência pode ser executado integralmente com geração de caixa própria e financiamentos subsidiados.
 3. **Remuneração aos Acionistas:** Recomenda-se aprovação da proposta de proventos no montante de 35% do lucro líquido ajustado, respeitando a política de dividendos e mantendo reservas estatutárias intactas.
 
-*Documento chancelado digitalmente pelo Motor de Análise Autônoma HyperCube.*`
+*Documento chancelado digitalmente pelo Motor de Análise Autônoma HyperCube (${activeAi.model}).*`
   };
 }
 
@@ -1530,6 +1634,12 @@ export async function POST(req: NextRequest, context: { params: Promise<{ slug: 
     const comp = sessionStore.getActiveCompany();
     const data = buildDriverPlanningData(comp);
     return NextResponse.json(data);
+  }
+
+  // Board Memo Generation
+  if (path === "governance/board-memo") {
+    const comp = sessionStore.getActiveCompany();
+    return NextResponse.json(buildBoardMemo(comp));
   }
 
   // Config LLM save (Dynamic Client Chosen Model)
