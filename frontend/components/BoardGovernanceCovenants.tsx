@@ -200,7 +200,7 @@ export default function BoardGovernanceCovenants() {
       </div>
 
       {/* Empty state banner when no company is loaded */}
-      {(!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload") && (
+      {!covenantData && (!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload") && (
         <div className="p-8 rounded-3xl bg-[#131b2e] border border-[#222a3d] text-center space-y-3 shadow-xl my-4">
           <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
             <Building2 className="w-6 h-6" />

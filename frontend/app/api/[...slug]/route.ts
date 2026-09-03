@@ -194,8 +194,11 @@ function buildDriverPlanningData(comp: any) {
     ticker: comp.ticker || "CLIENTE",
     workforce_summary: {
       total_headcount: 85,
+      total_final_headcount: 85,
       net_additions: 12,
+      net_headcount_growth: 12,
       total_annual_cost: 14250000.0,
+      total_workforce_cost_annual: 14250000.0,
       cost_cpv: 8200000.0,
       cost_sales: 3450000.0,
       cost_admin: 2600000.0,
@@ -260,8 +263,9 @@ function buildDriverPlanningData(comp: any) {
     },
     capex_summary: {
       total_active_projects: 3,
+      total_active_capex: 18.5,
       total_capex_budget: 18500000.0,
-      annual_depreciation_impact: 1920000.0,
+      annual_depreciation_impact: 1.92,
       projects: [
         {
           project_id: "proj_modernizacao",
@@ -299,6 +303,17 @@ function buildDriverPlanningData(comp: any) {
       active_balance_ok: true,
       three_statement_closed: true,
       delta: 0.0
+    },
+    three_statement: {
+      dre_operating_cost_delta: -850.0,
+      dfc_operational_cash_delta: -720.0,
+      bp_cash_and_equivalents_delta: -720.0,
+      is_balanced: true
+    },
+    driver_impact_variance: {
+      revenue_impact: 2400.0,
+      ebitda_impact: 980.0,
+      net_income_impact: 650.0
     }
   };
 }
@@ -340,8 +355,11 @@ function simulateDriverPlanningData(comp: any, body: any) {
     company_name: comp.name || "Empresa Cliente",
     workforce_summary: {
       total_headcount: totalHeadcount || 85,
+      total_final_headcount: totalHeadcount || 85,
       net_additions: netAdditions || 12,
+      net_headcount_growth: netAdditions || 12,
       total_annual_cost: totalAnnualCost || 14250000.0,
+      total_workforce_cost_annual: totalAnnualCost || 14250000.0,
       cost_cpv: (totalAnnualCost || 14250000.0) * 0.58,
       cost_sales: (totalAnnualCost || 14250000.0) * 0.24,
       cost_admin: (totalAnnualCost || 14250000.0) * 0.18,
@@ -349,8 +367,9 @@ function simulateDriverPlanningData(comp: any, body: any) {
     },
     capex_summary: {
       total_active_projects: projects.filter((p: any) => p.is_active !== false).length || 3,
+      total_active_capex: (totalCapex ? totalCapex / 1000000 : 18.5),
       total_capex_budget: totalCapex || 18500000.0,
-      annual_depreciation_impact: annualDepr || 1920000.0,
+      annual_depreciation_impact: (annualDepr ? annualDepr / 1000000 : 1.92),
       projects: projects.length > 0 ? projects : buildDriverPlanningData(comp).capex_summary.projects
     },
     closed_loop_delta: {

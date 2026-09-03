@@ -295,7 +295,7 @@ export default function OperationalDriverPlanning() {
 
             <button
               onClick={runSimulation}
-              disabled={simulating || (!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload")}
+              disabled={simulating || (!simulationResult && (!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload"))}
               className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-500 text-white text-xs font-black shadow-lg hover:shadow-xl transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${simulating ? "animate-spin" : ""}`} />
@@ -304,7 +304,7 @@ export default function OperationalDriverPlanning() {
 
             <button
               onClick={() => fetchBaseline()}
-              disabled={!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload"}
+              disabled={!simulationResult && (!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload")}
               className="px-3.5 py-2.5 rounded-2xl bg-slate-100 dark:bg-[#0b1326] border border-slate-200 dark:border-[#222a3d] hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               title="Restaurar orçamento base"
             >
@@ -314,7 +314,7 @@ export default function OperationalDriverPlanning() {
         </div>
 
         {/* Empty state banner when no company is loaded */}
-        {(!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload") && (
+        {(!simulationResult && (!hasActiveData || !activeCompany?.id || activeCompany.id === "aguardando_upload")) && (
           <div className="p-8 rounded-3xl bg-slate-100 dark:bg-[#0b1326] border border-slate-200 dark:border-[#222a3d] text-center space-y-3 shadow-xl my-4">
             <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center mx-auto text-orange-400">
               <Building2 className="w-6 h-6" />
