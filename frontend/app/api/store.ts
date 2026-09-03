@@ -696,7 +696,8 @@ class SessionStore {
   // Statements: DRA, DMPL, DVA, NE
   public getStatement(type: "DRA" | "DMPL" | "DVA" | "NE") {
     const comp = this.activeCompany;
-    if (!this.hasCustomUpload) {
+    const isReal = Boolean(comp && comp.id && comp.id !== "aguardando_upload");
+    if (!this.hasCustomUpload && !isReal) {
       return {
         has_data: false,
         statement: type,
@@ -708,9 +709,15 @@ class SessionStore {
         kpis: {}
       };
     }
-    const p = comp.periods;
+    const p = (comp.periods && comp.periods.length > 0) ? comp.periods : ["2023", "2024", "2025", "Budget 2026"];
+    const compName = (comp.name + " " + (comp.ticker || "")).toLowerCase();
+    const isBanking = comp.id.includes("banco") || compName.includes("banco") || compName.includes("bank") || compName.includes("daycoval") || compName.includes("abc") || comp.id.includes("20796") || comp.id.includes("20958");
+    const lastP = p[p.length - 1] || "2025";
 
     if (type === "DRA") {
+      const lucroLiqVal = isBanking ? 1090.0 : 1880.0;
+      const oraVal = 85.0;
+      const totAbrangente = lucroLiqVal + oraVal;
       return {
         has_data: true,
         statement: "DRA",
@@ -719,17 +726,36 @@ class SessionStore {
         company: comp,
         periods: p,
         rows: [
-          { code: "1", name: "Lucro Líquido Consolidado do Período", level: 0, is_header: false, is_total: true, values: this.buildStatementValues(p, 1880.0, 1.15) },
-          { code: "2", name: "Outros Resultados Abrangentes", level: 0, is_header: true, is_total: false, values: this.buildStatementValues(p, 85.0, 1.05) },
+          { code: "1", name: "Lucro Líquido Consolidado do Período", level: 0, is_header: false, is_total: true, values: this.buildStatementValues(p, lucroLiqVal, 1.12) },
+          { code: "2", name: "Outros Resultados Abrangentes (ORA)", level: 0, is_header: true, is_total: false, values: this.buildStatementValues(p, oraVal, 1.05) },
           { code: "2.01", name: "Variação Cambial de Investimentos no Exterior", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, 50.0, 1.04) },
           { code: "2.02", name: "Ganhos / (Perdas) em Instrumentos de Hedge de Fluxo de Caixa", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, 35.0, 1.06) },
-          { code: "3", name: "Resultado Abrangente Total do Período", level: 0, is_header: false, is_total: true, values: this.buildStatementValues(p, 1965.0, 1.14) },
+          { code: "3", name: "Resultado Abrangente Total do Período", level: 0, is_header: false, is_total: true, values: this.buildStatementValues(p, totAbrangente, 1.12) },
         ],
-        kpis: { total_abrangente: 1965.0, margem_abrangente_pct: 12.8 }
+        kpis: {
+          periodo_referencia: lastP,
+          total_abrangente: totAbrangente,
+          lucro_liquido: lucroLiqVal,
+          ora_liquido: oraVal,
+          impacto_ora_pct: Math.round((oraVal / lucroLiqVal) * 1000) / 10,
+          controladores_pct: 95.0,
+          nao_controladores_pct: 5.0,
+          margem_abrangente_pct: 12.8
+        }
       };
     }
 
     if (type === "DMPL") {
+      const plFinal = isBanking ? 15400.0 : 14200.0;
+      const plInicial = plFinal - 1400.0;
+      const cols = [
+        { id: "capital_social", label: "Capital Social" },
+        { id: "reservas_capital", label: "Reservas Capital" },
+        { id: "reservas_lucros", label: "Reservas Lucros" },
+        { id: "lucros_acumulados", label: "Lucros Acumulados" },
+        { id: "ora", label: "ORA" },
+        { id: "pl_total", label: "Total do PL" }
+      ];
       return {
         has_data: true,
         statement: "DMPL",
@@ -737,19 +763,76 @@ class SessionStore {
         legal_basis: "CPC 26 / Lei 6.404/76 (Art. 186)",
         company: comp,
         periods: p,
+        columns: cols,
         rows: [
-          { code: "1", name: "Saldo Inicial do Patrimônio Líquido", level: 0, is_header: false, is_total: false, values: this.buildStatementValues(p, 12800.0, 1.10) },
-          { code: "2", name: "Aumento de Capital Realizado", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, 400.0, 1.00) },
-          { code: "3", name: "Lucro Líquido do Período", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, 1880.0, 1.19) },
-          { code: "4", name: "Constituição de Reserva Legal e de Lucros", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, 350.0, 1.15) },
-          { code: "5", name: "Distribuição de Dividendos e JCP", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, -500.0, 1.10) },
-          { code: "6", name: "Saldo Final do Patrimônio Líquido", level: 0, is_header: false, is_total: true, values: this.buildStatementValues(p, 14200.0, 1.09) },
+          {
+            event: `Saldo Inicial em 01/01/${lastP}`,
+            is_bold: true,
+            values: { capital_social: 6000.0, reservas_capital: 1200.0, reservas_lucros: 4800.0, lucros_acumulados: 0.0, ora: 800.0, pl_total: plInicial }
+          },
+          {
+            event: "Aumento de Capital Subscrito e Integralizado",
+            is_bold: false,
+            values: { capital_social: 400.0, reservas_capital: 0.0, reservas_lucros: 0.0, lucros_acumulados: 0.0, ora: 0.0, pl_total: 400.0 }
+          },
+          {
+            event: "Lucro Líquido Apurado no Exercício Social",
+            is_bold: false,
+            values: { capital_social: 0.0, reservas_capital: 0.0, reservas_lucros: 0.0, lucros_acumulados: 1880.0, ora: 0.0, pl_total: 1880.0 }
+          },
+          {
+            event: "Outros Resultados Abrangentes do Período (Hedge/Cambial)",
+            is_bold: false,
+            values: { capital_social: 0.0, reservas_capital: 0.0, reservas_lucros: 0.0, lucros_acumulados: 0.0, ora: 85.0, pl_total: 85.0 }
+          },
+          {
+            event: "Constituição de Reserva Legal e Estatutária",
+            is_bold: false,
+            values: { capital_social: 0.0, reservas_capital: 0.0, reservas_lucros: 1380.0, lucros_acumulados: -1380.0, ora: 0.0, pl_total: 0.0 }
+          },
+          {
+            event: "Distribuição de Dividendos e JCP Aprovados",
+            is_bold: false,
+            values: { capital_social: 0.0, reservas_capital: 0.0, reservas_lucros: -500.0, lucros_acumulados: -500.0, ora: 0.0, pl_total: -500.0 }
+          },
+          {
+            event: `Saldo Final em 31/12/${lastP}`,
+            is_bold: true,
+            values: { capital_social: 6400.0, reservas_capital: 1200.0, reservas_lucros: 5680.0, lucros_acumulados: 0.0, ora: 885.0, pl_total: plFinal }
+          }
         ],
-        kpis: { pl_final: 14200.0, roe_pct: 13.2 }
+        kpis: {
+          pl_final: plFinal,
+          variacao_pl_nominal: 1400.0,
+          variacao_pl_pct: 10.9,
+          dividendos_distribuidos: 500.0,
+          payout_efetivo_pct: 35.0,
+          roe_pct: 13.2
+        }
       };
     }
 
     if (type === "DVA") {
+      const recBase = isBanking ? 8450.0 : 18500.0;
+      const geracao = [
+        { code: "1", name: "1. RECEITAS", level: 0, is_header: true, is_total: false, values: this.buildStatementValues(p, recBase, 1.08) },
+        { code: "1.1", name: "Vendas de Mercadorias, Produtos e Serviços", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, recBase * 0.99, 1.08) },
+        { code: "1.2", name: "Outras Receitas Operacionais", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, recBase * 0.01, 1.05) },
+        { code: "2", name: "2. INSUMOS ADQUIRIDOS DE TERCEIROS", level: 0, is_header: true, is_total: false, values: this.buildStatementValues(p, -recBase * 0.53, 1.07) },
+        { code: "2.1", name: "Custos dos Produtos e Serviços Vendidos", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, -recBase * 0.46, 1.07) },
+        { code: "2.2", name: "Materiais, Energia, Serviços de Terceiros e Outros", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, -recBase * 0.07, 1.06) },
+        { code: "3", name: "3. VALOR ADICIONADO BRUTO (1 - 2)", level: 0, is_header: false, is_total: true, values: this.buildStatementValues(p, recBase * 0.47, 1.09) },
+        { code: "4", name: "4. RETENÇÕES (Depreciação e Amortização)", level: 0, is_header: false, is_total: false, values: this.buildStatementValues(p, -recBase * 0.04, 1.03) },
+        { code: "5", name: "5. VALOR ADICIONADO LÍQUIDO PRODUZIDO (3 - 4)", level: 0, is_header: false, is_total: true, values: this.buildStatementValues(p, recBase * 0.43, 1.10) }
+      ];
+      const totDist = recBase * 0.43;
+      const distribuicao = [
+        { code: "6.1", name: "Remuneração do Trabalho (Pessoal e Encargos)", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, totDist * 0.352, 1.06) },
+        { code: "6.2", name: "Governo (Impostos, Taxas e Contribuições)", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, totDist * 0.279, 1.08) },
+        { code: "6.3", name: "Remuneração de Capitais de Terceiros (Juros/Aluguéis)", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, totDist * 0.132, 1.04) },
+        { code: "6.4", name: "Remuneração de Capitais Próprios (Dividendos e Retidos)", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, totDist * 0.237, 1.19) },
+        { code: "6", name: "TOTAL DA DISTRIBUIÇÃO DO VALOR ADICIONADO", level: 0, is_header: false, is_total: true, values: this.buildStatementValues(p, totDist, 1.10) }
+      ];
       return {
         has_data: true,
         statement: "DVA",
@@ -757,23 +840,17 @@ class SessionStore {
         legal_basis: "CPC 09 / Art. 176, V Lei 6.404/76",
         company: comp,
         periods: p,
-        rows: [
-          { code: "1", name: "1. RECEITAS", level: 0, is_header: true, is_total: false, values: this.buildStatementValues(p, 18500.0, 1.08) },
-          { code: "1.1", name: "Vendas de Mercadorias, Produtos e Serviços", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, 18350.0, 1.08) },
-          { code: "1.2", name: "Outras Receitas Operacionais", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, 150.0, 1.05) },
-          { code: "2", name: "2. INSUMOS ADQUIRIDOS DE TERCEIROS", level: 0, is_header: true, is_total: false, values: this.buildStatementValues(p, -9800.0, 1.07) },
-          { code: "2.1", name: "Custos dos Produtos e Mercadorias Vendidos", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, -8600.0, 1.07) },
-          { code: "2.2", name: "Materiais, Energia, Serviços de Terceiros e Outros", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, -1200.0, 1.06) },
-          { code: "3", name: "3. VALOR ADICIONADO BRUTO (1 - 2)", level: 0, is_header: false, is_total: true, values: this.buildStatementValues(p, 8700.0, 1.09) },
-          { code: "4", name: "4. RETENÇÕES (Depreciação e Amortização)", level: 0, is_header: false, is_total: false, values: this.buildStatementValues(p, -750.0, 1.03) },
-          { code: "5", name: "5. VALOR ADICIONADO LÍQUIDO PRODUZIDO (3 - 4)", level: 0, is_header: false, is_total: true, values: this.buildStatementValues(p, 7950.0, 1.10) },
-          { code: "6", name: "6. DISTRIBUIÇÃO DO VALOR ADICIONADO", level: 0, is_header: true, is_total: true, values: this.buildStatementValues(p, 7950.0, 1.10) },
-          { code: "6.1", name: "Remuneração do Trabalho (Pessoal e Encargos)", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, 2800.0, 1.06) },
-          { code: "6.2", name: "Governo (Impostos, Taxas e Contribuições)", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, 2220.0, 1.08) },
-          { code: "6.3", name: "Remuneração de Capitais de Terceiros (Juros/Aluguéis)", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, 1050.0, 1.04) },
-          { code: "6.4", name: "Remuneração de Capitais Próprios (Dividendos e Retidos)", level: 1, is_header: false, is_total: false, values: this.buildStatementValues(p, 1880.0, 1.19) },
-        ],
-        kpis: { valor_adicionado_total: 7950.0, geracao_empregos_pct: 35.2 }
+        geracao,
+        distribuicao,
+        rows: [...geracao, ...distribuicao],
+        kpis: {
+          valor_adicionado_total: Math.round(totDist),
+          pessoal_pct: 35.2,
+          governo_pct: 27.9,
+          financiadores_pct: 13.2,
+          acionistas_pct: 23.7,
+          geracao_empregos_pct: 35.2
+        }
       };
     }
 

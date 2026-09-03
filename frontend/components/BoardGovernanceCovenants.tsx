@@ -63,13 +63,13 @@ export default function BoardGovernanceCovenants() {
   const [memoLoading, setMemoLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = async (comp: string) => {
-    if (!comp || comp === "aguardando_upload") return;
+  const fetchData = async (comp?: string) => {
+    const cid = (comp && comp !== "aguardando_upload") ? comp : "empresa_cliente";
     setLoading(true);
     setError(null);
     try {
       // Fetch covenants status
-      const covUrl = getApiUrl(`/api/governance/covenants?company_id=${encodeURIComponent(comp)}`, apiBaseUrl);
+      const covUrl = getApiUrl(`/api/governance/covenants?company_id=${encodeURIComponent(cid)}`, apiBaseUrl);
       const covRes = await fetch(covUrl);
       if (!covRes.ok) throw new Error("Erro ao carregar status de covenants");
       const covJson = await covRes.json();
@@ -80,7 +80,7 @@ export default function BoardGovernanceCovenants() {
       const memoRes = await fetch(memoUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company_id: comp })
+        body: JSON.stringify({ company_id: cid })
       });
       if (memoRes.ok) {
         const memoJson = await memoRes.json();
@@ -94,13 +94,7 @@ export default function BoardGovernanceCovenants() {
   };
 
   useEffect(() => {
-    if (activeCompany?.id && activeCompany.id !== "aguardando_upload") {
-      fetchData(activeCompany.id);
-    } else {
-      setCovenantData(null);
-      setBoardMemo(null);
-      setLoading(false);
-    }
+    fetchData(activeCompany?.id);
   }, [activeCompany?.id, apiBaseUrl]);
 
   const regenerateMemo = async () => {

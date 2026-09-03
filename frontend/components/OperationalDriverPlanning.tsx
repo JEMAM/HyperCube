@@ -101,8 +101,7 @@ export default function OperationalDriverPlanning() {
 
   // Fetch baseline drivers for active company
   const fetchBaseline = async (companyId?: string) => {
-    const cid = companyId || activeCompany?.id;
-    if (!cid || cid === "aguardando_upload") return;
+    const cid = (companyId && companyId !== "aguardando_upload") ? companyId : "empresa_cliente";
     setLoading(true);
     setError(null);
     try {
@@ -138,14 +137,7 @@ export default function OperationalDriverPlanning() {
   };
 
   useEffect(() => {
-    if (activeCompany?.id && activeCompany.id !== "aguardando_upload") {
-      fetchBaseline(activeCompany.id);
-    } else {
-      setDepartments([]);
-      setCapexProjects([]);
-      setSimulationResult(null);
-      setLoading(false);
-    }
+    fetchBaseline(activeCompany?.id);
   }, [activeCompany?.id, apiBaseUrl]);
 
   // Execute simulation when user modifies drivers

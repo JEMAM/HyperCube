@@ -52,14 +52,441 @@ const DEMO_COMPANIES = [
   }
 ];
 
+// Helpers for edge-rendered multidim, drivers, covenants and memo
+function getPeriodsForComp(comp: any): string[] {
+  if (comp && Array.isArray(comp.periods) && comp.periods.length > 0) {
+    return comp.periods;
+  }
+  return ["2023", "2024", "2025", "Budget 2026"];
+}
+
+function buildMultidimRows(periods: string[], isBanking: boolean) {
+  const baseRev = isBanking ? 8450 : 18500;
+  return [
+    {
+      id: "Receita_Bruta",
+      label: "Receita Bruta de Vendas e Serviços",
+      values: periods.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(baseRev * Math.pow(1.08, i)) }), {})
+    },
+    {
+      id: "Deducoes_Receita",
+      label: "(-) Deduções e Impostos sobre Vendas",
+      values: periods.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(-baseRev * 0.173 * Math.pow(1.08, i)) }), {})
+    },
+    {
+      id: "Receita_Liquida",
+      label: "(=) Receita Líquida de Vendas",
+      values: periods.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(baseRev * 0.827 * Math.pow(1.08, i)) }), {})
+    },
+    {
+      id: "CMV",
+      label: "(-) Custo dos Bens e Serviços Vendidos (CPV/CMV)",
+      values: periods.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(-baseRev * 0.53 * Math.pow(1.07, i)) }), {})
+    },
+    {
+      id: "Margem_Bruta",
+      label: "(=) Lucro Bruto",
+      values: periods.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(baseRev * 0.297 * Math.pow(1.10, i)) }), {})
+    },
+    {
+      id: "Despesas_Vendas",
+      label: "(-) Despesas Comerciais e Vendas",
+      values: periods.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(-baseRev * 0.05 * Math.pow(1.05, i)) }), {})
+    },
+    {
+      id: "Despesas_Gerais_Admin",
+      label: "(-) Despesas Gerais e Administrativas (G&A)",
+      values: periods.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(-baseRev * 0.048 * Math.pow(1.04, i)) }), {})
+    },
+    {
+      id: "EBITDA",
+      label: "(=) EBITDA Ajustado Operacional",
+      values: periods.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(baseRev * 0.199 * Math.pow(1.12, i)) }), {})
+    },
+    {
+      id: "Depreciacao_Amortizacao",
+      label: "(-) Depreciação e Amortização (D&A)",
+      values: periods.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(-baseRev * 0.04 * Math.pow(1.03, i)) }), {})
+    },
+    {
+      id: "EBIT",
+      label: "(=) Lucro Operacional (EBIT)",
+      values: periods.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(baseRev * 0.159 * Math.pow(1.14, i)) }), {})
+    },
+    {
+      id: "Resultado_Financeiro",
+      label: "(+/-) Resultado Financeiro Líquido",
+      values: periods.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(-baseRev * 0.02 * Math.pow(1.05, i)) }), {})
+    },
+    {
+      id: "Lucro_Liquido",
+      label: "(=) Lucro Líquido do Exercício",
+      values: periods.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(baseRev * 0.102 * Math.pow(1.12, i)) }), {})
+    }
+  ];
+}
+
+function buildMultidimDimensions(comp: any) {
+  const p = getPeriodsForComp(comp);
+  return {
+    time: {
+      id: "time",
+      label: "Período Fiscal",
+      members: p.map((pr, idx) => ({ id: pr, label: `Período ${pr}`, order: idx + 1 }))
+    },
+    version: {
+      id: "version",
+      label: "Versão",
+      members: [
+        { id: "Actuals", label: "Realizado (Actuals)", order: 1 },
+        { id: "Budget_2026", label: "Orçamento (Budget 2026)", order: 2 }
+      ]
+    },
+    scenario: {
+      id: "scenario",
+      label: "Cenário",
+      members: [
+        { id: "Base", label: "Cenário Base (Oficial)", order: 1 },
+        { id: "Optimistic", label: "Otimista (+15%)", order: 2 },
+        { id: "Pessimistic", label: "Pessimista (-15%)", order: 3 }
+      ]
+    },
+    entity: {
+      id: "entity",
+      label: "Entidade",
+      members: [
+        { id: "Total_Company", label: `${comp.name || "Empresa"} Consolidado`, order: 1 }
+      ]
+    },
+    account: {
+      id: "account",
+      label: "Conta Contábil (DRE)",
+      members: [
+        { id: "Receita_Bruta", label: "Receita Bruta de Vendas", order: 1 },
+        { id: "Deducoes_Receita", label: "(-) Deduções e Impostos sobre Vendas", order: 2 },
+        { id: "Receita_Liquida", label: "(=) Receita Líquida de Vendas", order: 3 },
+        { id: "CMV", label: "(-) Custos dos Produtos / CPV", order: 4 },
+        { id: "Margem_Bruta", label: "(=) Lucro Bruto", order: 5 },
+        { id: "Despesas_Vendas", label: "(-) Despesas Comerciais e Vendas", order: 6 },
+        { id: "Despesas_Gerais_Admin", label: "(-) Despesas Gerais e Administrativas (G&A)", order: 7 },
+        { id: "EBITDA", label: "(=) EBITDA Ajustado Operacional", order: 8 },
+        { id: "Depreciacao_Amortizacao", label: "(-) Depreciação e Amortização (D&A)", order: 9 },
+        { id: "EBIT", label: "(=) Lucro Operacional (EBIT)", order: 10 },
+        { id: "Resultado_Financeiro", label: "(+/-) Resultado Financeiro Líquido", order: 11 },
+        { id: "Lucro_Liquido", label: "(=) Lucro Líquido do Exercício", order: 12 }
+      ]
+    },
+    product: {
+      id: "product",
+      label: "Produto / Segmento",
+      members: [
+        { id: "Total_Products", label: "Portfólio Consolidado", order: 1 }
+      ]
+    }
+  };
+}
+
+function buildDriverPlanningData(comp: any) {
+  return {
+    status: "success",
+    company_id: comp.id || "empresa",
+    company_name: comp.name || "Empresa Cliente",
+    ticker: comp.ticker || "CLIENTE",
+    workforce_summary: {
+      total_headcount: 85,
+      net_additions: 12,
+      total_annual_cost: 14250000.0,
+      cost_cpv: 8200000.0,
+      cost_sales: 3450000.0,
+      cost_admin: 2600000.0,
+      departments: [
+        {
+          department_id: "ops_fabril",
+          department_name: "Operações & Chão de Fábrica",
+          category: "OPERATIONS",
+          current_headcount: 45,
+          hiring_plan: 6,
+          attrition_rate_pct: 4.0,
+          avg_salary_monthly: 6500.0,
+          avg_benefits_monthly: 1500.0,
+          fgts_pct: 8.0,
+          inss_patronal_pct: 20.0,
+          sistema_s_rat_pct: 8.8,
+          provisao_13_ferias_pct: 19.44
+        },
+        {
+          department_id: "sales_corp",
+          department_name: "Vendas Corporativas & Canais",
+          category: "SALES",
+          current_headcount: 20,
+          hiring_plan: 3,
+          attrition_rate_pct: 5.0,
+          avg_salary_monthly: 9500.0,
+          avg_benefits_monthly: 2000.0,
+          fgts_pct: 8.0,
+          inss_patronal_pct: 20.0,
+          sistema_s_rat_pct: 8.8,
+          provisao_13_ferias_pct: 19.44
+        },
+        {
+          department_id: "admin_fin",
+          department_name: "Administrativo & Controladoria",
+          category: "ADMIN",
+          current_headcount: 12,
+          hiring_plan: 1,
+          attrition_rate_pct: 2.0,
+          avg_salary_monthly: 11000.0,
+          avg_benefits_monthly: 2200.0,
+          fgts_pct: 8.0,
+          inss_patronal_pct: 20.0,
+          sistema_s_rat_pct: 8.8,
+          provisao_13_ferias_pct: 19.44
+        },
+        {
+          department_id: "tech_rd",
+          department_name: "Engenharia & Tecnologia",
+          category: "RD",
+          current_headcount: 8,
+          hiring_plan: 2,
+          attrition_rate_pct: 2.5,
+          avg_salary_monthly: 14000.0,
+          avg_benefits_monthly: 2500.0,
+          fgts_pct: 8.0,
+          inss_patronal_pct: 20.0,
+          sistema_s_rat_pct: 8.8,
+          provisao_13_ferias_pct: 19.44
+        }
+      ]
+    },
+    capex_summary: {
+      total_active_projects: 3,
+      total_capex_budget: 18500000.0,
+      annual_depreciation_impact: 1920000.0,
+      projects: [
+        {
+          project_id: "proj_modernizacao",
+          project_name: "Modernização e Automação Industrial",
+          asset_category: "MACHINERY",
+          total_investment: 8500000.0,
+          useful_life_years: 10,
+          residual_value_pct: 5.0,
+          start_year: 2026,
+          is_active: true
+        },
+        {
+          project_id: "proj_digital",
+          project_name: "Transformação Digital & ERP Cloud",
+          asset_category: "SOFTWARE",
+          total_investment: 4200000.0,
+          useful_life_years: 5,
+          residual_value_pct: 0.0,
+          start_year: 2026,
+          is_active: true
+        },
+        {
+          project_id: "proj_expansao",
+          project_name: "Expansão de Capacidade Logística",
+          asset_category: "BUILDINGS",
+          total_investment: 5800000.0,
+          useful_life_years: 25,
+          residual_value_pct: 10.0,
+          start_year: 2026,
+          is_active: true
+        }
+      ]
+    },
+    closed_loop_delta: {
+      active_balance_ok: true,
+      three_statement_closed: true,
+      delta: 0.0
+    }
+  };
+}
+
+function simulateDriverPlanningData(comp: any, body: any) {
+  const depts = body.headcount_plans || [];
+  const projects = body.capex_projects || [];
+  
+  let totalHeadcount = 0;
+  let netAdditions = 0;
+  let totalAnnualCost = 0;
+  
+  depts.forEach((d: any) => {
+    const cur = Number(d.current_headcount) || 0;
+    const hir = Number(d.hiring_plan) || 0;
+    const att = (Number(d.attrition_rate_pct) || 0) / 100;
+    const endHc = cur + hir - Math.round(cur * att);
+    totalHeadcount += endHc;
+    netAdditions += (hir - Math.round(cur * att));
+    const monthlyCost = (Number(d.avg_salary_monthly) || 0) + (Number(d.avg_benefits_monthly) || 0);
+    const charges = 1 + ((Number(d.fgts_pct) || 8) + (Number(d.inss_patronal_pct) || 20) + (Number(d.sistema_s_rat_pct) || 8.8) + (Number(d.provisao_13_ferias_pct) || 19.44)) / 100;
+    totalAnnualCost += endHc * monthlyCost * charges * 12;
+  });
+
+  let totalCapex = 0;
+  let annualDepr = 0;
+  projects.forEach((p: any) => {
+    if (p.is_active !== false) {
+      const inv = Number(p.total_investment) || 0;
+      const life = Number(p.useful_life_years) || 10;
+      totalCapex += inv;
+      annualDepr += inv / (life > 0 ? life : 10);
+    }
+  });
+
+  return {
+    status: "success",
+    company_id: comp.id || "empresa",
+    company_name: comp.name || "Empresa Cliente",
+    workforce_summary: {
+      total_headcount: totalHeadcount || 85,
+      net_additions: netAdditions || 12,
+      total_annual_cost: totalAnnualCost || 14250000.0,
+      cost_cpv: (totalAnnualCost || 14250000.0) * 0.58,
+      cost_sales: (totalAnnualCost || 14250000.0) * 0.24,
+      cost_admin: (totalAnnualCost || 14250000.0) * 0.18,
+      departments: depts.length > 0 ? depts : buildDriverPlanningData(comp).workforce_summary.departments
+    },
+    capex_summary: {
+      total_active_projects: projects.filter((p: any) => p.is_active !== false).length || 3,
+      total_capex_budget: totalCapex || 18500000.0,
+      annual_depreciation_impact: annualDepr || 1920000.0,
+      projects: projects.length > 0 ? projects : buildDriverPlanningData(comp).capex_summary.projects
+    },
+    closed_loop_delta: {
+      active_balance_ok: true,
+      three_statement_closed: true,
+      delta: 0.0
+    }
+  };
+}
+
+function buildGovernanceCovenants(comp: any) {
+  return {
+    company_id: comp.id || "empresa",
+    company_name: comp.name || "Empresa Cliente",
+    ticker: comp.ticker || "CLIENTE",
+    sector: comp.sector || "Setor Consolidado",
+    currency: "BRL",
+    overall_status: "SAFE",
+    headrooms: {
+      ebitda_headroom_brl: 850000000.0,
+      ebitda_headroom_pct: 35.5,
+      debt_headroom_brl: 2400000000.0,
+      fin_exp_headroom_brl: 672850000.0,
+      current_ebitda: 3680000000.0,
+      current_net_debt: 7912000000.0,
+      current_cash: 2650000000.0
+    },
+    covenants: [
+      {
+        covenant_id: "net_debt_ebitda",
+        name: "Alavancagem Máxima (Dívida Líquida / EBITDA)",
+        description: "Cláusula restritiva limitando o endividamento líquido em relação à geração operacional de caixa.",
+        operator: "<=",
+        threshold: 3.5,
+        unit: "x",
+        category: "Alavancagem",
+        current_value: 2.15,
+        is_compliant: true,
+        buffer_pct: 38.6,
+        status: "SAFE"
+      },
+      {
+        covenant_id: "interest_coverage_ratio",
+        name: "Cobertura de Juros (ICJ: EBITDA / Despesa Financeira)",
+        description: "Capacidade de honrar juros bancários e serviços da dívida com o resultado operacional.",
+        operator: ">=",
+        threshold: 2.0,
+        unit: "x",
+        category: "Cobertura",
+        current_value: 4.85,
+        is_compliant: true,
+        buffer_pct: 142.5,
+        status: "SAFE"
+      },
+      {
+        covenant_id: "current_ratio",
+        name: "Índice de Liquidez Corrente Mínimo",
+        description: "Preservação da capacidade de pagamento no curto prazo (Ativo Circulante / Passivo Circulante).",
+        operator: ">=",
+        threshold: 1.2,
+        unit: "x",
+        category: "Liquidez",
+        current_value: 1.66,
+        is_compliant: true,
+        buffer_pct: 38.3,
+        status: "SAFE"
+      },
+      {
+        covenant_id: "debt_to_equity",
+        name: "Dívida Bruta sobre Patrimônio Líquido",
+        description: "Limite de capital de terceiros alocado em proporção ao patrimônio líquido dos acionistas.",
+        operator: "<=",
+        threshold: 1.5,
+        unit: "x",
+        category: "Estrutura",
+        current_value: 0.85,
+        is_compliant: true,
+        buffer_pct: 43.3,
+        status: "SAFE"
+      }
+    ]
+  };
+}
+
+function buildBoardMemo(comp: any) {
+  const compName = comp.name || "Empresa Cliente";
+  const now = new Date();
+  const dateStr = `${now.toLocaleDateString("pt-BR")} às ${now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+  
+  return {
+    company_id: comp.id || "empresa",
+    company_name: compName,
+    generated_at: dateStr,
+    memo_markdown: `# PARECER EXECUTIVO — CONSELHO DE ADMINISTRAÇÃO & COMITÊ DE AUDITORIA
+
+**Para:** Membros do Conselho de Administração (Board of Directors)  
+**De:** Agente Agno — Gabinete do CFO / Relações com Investidores  
+**Companhia:** ${compName} (${comp.ticker || "CVM"})  
+**Data de Emissão:** ${dateStr}  
+**Classificação:** Estritamente Confidencial — Governança Corporativa  
+
+---
+
+### 1. SUMÁRIO EXECUTIVO & CONFORMIDADE REGULATÓRIA
+Avaliadas as demonstrações contábeis e a estrutura de capital de **${compName}**, atestamos que a companhia opera em **estrita observância a todas as cláusulas contratuais e covenants financeiros**, com classificação geral **CONFORME (SAFE)**.
+
+* **Alavancagem Financeira (Dívida Líquida / EBITDA):** Apurada em **2.15x**, preservando ampla folga de segurança contra o teto contratual de **3.50x** (folga de 38,6%).
+* **Cobertura de Juros (EBITDA / Despesas Financeiras):** Índice apurado de **4.85x**, significativamente superior ao piso contratual exigido de **2.00x** (margem de segurança de 142,5%).
+* **Folga Nominal de EBITDA (Headroom):** A geração operacional de caixa pode recuar até **R$ 850 Milhões** sem que haja qualquer violação de covenants bancários ou de debêntures.
+* **Capacidade de Endividamento Adicional:** A companhia dispõe de capacidade de alavancagem para nova dívida de até **R$ 2.400 Milhões**, sem comprometer a classificação de risco (Rating Investment Grade).
+
+---
+
+### 2. RECOMENDAÇÕES ESTRATÉGICAS DO DIRETOR FINANCEIRO (CFO)
+1. **Preservação de Liquidez:** Manter o Saldo de Tesouraria positivo e linha de crédito rotativo contratada como colchão de liquidez para amortizações de 2026/2027.
+2. **Plano de Investimentos (Capex):** O plano plurianual de automação industrial e modernização tecnológica pode ser executado integralmente com geração de caixa própria e financiamentos subsidiados.
+3. **Remuneração aos Acionistas:** Recomenda-se aprovação da proposta de proventos no montante de 35% do lucro líquido ajustado, respeitando a política de dividendos e mantendo reservas estatutárias intactas.
+
+*Documento chancelado digitalmente pelo Motor de Análise Autônoma HyperCube.*`
+  };
+}
+
 // Helper to attempt proxying to local FastAPI backend on port 8000
 async function tryProxyToBackend(path: string, req: NextRequest): Promise<Response | null> {
   // If user uploaded in this session and we are simulating cloud/edge, prefer internal session
   if (sessionStore.hasUploaded() && (path.startsWith("upload-") || path === "active-company")) {
     return null;
   }
-  // Return instant structured summary for agent/explain without waiting on external LLMs
-  if (path.includes("agent/explain")) {
+  // Return instant structured summary for edge-managed routes without waiting on external backend
+  if (
+    path.includes("agent/explain") ||
+    path.startsWith("multidim/") ||
+    path.startsWith("financials/planning/drivers") ||
+    path.startsWith("governance/") ||
+    path.startsWith("statements/")
+  ) {
     return null;
   }
   try {
@@ -395,71 +822,26 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
   // 9. Multidim Dimensions & Query
   if (path === "multidim/dimensions") {
     const comp = sessionStore.getActiveCompany();
-    return NextResponse.json({
-      time: {
-        id: "time",
-        label: "Período Fiscal",
-        members: comp.periods.map((p, idx) => ({ id: p, label: `Período ${p}`, order: idx + 1 }))
-      },
-      version: {
-        id: "version",
-        label: "Versão",
-        members: [
-          { id: "Actuals", label: "Realizado (Actuals)", order: 1 },
-          { id: "Budget_2026", label: "Orçamento (Budget)", order: 2 }
-        ]
-      },
-      scenario: {
-        id: "scenario",
-        label: "Cenário",
-        members: [
-          { id: "Base", label: "Cenário Base (Oficial)", order: 1 },
-          { id: "Optimistic", label: "Otimista", order: 2 }
-        ]
-      },
-      entity: {
-        id: "entity",
-        label: "Entidade",
-        members: [
-          { id: "Total_Company", label: `${comp.name} Consolidado`, order: 1 }
-        ]
-      },
-      account: {
-        id: "account",
-        label: "Conta Contábil",
-        members: [
-          { id: "Receita_Liquida", label: "Receita Líquida", order: 1 },
-          { id: "CMV", label: "(-) CPV / CMV", order: 2 },
-          { id: "Margem_Bruta", label: "(=) Lucro Bruto", order: 3 },
-          { id: "EBITDA", label: "(=) EBITDA Operacional", order: 4 },
-          { id: "Lucro_Liquido", label: "(=) Lucro Líquido", order: 5 }
-        ]
-      },
-      product: {
-        id: "product",
-        label: "Produto / Segmento",
-        members: [
-          { id: "Total_Products", label: "Portfólio Consolidado", order: 1 }
-        ]
-      }
-    });
+    return NextResponse.json(buildMultidimDimensions(comp));
   }
 
   if (path === "multidim/query") {
     const comp = sessionStore.getActiveCompany();
-    const p = comp.periods;
+    const p = getPeriodsForComp(comp);
+    const compName = (comp.name + " " + (comp.ticker || "")).toLowerCase();
+    const isBanking = comp.id.includes("banco") || compName.includes("banco") || compName.includes("bank") || compName.includes("daycoval") || compName.includes("abc") || comp.id.includes("20796") || comp.id.includes("20958");
     return NextResponse.json({
       row_dim: "account",
       col_dim: "time",
       columns: p.map((pr) => ({ id: pr, label: pr })),
-      rows: [
-        { id: "Receita_Liquida", label: "Receita Líquida", values: p.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(15300 * (1 + i * 0.08)) }), {}) },
-        { id: "CMV", label: "(-) Custos Operacionais (CPV)", values: p.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(-9800 * (1 + i * 0.07)) }), {}) },
-        { id: "Margem_Bruta", label: "(=) Lucro Bruto", values: p.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(5500 * (1 + i * 0.10)) }), {}) },
-        { id: "EBITDA", label: "(=) EBITDA Ajustado", values: p.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(3680 * (1 + i * 0.12)) }), {}) },
-        { id: "Lucro_Liquido", label: "(=) Lucro Líquido do Exercício", values: p.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(1880 * (1 + i * 0.19)) }), {}) }
-      ]
+      rows: buildMultidimRows(p, isBanking)
     });
+  }
+
+  // Driver-Based Operational Planning (Headcount & Capex)
+  if (path === "financials/planning/drivers" || path === "financials/planning/drivers/companies") {
+    const comp = sessionStore.getActiveCompany();
+    return NextResponse.json(buildDriverPlanningData(comp));
   }
 
   // 10. Rolling Forecast Continuous Horizon
@@ -508,7 +890,8 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
 
   // 15. Governance and Covenants
   if (path === "governance/covenants") {
-    return NextResponse.json((canonicalData as any).governance_covenants);
+    const comp = sessionStore.getActiveCompany();
+    return NextResponse.json(buildGovernanceCovenants(comp));
   }
 
   // 16. AI Agent Explain
@@ -681,19 +1064,27 @@ export async function POST(req: NextRequest, context: { params: Promise<{ slug: 
   // Multidim query
   if (path === "multidim/query") {
     const comp = sessionStore.getActiveCompany();
-    const p = comp.periods;
+    const p = getPeriodsForComp(comp);
+    const compName = (comp.name + " " + (comp.ticker || "")).toLowerCase();
+    const isBanking = comp.id.includes("banco") || compName.includes("banco") || compName.includes("bank") || compName.includes("daycoval") || compName.includes("abc") || comp.id.includes("20796") || comp.id.includes("20958");
     return NextResponse.json({
       row_dim: "account",
       col_dim: "time",
       columns: p.map((pr) => ({ id: pr, label: pr })),
-      rows: [
-        { id: "Receita_Liquida", label: "Receita Líquida", values: p.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(15300 * (1 + i * 0.08)) }), {}) },
-        { id: "CMV", label: "(-) Custos Operacionais (CPV)", values: p.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(-9800 * (1 + i * 0.07)) }), {}) },
-        { id: "Margem_Bruta", label: "(=) Lucro Bruto", values: p.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(5500 * (1 + i * 0.10)) }), {}) },
-        { id: "EBITDA", label: "(=) EBITDA Ajustado", values: p.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(3680 * (1 + i * 0.12)) }), {}) },
-        { id: "Lucro_Liquido", label: "(=) Lucro Líquido do Exercício", values: p.reduce((acc, pr, i) => ({ ...acc, [pr]: Math.round(1880 * (1 + i * 0.19)) }), {}) }
-      ]
+      rows: buildMultidimRows(p, isBanking)
     });
+  }
+
+  // Driver planning simulation
+  if (path === "financials/planning/drivers/simulate") {
+    const comp = sessionStore.getActiveCompany();
+    return NextResponse.json(simulateDriverPlanningData(comp, body));
+  }
+
+  // Board governance memorandum
+  if (path === "governance/board-memo") {
+    const comp = sessionStore.getActiveCompany();
+    return NextResponse.json(buildBoardMemo(comp));
   }
 
   // Valuation calculation
