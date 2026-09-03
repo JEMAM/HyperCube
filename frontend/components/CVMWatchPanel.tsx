@@ -204,14 +204,21 @@ function matchSector(sec1: string, sec2: string): boolean {
     });
   }, [allCompanies, selectedSector, searchTerm]);
 
-  // Synchronize company selection: if selectedCodCvm does not belong to the newly filtered list, pick the first one
+  // Synchronize company selection: if selectedCodCvm does not belong to the newly filtered list, align sector with company
   useEffect(() => {
     if (filteredCompanies.length > 0) {
       const inList = filteredCompanies.some((c) => c.cod_cvm === selectedCodCvm);
       if (!inList) {
-        const nextCod = filteredCompanies[0].cod_cvm;
-        setSelectedCodCvm(nextCod);
-        loadCompanyFinancials(nextCod);
+        const matchMaster = (allCompanies.length > 0 ? allCompanies : CVM_COMPANIES).find((c) => c.cod_cvm === selectedCodCvm);
+        if (matchMaster && matchMaster.setor && selectedSector !== "all" && selectedSector !== matchMaster.setor) {
+          setSelectedSector(matchMaster.setor);
+          return;
+        }
+        if (!matchMaster) {
+          const nextCod = filteredCompanies[0].cod_cvm;
+          setSelectedCodCvm(nextCod);
+          loadCompanyFinancials(nextCod);
+        }
       }
     }
   }, [filteredCompanies, selectedCodCvm]);
@@ -305,6 +312,24 @@ function matchSector(sec1: string, sec2: string): boolean {
     if (!codCvm) return;
     setLoading(true);
     setCubeLoadedMsg(null);
+
+    const comp = (allCompanies.length > 0 ? allCompanies : CVM_COMPANIES).find((c) => c.cod_cvm === codCvm);
+    if (comp) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cvm_selected_cod", String(codCvm));
+        localStorage.setItem("cvm_selected_sector", comp.setor);
+      }
+      setActiveCompany({
+        id: `cvm_${comp.codigo_cvm_str || comp.cod_cvm}`,
+        name: comp.denom_social,
+        ticker: comp.nome_pregao,
+        currency: "R$",
+        periods: ["2022", "2023", "2024", "2025"],
+        periodicity: periodicity,
+        sector: comp.setor,
+        description: `Companhia aberta listada na CVM (${comp.denom_social}) carregada via CVM Watch & Análise.`
+      });
+    }
 
     try {
       const data = await fetchWithFallback(`/api/cvm/companies/${codCvm}/financials`);
@@ -998,7 +1023,10 @@ function matchSector(sec1: string, sec2: string): boolean {
               <div className="flex items-center gap-1 p-1 rounded-2xl border bg-slate-100 dark:bg-slate-800/90 border-slate-300 dark:border-slate-700 shadow-xs">
                 <button
                   type="button"
-                  onClick={() => setPeriodicity("ANUAL")}
+                  onClick={() => {
+                    setPeriodicity("ANUAL");
+                    if (activeCompany) setActiveCompany({ ...activeCompany, periodicity: "ANUAL" });
+                  }}
                   className={`px-3 py-2 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${
                     periodicity === "ANUAL"
                       ? "bg-emerald-500 text-slate-950 shadow-sm"
@@ -1011,7 +1039,10 @@ function matchSector(sec1: string, sec2: string): boolean {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setPeriodicity("TRIMESTRAL")}
+                  onClick={() => {
+                    setPeriodicity("TRIMESTRAL");
+                    if (activeCompany) setActiveCompany({ ...activeCompany, periodicity: "TRIMESTRAL" });
+                  }}
                   className={`px-3 py-2 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${
                     periodicity === "TRIMESTRAL"
                       ? "bg-cyan-500 text-slate-950 shadow-sm"

@@ -3,6 +3,7 @@
 import React from "react";
 import { Building2, Layers, CheckCircle2 } from "lucide-react";
 import { usePreferences } from "./PreferencesContext";
+import { CVM_COMPANIES } from "@/lib/cvmData";
 
 interface CompanyBadgeProps {
   variant?: "header" | "banner" | "subtle" | "chip";
@@ -27,18 +28,27 @@ export default function CompanyBadge({
   const isDark = theme === "dark";
   const isEn = language === "en";
 
-  // Before client mounts, use clean initial SSR placeholder to prevent hydration mismatches with localStorage
-  const currentCompany = mounted
-    ? activeCompany
-    : {
-        id: "aguardando_upload",
-        name: isEn ? "Awaiting Data Upload" : "Aguardando Upload de Dados",
-        ticker: "EMPRESA",
-        description: "",
-        currency: "BRL"
+  // Resolve active company: check activeCompany state, then localStorage fallback to Cyrela
+  let currentCompany = activeCompany;
+  if (mounted && (!currentCompany || currentCompany.id === "aguardando_upload")) {
+    const savedCod = typeof window !== "undefined" ? localStorage.getItem("cvm_selected_cod") : null;
+    const cod = savedCod ? Number(savedCod) : 14460;
+    const match = CVM_COMPANIES.find(c => c.cod_cvm === cod);
+    if (match) {
+      currentCompany = {
+        id: `cvm_${match.cod_cvm}`,
+        name: match.denom_social,
+        ticker: match.nome_pregao,
+        currency: "R$",
+        periods: ["2022", "2023", "2024", "2025"],
+        periodicity: "ANUAL",
+        sector: match.setor,
+        description: match.denom_social
       };
+    }
+  }
 
-  const isAwaitingUpload = currentCompany.id === "aguardando_upload";
+  const isAwaitingUpload = !currentCompany || currentCompany.id === "aguardando_upload";
 
   if (variant === "chip") {
     return (
