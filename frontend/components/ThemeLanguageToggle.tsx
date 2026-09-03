@@ -51,9 +51,12 @@ export default function ThemeLanguageToggle() {
       }
     };
 
-    updateFromStorage();
+    const configUrl =
+      typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1"
+        ? "/api/config/llm"
+        : `${apiBaseUrl || ""}/api/config/llm`;
 
-    fetch(`${apiBaseUrl}/api/config/llm`)
+    fetch(configUrl)
       .then((r) => (r.ok ? r.json() : null))
       .then((cfg) => {
         if (!cfg) return;
