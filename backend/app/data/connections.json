@@ -326,5 +326,21 @@
     },
     "is_active": false,
     "created_at": "2026-09-02T09:29:06Z"
+  },
+  {
+    "id": "conn_totvs_protheus_1788389549",
+    "instrument_id": "totvs_protheus",
+    "name": "TOTVS Test Connection",
+    "environment": "local",
+    "config": {
+      "host": "localhost",
+      "port": 1433,
+      "database": "TEST_DB",
+      "company_branch": "01",
+      "username": "sa",
+      "password": "test_password"
+    },
+    "is_active": false,
+    "created_at": "2026-09-02T19:52:29Z"
   }
 ]

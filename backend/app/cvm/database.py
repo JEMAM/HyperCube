@@ -205,6 +205,27 @@ class CVMDatabase:
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, rows)
 
+    def upsert_financials_df(self, df: Any):
+        """Batch upserts millions of canonical financial records instantly using Arrow zero-copy."""
+        if df is None or len(df) == 0:
+            return
+        arrow_table = df.to_arrow()
+        self.conn.register("incoming_records", arrow_table)
+        self.conn.execute("""
+            INSERT OR REPLACE INTO cvm_financials 
+            (cod_cvm, dt_refer, tipo, cd_conta, ds_conta, vl_conta, conta_canonical)
+            SELECT 
+                CAST(cod_cvm AS INTEGER), 
+                CAST(dt_refer AS DATE), 
+                CAST(tipo AS VARCHAR), 
+                CAST(cd_conta AS VARCHAR), 
+                CAST(ds_conta AS VARCHAR), 
+                CAST(vl_conta AS DOUBLE), 
+                CAST(conta_canonical AS VARCHAR)
+            FROM incoming_records
+        """)
+        self.conn.unregister("incoming_records")
+
     def get_sectors(self) -> List[str]:
         """Returns sorted list of distinct, deduplicated industry sectors."""
         from backend.app.cvm.normalizer import CVM_CANONICAL_SECTORS

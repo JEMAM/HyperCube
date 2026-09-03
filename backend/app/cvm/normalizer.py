@@ -24,9 +24,9 @@ STANDARD_ACCOUNT_MAP = {
     "3.08": "imposto_renda_contribuicao",
     "3.09": "resultado_operacoes_descontinuadas",
     "3.11": "lucro_liquido",
-    "3.99": "lucro_liquido",
-    "3.99.01": "lucro_atribuido_controladores",
-    "3.99.02": "lucro_atribuido_nao_controladores",
+    "3.99": "lucro_por_acao",
+    "3.99.01": "lucro_por_acao_basico",
+    "3.99.02": "lucro_por_acao_diluido",
 }
 
 FINANCIAL_ACCOUNT_MAP = {
@@ -34,20 +34,47 @@ FINANCIAL_ACCOUNT_MAP = {
     "receita_com_operacoes_de_credito": "receita_intermediacao",
     "receita_com_operacoes_de_credito_e_repasses": "receita_intermediacao",
     "receitas_da_intermediacao_financeira": "receita_intermediacao",
+    "receitas_de_intermediacao_financeira": "receita_intermediacao",
+    "receitas_com_juros_e_similares": "receita_intermediacao",
     "receita_titulos_valores_mobiliarios": "receita_titulos",
     "despesas_de_captacao": "despesas_captacao",
+    "despesas_de_intermediacao_financeira": "despesas_captacao",
+    "despesas_da_intermediacao_financeira": "despesas_captacao",
+    "despesas_com_juros_e_similares": "despesas_captacao",
     "produto_da_intermediacao_financeira": "produto_intermediacao",
+    "resultado_bruto_de_intermediacao_financeira": "produto_intermediacao",
+    "resultado_bruto_da_intermediacao_financeira": "produto_intermediacao",
     "provisao_para_risco_de_credito_prc": "provisao_credito",
+    "despesa_de_provisao_para_perda_esperada": "provisao_credito",
+    "despesa_de_provisao_para_perda_esperada_para_risco_de_credito": "provisao_credito",
+    "provisao_para_creditos_de_liquidacao_duvidosa": "provisao_credito",
+    "perda_esperada": "provisao_credito",
     "resultado_da_intermediacao_financeira": "resultado_intermediacao",
+    "receitas_de_prestacao_de_servicos": "receita_servicos",
     "despesas_pessoal_e_administrativas": "despesas_adm_pessoal",
     "despesas_de_pessoal": "despesas_pessoal",
+    "despesas_com_pessoal": "despesas_pessoal",
     "despesas_administrativas": "despesas_adm",
+    "outras_despesas_de_administrativas": "despesas_adm",
+    "outras_despesas_administrativas": "despesas_adm",
     "despesas_tributarias": "despesas_tributarias",
     "outras_despesas_liquidas": "outras_despesas_liquidas",
+    "outras_receitas_operacionais": "outras_receitas_op",
+    "outras_despesas_operacionais": "outras_despesas_op",
+    "resultado_da_equivalencia_patrimonial": "resultado_equivalencia_patrimonial",
     "resultado_antes_da_tributacao": "resultado_antes_tributos",
+    "resultado_antes_dos_tributos_sobre_o_lucro": "resultado_antes_tributos",
     "tributos_sobre_o_lucro": "imposto_renda_contribuicao",
+    "imposto_de_renda_e_contribuicao_social_sobre_o_lucro": "imposto_renda_contribuicao",
     "participacao_nos_lucros": "participacao_lucros",
-    "lucro_liquido": "lucro_liquido"
+    "lucro_ou_prejuizo_liquido_consolidado_do_periodo": "lucro_liquido",
+    "lucro_ou_prejuizo_liquido_consolidado": "lucro_liquido",
+    "lucro_liquido_consolidado": "lucro_liquido",
+    "lucro_liquido": "lucro_liquido",
+    "atribuido_aos_socios_da_empresa_controladora": "lucro_controladora",
+    "atribuido_a_socios_da_empresa_controladora": "lucro_controladora",
+    "atribuido_aos_socios_nao_controladores": "lucro_nao_controladores",
+    "atribuido_a_socios_nao_controladores": "lucro_nao_controladores"
 }
 
 import unicodedata
@@ -78,6 +105,16 @@ def normalize_account_code(cd_conta: str, ds_conta: str, is_financial: bool = Fa
             return "despesas_captacao"
         if "provisao" in ds_clean or "risco de credito" in ds_clean:
             return "provisao_credito"
+
+    if cd.startswith("3."):
+        if "por acao" in ds_clean or "por_acao" in ds_clean:
+            return "lucro_por_acao"
+        if ("lucro" in ds_clean or "prejuizo" in ds_clean) and ("consolidado" in ds_clean or "periodo" in ds_clean or "exercicio" in ds_clean):
+            if "controladora" in ds_clean or "controladores" in ds_clean:
+                return "lucro_controladora"
+            if "nao controladores" in ds_clean or "nao_controladores" in ds_clean:
+                return "lucro_nao_controladores"
+            return "lucro_liquido"
 
     # Direct match on standard CVM numeric codes
     if cd in STANDARD_ACCOUNT_MAP:

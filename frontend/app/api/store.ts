@@ -137,6 +137,11 @@ class SessionStore {
       compName = "Petrobras S.A.";
       ticker = "PETR4";
       periods = ["2023", "2024", "2025", "Budget 2026"];
+    } else if (lower.includes("cvc")) {
+      cid = "cvc_brasil";
+      compName = "CVC Brasil Operadora e Agência de Viagens S.A.";
+      ticker = "CVCB3";
+      periods = ["2024", "2025", "Budget 2026"];
     }
 
     this.activeCompany = {
@@ -207,6 +212,29 @@ class SessionStore {
           { id: "lair", code: "3.06", name: "(=) Resultado Antes da Tributação (LAIR / EBT)", is_header: true, level: 0, periods: this.buildRowPeriods(p, 1580.0, 1.12) },
           { id: "impostos", code: "3.07", name: "(-) Imposto de Renda e Contribuição Social (CSLL)", is_header: false, level: 1, periods: this.buildRowPeriods(p, -490.0, 1.12) },
           { id: "lucro_liquido", code: "3.08", name: "(=) Lucro Líquido do Exercício", is_header: true, level: 0, periods: this.buildRowPeriods(p, 1090.0, 1.12) },
+        ]
+      };
+    }
+
+    const isCVC = comp.id.includes("cvc") || compName.includes("cvc");
+    if (isCVC) {
+      return {
+        company: comp,
+        periods: p,
+        rows: [
+          { id: "receita_liquida", code: "3.01", name: "(=) Receita Líquida de Vendas", is_header: true, level: 0, periods: this.buildRowPeriods(p, 1420.76, 1.0477) },
+          { id: "cpv", code: "3.02", name: "(-) Custo dos Serviços Prestados", is_header: false, level: 1, periods: this.buildRowPeriods(p, -105.95, 0.403) },
+          { id: "lucro_bruto", code: "3.03", name: "(=) Lucro Bruto", is_header: true, level: 0, periods: this.buildRowPeriods(p, 1314.82, 1.0996) },
+          { id: "despesas_vendas", code: "3.04.01", name: "(-) Despesas com Vendas", is_header: false, level: 1, periods: this.buildRowPeriods(p, -253.82, 1.1366) },
+          { id: "despesas_admin", code: "3.04.02", name: "(-) Despesas Gerais e Administrativas", is_header: false, level: 1, periods: this.buildRowPeriods(p, -963.86, 1.0126) },
+          { id: "outras_receitas_op", code: "3.04.05", name: "(+/-) Outras Receitas/(Despesas) Operacionais", is_header: false, level: 1, periods: this.buildRowPeriods(p, -6.31, -14.88) },
+          { id: "ebitda", code: "3.05", name: "(=) EBITDA Ajustado Operacional", is_header: true, level: 0, periods: this.buildRowPeriods(p, 313.32, 1.6117) },
+          { id: "depreciacao", code: "3.05.01", name: "(-) Depreciação e Amortização (D&A)", is_header: false, level: 1, periods: this.buildRowPeriods(p, -222.50, 1.0324) },
+          { id: "ebit", code: "3.06", name: "(=) Lucro Operacional (EBIT)", is_header: true, level: 0, periods: this.buildRowPeriods(p, 90.82, 3.0309) },
+          { id: "resultado_financeiro", code: "3.07", name: "(-) Resultado Financeiro Líquido", is_header: false, level: 1, periods: this.buildRowPeriods(p, -174.18, 1.5844) },
+          { id: "lair", code: "3.08", name: "(=) Prejuízo Antes dos Tributos (LAIR / EBT)", is_header: true, level: 0, periods: this.buildRowPeriods(p, -83.37, 0.0086) },
+          { id: "impostos", code: "3.09", name: "(-) Imposto de Renda e Contribuição Social", is_header: false, level: 1, periods: this.buildRowPeriods(p, -19.97, 2.0136) },
+          { id: "lucro_liquido", code: "3.10", name: "(=) Prejuízo Líquido do Exercício", is_header: true, level: 0, periods: this.buildRowPeriods(p, -103.34, 0.3962) },
         ]
       };
     }

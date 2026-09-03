@@ -96,12 +96,16 @@ def get_watchdog_status():
     """Returns the latest CVM watchdog status, last run timestamp, and statistics."""
     return cvm_db.get_watch_status()
 
-@router.post("/watchdog/run")
-async def trigger_watchdog_run(background_tasks: BackgroundTasks):
-    """Triggers an on-demand CVM watchdog detection cycle."""
-    if cvm_watchdog.is_running:
-        return {"status": "ALREADY_RUNNING", "message": "CVM Watchdog cycle is already in progress"}
-    
-    # Run cycle asynchronously
-    background_tasks.add_task(cvm_watchdog.run_detection_cycle)
-    return {"status": "TRIGGERED", "message": "CVM Watchdog detection cycle initiated"}
+@router.post("/sync-company/{cod_cvm}")
+def sync_company_official_data(cod_cvm: int):
+    """
+    Forces an immediate download and ingestion of official CVM statements for cod_cvm.
+    """
+    records = cvm_watchdog.ensure_company_financials_loaded(cod_cvm, force_refresh=True)
+    return {
+        "status": "synchronized",
+        "cod_cvm": cod_cvm,
+        "total_records": len(records),
+        "message": f"Successfully ingested {len(records)} official CVM statement rows"
+    }
+

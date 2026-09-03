@@ -246,10 +246,15 @@ class MultiDimCube:
         order_idx = 1
 
         if is_annual:
-            # Aggregate time_series by year
+            # In CVM filings, 12-31 (DFP) is the full-year accumulated statement.
+            # If 12-31 is available for a year, take it directly; otherwise sum the available quarters.
             by_year: Dict[str, Dict[str, float]] = {}
+            dfp_by_year: Dict[str, Dict[str, float]] = {}
+            quarters_by_year: Dict[str, Dict[str, float]] = {}
+
             for ts in time_series:
-                yr = str(ts.get("year") or ts.get("period", "")[:4])
+                p = str(ts.get("period", ""))
+                yr = str(ts.get("year") or p[:4])
                 if not yr or len(yr) != 4 or not yr.isdigit():
                     continue
                 rev_liq = float(ts.get("receita_liquida") or 0.0)
@@ -258,20 +263,29 @@ class MultiDimCube:
                 ebit = float(ts.get("resultado_ebit") or (mb * 0.40))
                 lucro_liq = float(ts.get("lucro_liquido") or (ebit * 0.70))
 
-                if yr not in by_year:
-                    by_year[yr] = {
-                        "receita_liquida": rev_liq,
-                        "custo_bens_servicos": cmv,
-                        "lucro_bruto": mb,
-                        "resultado_ebit": ebit,
-                        "lucro_liquido": lucro_liq
-                    }
+                entry = {
+                    "receita_liquida": rev_liq,
+                    "custo_bens_servicos": cmv,
+                    "lucro_bruto": mb,
+                    "resultado_ebit": ebit,
+                    "lucro_liquido": lucro_liq
+                }
+
+                if p.endswith("-12-31"):
+                    dfp_by_year[yr] = entry
                 else:
-                    by_year[yr]["receita_liquida"] += rev_liq
-                    by_year[yr]["custo_bens_servicos"] += cmv
-                    by_year[yr]["lucro_bruto"] += mb
-                    by_year[yr]["resultado_ebit"] += ebit
-                    by_year[yr]["lucro_liquido"] += lucro_liq
+                    if yr not in quarters_by_year:
+                        quarters_by_year[yr] = entry.copy()
+                    else:
+                        for k in entry:
+                            quarters_by_year[yr][k] += entry[k]
+
+            all_years = sorted(list(set(dfp_by_year.keys()) | set(quarters_by_year.keys())))
+            for yr in all_years:
+                if yr in dfp_by_year:
+                    by_year[yr] = dfp_by_year[yr]
+                else:
+                    by_year[yr] = quarters_by_year[yr]
 
             sorted_years = sorted(list(by_year.keys()))[-4:]
             if not sorted_years:

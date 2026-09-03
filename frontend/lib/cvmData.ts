@@ -1,4 +1,5 @@
 import cvmCompaniesJson from "./cvm_companies.json";
+import realCvmFinancials from "./cvm_real_financials.json";
 
 export interface CVMCompany {
   cod_cvm: number;
@@ -117,6 +118,40 @@ export function generateCvmAnalysis(cod_cvm: number): CVMAnalysisResponse {
 
   const nameUpper = (company.denom_social + " " + company.nome_pregao).toUpperCase();
 
+  // If real official CVM open data is ingested for this company, return it directly
+  const realProfile = (realCvmFinancials as Record<string, any>)[String(cod_cvm)];
+  if (realProfile && Array.isArray(realProfile.time_series) && realProfile.time_series.length > 0) {
+    const quarters = realProfile.time_series;
+    const filings: CVMFiling[] = quarters.slice().reverse().map((q: any, idx: number) => ({
+      id: `filing_${cod_cvm}_${(q.period || "2025").replace(/-/g, "")}`,
+      cod_cvm,
+      tipo: q.period && q.period.includes("12-31") ? "DFP" : "ITR",
+      dt_refer: q.period,
+      dt_entrega: q.period,
+      versao: 1,
+      url_documento: `https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_${(q.period || "2024").substring(0, 4)}.zip`,
+      status: idx === 0 ? "NEW" : "LOADED"
+    }));
+
+    return {
+      company,
+      kpis: realProfile.kpis || {
+        latest_period: quarters[quarters.length - 1].period,
+        receita_liquida: quarters[quarters.length - 1].receita_liquida,
+        receita_growth_yoy: 5.0,
+        lucro_liquido: quarters[quarters.length - 1].lucro_liquido,
+        lucro_growth_yoy: 5.0,
+        margem_bruta: quarters[quarters.length - 1].margem_bruta,
+        margem_ebit: quarters[quarters.length - 1].margem_ebit,
+        margem_liquida: quarters[quarters.length - 1].margem_liquida,
+        roe_estimado: 15.0
+      },
+      time_series: realProfile.time_series,
+      filings,
+      periods: realProfile.periods || quarters.map((q: any) => q.period)
+    };
+  }
+
   // Base parameters according to company profile
   let baseRev = 5000.0;
   let grossMargin = 0.35;
@@ -203,6 +238,12 @@ export function generateCvmAnalysis(cod_cvm: number): CVMAnalysisResponse {
     grossMargin = 0.18;
     ebitMargin = 0.09;
     netMargin = 0.04;
+  } else if (cod_cvm === 23310 || nameUpper.includes("CVC BRASIL")) {
+    // Official Audited IFRS / CPC figures from EY (cvc_2024-2025.pdf)
+    baseRev = 1420.76;
+    grossMargin = 0.95;
+    ebitMargin = 0.15;
+    netMargin = -0.04;
   } else {
     // Unique deterministic baseline
     baseRev = 1500.0 + ((cod_cvm * 179) % 18500);
@@ -231,15 +272,40 @@ export function generateCvmAnalysis(cod_cvm: number): CVMAnalysisResponse {
   ];
 
   const time_series = quarters.map((q) => {
-    const rev = Math.round(baseRev * q.factor * 100) / 100;
-    const cpv = Math.round(-rev * (1 - grossMargin) * 100) / 100;
-    const gross = Math.round((rev + cpv) * 100) / 100;
-    const opex = Math.round(-rev * (grossMargin - ebitMargin) * 100) / 100;
-    const ebit = Math.round((gross + opex) * 100) / 100;
-    const fin = Math.round(-ebit * 0.12 * 100) / 100;
-    const lair = Math.round((ebit + fin) * 100) / 100;
-    const tax = Math.round(-lair * 0.25 * 100) / 100;
-    const net = Math.round((lair + tax) * 100) / 100;
+    const isCVC = cod_cvm === 23310 || nameUpper.includes("CVC BRASIL");
+    let rev = Math.round(baseRev * q.factor * 100) / 100;
+    let cpv = Math.round(-rev * (1 - grossMargin) * 100) / 100;
+    let gross = Math.round((rev + cpv) * 100) / 100;
+    let opex = Math.round(-rev * (grossMargin - ebitMargin) * 100) / 100;
+    let ebit = Math.round((gross + opex) * 100) / 100;
+    let fin = Math.round(-ebit * 0.12 * 100) / 100;
+    let lair = Math.round((ebit + fin) * 100) / 100;
+    let tax = Math.round(-lair * 0.25 * 100) / 100;
+    let net = Math.round((lair + tax) * 100) / 100;
+
+    if (isCVC) {
+      if (q.period === "2024-12-31") {
+        rev = 1420.76;
+        cpv = -105.95;
+        gross = 1314.82;
+        ebit = 90.82;
+        fin = -174.18;
+        lair = -83.37;
+        tax = -19.97;
+        net = -103.34;
+        opex = -1224.00;
+      } else if (q.period === "2025-12-31") {
+        rev = 1488.49;
+        cpv = -42.70;
+        gross = 1445.79;
+        ebit = 275.26;
+        fin = -275.98;
+        lair = -0.72;
+        tax = -40.21;
+        net = -40.94;
+        opex = -1170.53;
+      }
+    }
 
     return {
       period: q.period,

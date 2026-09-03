@@ -14,23 +14,50 @@ class CVMCompanyAnalyzer:
         if not company:
             return None
 
-        financials = cvm_db.get_company_financials(cod_cvm)
+        from backend.app.cvm.watchdog import cvm_watchdog
+        financials = cvm_watchdog.ensure_company_financials_loaded(cod_cvm)
         filings = cvm_db.get_company_filings(cod_cvm)
 
-        # If financials are empty, seed on-demand
-        if not financials:
-            from backend.app.cvm.watchdog import cvm_watchdog
-            cvm_watchdog.generate_company_financial_series(cod_cvm, company.get("setor", ""))
-            financials = cvm_db.get_company_financials(cod_cvm)
-            filings = cvm_db.get_company_filings(cod_cvm)
-
-        # Group accounts by date
+        # Group accounts by date with strict priority for primary DRE accounts
         periods_dict = defaultdict(dict)
-        for rec in financials:
+        # Sort financials so that non-3. accounts are processed first and primary DRE accounts take final precedence
+        def get_account_priority(rec):
+            cd = str(rec.get("cd_conta", ""))
+            if cd in ["3.01", "3.02", "3.03", "3.05", "3.06", "3.07", "3.08", "3.11"]:
+                return 100
+            if cd.startswith("3."):
+                return 50
+            return 10
+
+        sorted_financials = sorted(financials, key=get_account_priority)
+
+        for rec in sorted_financials:
             dt = rec["dt_refer"]
             canonical = rec["conta_canonical"]
             vl = rec["vl_conta"]
-            periods_dict[dt][canonical] = vl
+            cd = str(rec.get("cd_conta", ""))
+
+            # Explicit mapping for primary DRE statements
+            if cd == "3.01":
+                periods_dict[dt]["receita_liquida"] = vl
+            elif cd == "3.02":
+                periods_dict[dt]["custo_bens_servicos"] = vl
+            elif cd == "3.03":
+                periods_dict[dt]["lucro_bruto"] = vl
+            elif cd == "3.05":
+                periods_dict[dt]["resultado_ebit"] = vl
+            elif cd == "3.06":
+                periods_dict[dt]["resultado_financeiro"] = vl
+            elif cd == "3.07":
+                periods_dict[dt]["resultado_antes_tributos"] = vl
+            elif cd == "3.08":
+                periods_dict[dt]["imposto_renda_contribuicao"] = vl
+            elif cd == "3.11":
+                periods_dict[dt]["lucro_liquido"] = vl
+            else:
+                if canonical not in periods_dict[dt]:
+                    periods_dict[dt][canonical] = vl
+
             # Also keep raw account code and desc
             if "raw_accounts" not in periods_dict[dt]:
                 periods_dict[dt]["raw_accounts"] = []
@@ -50,7 +77,7 @@ class CVMCompanyAnalyzer:
             rev = data.get("receita_liquida") or data.get("receita_intermediacao") or 0.0
             cpv = data.get("custo_bens_servicos") or data.get("despesas_captacao") or 0.0
             lucro_bruto = data.get("lucro_bruto") or data.get("produto_intermediacao") or (rev + cpv)
-            ebit = data.get("resultado_ebit") or data.get("resultado_intermediacao") or 0.0
+            ebit = data.get("resultado_ebit") or data.get("resultado_intermediacao") or data.get("resultado_antes_tributos") or 0.0
             lucro_liq = data.get("lucro_liquido", 0.0)
             
             # Margins

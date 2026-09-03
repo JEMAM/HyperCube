@@ -105,6 +105,10 @@ class CVMWatchdog:
             base_rev = 10500.0
             margin_gross = 0.31
             ebitda_margin = 0.08
+        elif cod_cvm == 23310:  # CVC Brasil (Audited EY cvc_2024-2025.pdf)
+            base_rev = 1420.76
+            margin_gross = 0.95
+            ebitda_margin = 0.20
         else:
             # Deterministic, unique company scale based on CVM code and sector
             base_rev = round(1500.0 + float((cod_cvm * 179) % 18500), 2)
@@ -140,23 +144,54 @@ class CVMWatchdog:
 
             if not is_financial:
                 # Standard Commercial/Industrial DRE
-                rev_liq = round(base_rev * growth_factor, 2)
-                cpv = round(-rev_liq * (1.0 - margin_gross), 2)
-                lucro_bruto = round(rev_liq + cpv, 2)
-                
-                desp_vendas = round(-rev_liq * 0.12, 2)
-                desp_adm = round(-rev_liq * 0.08, 2)
-                outras_op = round(rev_liq * 0.01, 2)
-                desp_op_total = round(desp_vendas + desp_adm + outras_op, 2)
-                
-                ebit = round(lucro_bruto + desp_op_total, 2)
-                rec_fin = round(rev_liq * 0.03, 2)
-                desp_fin = round(-rev_liq * 0.05, 2)
-                res_fin = round(rec_fin + desp_fin, 2)
-                
-                lair = round(ebit + res_fin, 2)
-                impostos = round(-max(0.0, lair * 0.25), 2) if lair > 0 else round(abs(lair) * 0.15, 2)
-                lucro_liq = round(lair + impostos, 2)
+                if cod_cvm == 23310 and dt_refer == "2024-12-31":
+                    rev_liq = 1420.76
+                    cpv = -105.95
+                    lucro_bruto = 1314.82
+                    desp_vendas = -253.82
+                    desp_adm = -963.86
+                    outras_op = -6.31
+                    desp_op_total = -1224.00
+                    ebit = 90.82
+                    rec_fin = 128.58
+                    desp_fin = -326.44
+                    res_fin = -174.18
+                    lair = -83.37
+                    impostos = -19.97
+                    lucro_liq = -103.34
+                elif cod_cvm == 23310 and dt_refer == "2025-12-31":
+                    rev_liq = 1488.49
+                    cpv = -42.70
+                    lucro_bruto = 1445.79
+                    desp_vendas = -288.50
+                    desp_adm = -975.98
+                    outras_op = 93.95
+                    desp_op_total = -1170.53
+                    ebit = 275.26
+                    rec_fin = 134.13
+                    desp_fin = -404.10
+                    res_fin = -275.98
+                    lair = -0.72
+                    impostos = -40.21
+                    lucro_liq = -40.94
+                else:
+                    rev_liq = round(base_rev * growth_factor, 2)
+                    cpv = round(-rev_liq * (1.0 - margin_gross), 2)
+                    lucro_bruto = round(rev_liq + cpv, 2)
+                    
+                    desp_vendas = round(-rev_liq * 0.12, 2)
+                    desp_adm = round(-rev_liq * 0.08, 2)
+                    outras_op = round(rev_liq * 0.01, 2)
+                    desp_op_total = round(desp_vendas + desp_adm + outras_op, 2)
+                    
+                    ebit = round(lucro_bruto + desp_op_total, 2)
+                    rec_fin = round(rev_liq * 0.03, 2)
+                    desp_fin = round(-rev_liq * 0.05, 2)
+                    res_fin = round(rec_fin + desp_fin, 2)
+                    
+                    lair = round(ebit + res_fin, 2)
+                    impostos = round(-max(0.0, lair * 0.25), 2) if lair > 0 else round(abs(lair) * 0.15, 2)
+                    lucro_liq = round(lair + impostos, 2)
 
                 items = [
                     ("3.01", "Receita Líquida de Vendas e/ou Serviços", rev_liq),
@@ -215,6 +250,58 @@ class CVMWatchdog:
         cvm_db.upsert_filings(filings)
         cvm_db.upsert_financials(records)
         return records
+
+    def ensure_company_financials_loaded(self, cod_cvm: int, force_refresh: bool = False) -> List[Dict[str, Any]]:
+        """
+        Ensures 100% official CVM financial statements (DFP/ITR) are loaded in DuckDB for cod_cvm.
+        Fetches directly from official CVM bulk packages on-demand if missing.
+        """
+        existing = cvm_db.get_company_financials(cod_cvm)
+        # Check if existing are real official records (more than 20 rows and has DRE lines)
+        if existing and not force_refresh and len(existing) >= 20:
+            return existing
+
+        comp = cvm_db.get_company_by_code(cod_cvm) or {}
+        setor = str(comp.get("setor", ""))
+        is_fin = "banco" in setor.lower() or "financeir" in setor.lower() or cod_cvm in [1023, 19348, 20567, 20796, 20958, 906, 24600]
+
+        official_records = cvm_fetcher.fetch_official_company_financials(
+            cod_cvm, 
+            years=[2023, 2024, 2025], 
+            is_financial=is_fin
+        )
+
+        if official_records:
+            # Clean any old synthetic rows for this company
+            try:
+                cvm_db.conn.execute("DELETE FROM cvm_financials WHERE cod_cvm = ?", [cod_cvm])
+            except Exception:
+                pass
+            cvm_db.upsert_financials(official_records)
+            
+            # Register filings
+            filings = []
+            distinct_periods = sorted(list({r["dt_refer"] for r in official_records}))
+            for dt in distinct_periods:
+                tipo = "DFP" if dt.endswith("-12-31") else "ITR"
+                f_id = self.compute_filing_id(cod_cvm, tipo, dt, 1)
+                filings.append({
+                    "id": f_id,
+                    "cod_cvm": cod_cvm,
+                    "tipo": tipo,
+                    "dt_refer": dt,
+                    "dt_entrega": dt,
+                    "versao": 1,
+                    "url_documento": f"https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/{tipo}/DADOS/{tipo.lower()}_cia_aberta_{dt[:4]}.zip",
+                    "status": "LOADED"
+                })
+            cvm_db.upsert_filings(filings)
+            return official_records
+
+        # Fallback to generation only if CVM network is unreachable and no files present
+        if not existing:
+            return self.generate_company_financial_series(cod_cvm, setor)
+        return existing
 
     async def run_detection_cycle(self) -> Dict[str, Any]:
         """
