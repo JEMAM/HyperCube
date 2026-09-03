@@ -134,8 +134,9 @@ function FormattedDiagnostic({ text, isDark, isEn }: { text: string; isDark: boo
   const isDovish = text.toLowerCase().includes("dovish");
   const isNeutral = text.toLowerCase().includes("neutra") || text.toLowerCase().includes("neutral");
 
-  // Split text into numbered sections or paragraphs
-  const paragraphs = text.split("\n\n").filter((p) => p.trim().length > 0);
+  // Split text into numbered sections or paragraphs (handling escaped or raw newlines)
+  const normalizedText = (text || "").replace(/\\n/g, "\n");
+  const paragraphs = normalizedText.split(/\n\s*\n/).filter((p) => p.trim().length > 0);
 
   return (
     <div className="space-y-4 font-sans text-xs sm:text-sm">
