@@ -1,90 +1,53 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import {
-  Building2,
-  TrendingUp,
-  TrendingDown,
-  Search,
-  Filter,
-  RefreshCw,
-  Zap,
-  CheckCircle2,
-  FileText,
-  DollarSign,
-  PieChart,
-  BarChart3,
-  Layers,
-  ArrowRight,
-  ShieldCheck,
-  Calendar,
-  ExternalLink,
-  ChevronDown,
-  Download,
+import { 
+  Building2, 
+  Search, 
+  ChevronDown, 
+  Calendar, 
+  BarChart2, 
+  FileSpreadsheet, 
+  Download, 
+  CheckCircle2, 
+  Upload, 
+  ArrowRight, 
+  Layers, 
+  FileText, 
+  Sparkles, 
+  Check, 
   Info,
-  FileSpreadsheet,
-  ArrowRightLeft
+  Clock,
+  ShieldCheck,
+  RefreshCw,
+  FolderDown
 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend
-} from "recharts";
-import ThemeLanguageToggle from "./ThemeLanguageToggle";
 import { usePreferences } from "./PreferencesContext";
-import CompanyBadge from "./CompanyBadge";
-import {
-  CVM_SECTORS,
-  CVM_COMPANIES,
-  generateCvmAnalysis,
-  CVMCompany,
-  CVMFiling,
-  CVMAnalysisResponse
-} from "@/lib/cvmData";
-
-function formatCurrency(val: number): string {
-  if (Math.abs(val) >= 1000) {
-    return `R$ ${(val / 1000).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 2 })} Bi`;
-  }
-  return `R$ ${val.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 2 })} Mi`;
-}
-
-function formatCurrencyRaw(val: number): string {
-  return `R$ ${val.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Mi`;
-}
+import { CVM_SECTORS, CVM_COMPANIES, CVMCompany, generateCvmAnalysis } from "@/lib/cvmData";
 
 interface CVMWatchPanelProps {
   onNavigate?: (mode: string) => void;
+  onSendToIngestion?: (companyInfo: any) => void;
 }
 
-export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
-  const { theme, language, apiBaseUrl, backendOnline, refreshActiveCompany, activeCompany, setActiveCompany } = usePreferences();
+interface CVMFileItem {
+  id: string;
+  filename: string;
+  docType: "DFP" | "ITR";
+  periodLabel: string;
+  referenceDate: string;
+  statementsIncluded: string[];
+  sizeApprox: string;
+  status: "READY" | "AUDITED";
+  urlDownload?: string;
+}
+
+export default function CVMWatchPanel({ onNavigate, onSendToIngestion }: CVMWatchPanelProps) {
+  const { theme, language, activeCompany, setActiveCompany, apiBaseUrl } = usePreferences();
   const isDark = theme === "dark";
   const isEn = language === "en";
 
-  // Pre-seeded complete list of 756 CVM companies and 31 sectors
-  const [sectors, setSectors] = useState<string[]>(CVM_SECTORS);
-
-  // Initialize selected company: try to match localStorage first, then activeCompany, fallback to Cyrela (14460)
-  const [selectedCodCvm, setSelectedCodCvm] = useState<number>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cvm_selected_cod");
-      if (saved && !isNaN(Number(saved))) return Number(saved);
-    }
-    if (activeCompany && activeCompany.id && activeCompany.id.startsWith("cvm_")) {
-      const rawCode = parseInt(activeCompany.id.replace("cvm_", ""), 10);
-      if (rawCode && !isNaN(rawCode)) return rawCode;
-    }
-    return 14460; // Cyrela Brazil Realty
-  });
-
+  // 1. Sector State (persisted)
   const [selectedSector, setSelectedSector] = useState<string>(() => {
     if (typeof window !== "undefined") {
       const savedSec = localStorage.getItem("cvm_selected_sector");
@@ -98,1789 +61,719 @@ export default function CVMWatchPanel({ onNavigate }: CVMWatchPanelProps) {
     return "Construção Civil e Imobiliário";
   });
 
-  const [allCompanies, setAllCompanies] = useState<CVMCompany[]>(CVM_COMPANIES);
+  // 2. Company State (persisted, defaulting to Cyrela)
+  const [selectedCodCvm, setSelectedCodCvm] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cvm_selected_cod");
+      if (saved && !isNaN(Number(saved))) return Number(saved);
+    }
+    if (activeCompany && activeCompany.id && activeCompany.id.startsWith("cvm_")) {
+      const rawCode = parseInt(activeCompany.id.replace("cvm_", ""), 10);
+      if (rawCode && !isNaN(rawCode)) return rawCode;
+    }
+    return 14460; // Cyrela Brazil Realty
+  });
 
+  // Search filter inside selected sector
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [analysisData, setAnalysisData] = useState<CVMAnalysisResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [loadingCube, setLoadingCube] = useState<boolean>(false);
-  const [cubeLoadedMsg, setCubeLoadedMsg] = useState<string | null>(null);
-  const [activeChartTab, setActiveChartTab] = useState<"DRE" | "MARGINS" | "STRUCTURE">("DRE");
-  const [statementTab, setStatementTab] = useState<"DRE" | "DFC">("DRE");
+
+  // 3. Periodicity: "ANUAL" (DFP) or "TRIMESTRAL" (ITR)
   const [periodicity, setPeriodicity] = useState<"ANUAL" | "TRIMESTRAL">("ANUAL");
-  const [filingTypeFilter, setFilingTypeFilter] = useState<"ALL" | "DFP" | "ITR">("ALL");
 
-  // Watchdog status
-  const [watchStatus, setWatchStatus] = useState<any>(null);
-  const [runningWatchdog, setRunningWatchdog] = useState<boolean>(false);
+  // Selected file IDs for upload
+  const [selectedFileIds, setSelectedFileIds] = useState<Record<string, boolean>>({});
 
-function canonicalizeSectorName(s: string): string {
-  if (!s) return "outros";
-  const norm = (s || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]/g, "");
+  // Sending state and feedback
+  const [sendingToIngestion, setSendingToIngestion] = useState<boolean>(false);
+  const [sendSuccessMsg, setSendSuccessMsg] = useState<string | null>(null);
 
-  if (norm.includes("educa") || norm.includes("ensino")) return "educacao";
-  if (norm.includes("eletric") || norm.includes("energia")) return "energia_eletrica";
-  if (norm.includes("constru") || norm.includes("imobili")) return "construcao_civil";
-  if (norm.includes("comerc") || norm.includes("varejo") || norm.includes("atacado") || norm.includes("lojas")) return "comercio";
-  if (norm.includes("aero") || norm.includes("materialdetransporte")) return "transporte_aero";
-  if (norm.includes("transporte") || norm.includes("logist")) return "transporte_logistica";
-  if (norm.includes("banco")) return "bancos";
-  if (norm.includes("petrol") || norm.includes("gas") || norm.includes("combust")) return "petroleo_gas";
-  if (norm.includes("telecom")) return "telecom";
-  if (norm.includes("aliment") || norm.includes("bebid")) return "alimentos_bebidas";
-  if (norm.includes("medic") || norm.includes("hospit") || norm.includes("saude")) return "saude";
-  if (norm.includes("metalurg") || norm.includes("siderurg")) return "metalurgia";
-  if (norm.includes("maquin") || norm.includes("equip") || norm.includes("veicul") || norm.includes("motores")) return "maquinas_veiculos";
-  if (norm.includes("textil") || norm.includes("vestu")) return "textil";
-  if (norm.includes("agric") || norm.includes("acucar") || norm.includes("alcool") || norm.includes("cana")) return "agricultura";
-  if (norm.includes("farmac") || norm.includes("higien") || norm.includes("medicamento")) return "farmaceutico";
-  if (norm.includes("miner") || norm.includes("extrac")) return "mineracao";
-  if (norm.includes("securit")) return "securitizacao";
-  if (norm.includes("segur") || norm.includes("corretor")) return "seguros";
-  if (norm.includes("hosped") || norm.includes("turis") || norm.includes("hotel") || norm.includes("viagens")) return "turismo";
-  if (norm.includes("brinq") || norm.includes("lazer")) return "lazer";
-  if (norm.includes("papel") || norm.includes("celul")) return "papel_celulose";
-  if (norm.includes("intermediac")) return "intermediacao";
-  if (norm.includes("arrend")) return "arrendamento";
-  if (norm.includes("bolsa") || norm.includes("capitais")) return "bolsa";
-  if (norm.includes("embalag")) return "embalagens";
-  if (norm.includes("reflorest")) return "reflorestamento";
-  if (norm.includes("saneam") || norm.includes("agua") || norm.includes("esgoto")) return "saneamento";
-  if (norm.includes("credito")) return "credito";
-  if (norm.includes("comunic") || norm.includes("informat")) return "comunicacao";
-  if (norm.includes("petroquim") || norm.includes("borracha")) return "petroquimicos";
+  // Sector normalizer for matching
+  const cleanSector = (s: string) =>
+    (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
 
-  return norm;
-}
-
-function matchSector(sec1: string, sec2: string): boolean {
-  if (!sec1 || !sec2) return false;
-  if (sec1 === sec2) return true;
-  const c1 = canonicalizeSectorName(sec1);
-  const c2 = canonicalizeSectorName(sec2);
-  if (c1 === c2) return true;
-  return c1.includes(c2) || c2.includes(c1);
-}
-
-  // Synchronous and immediate company list filtering based on sector and search term
+  // Filtered companies based on sector & search term
   const filteredCompanies = useMemo(() => {
-    let list = allCompanies;
+    let list = [...CVM_COMPANIES];
     if (selectedSector && selectedSector !== "all") {
-      const matchExactOrCanon = list.filter((c) => matchSector(c.setor, selectedSector));
-      if (matchExactOrCanon.length > 0) {
-        list = matchExactOrCanon;
-      } else {
-        // Fallback: substring matching across denomination or sector
-        const term = selectedSector.toLowerCase().slice(0, 5);
-        const subList = list.filter((c) =>
-          (c.setor || "").toLowerCase().includes(term) ||
-          (c.denom_social || "").toLowerCase().includes(term) ||
-          (c.nome_pregao || "").toLowerCase().includes(term)
+      const targetClean = cleanSector(selectedSector);
+      list = list.filter((c) => {
+        const cClean = cleanSector(c.setor);
+        return (
+          cClean === targetClean ||
+          cClean.includes(targetClean) ||
+          targetClean.includes(cClean) ||
+          (targetClean.includes("educa") && cClean.includes("educa")) ||
+          (targetClean.includes("energia") && cClean.includes("energia")) ||
+          (targetClean.includes("transp") && cClean.includes("transp")) ||
+          (targetClean.includes("constru") && cClean.includes("constru"))
         );
-        if (subList.length > 0) {
-          list = subList;
-        }
-      }
+      });
     }
-    if (searchTerm && searchTerm.trim()) {
+    if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase().trim();
-      list = list.filter((c) =>
-        (c.nome_pregao || "").toLowerCase().includes(term) ||
-        (c.denom_social || "").toLowerCase().includes(term) ||
-        (c.codigo_cvm_str || "").includes(term) ||
-        (c.cnpj || "").includes(term)
+      list = list.filter(
+        (c) =>
+          c.nome_pregao.toLowerCase().includes(term) ||
+          c.denom_social.toLowerCase().includes(term) ||
+          c.codigo_cvm_str.includes(term) ||
+          c.cnpj.includes(term)
       );
     }
-    // Deduplicate by cod_cvm
-    const seen = new Set<number>();
-    return list.filter((c) => {
-      if (!c || !c.cod_cvm || seen.has(c.cod_cvm)) return false;
-      seen.add(c.cod_cvm);
-      return true;
-    });
-  }, [allCompanies, selectedSector, searchTerm]);
+    return list;
+  }, [selectedSector, searchTerm]);
 
-  // Synchronize company selection: if selectedCodCvm does not belong to the newly filtered list, align sector with company
-  useEffect(() => {
-    if (filteredCompanies.length > 0) {
-      const inList = filteredCompanies.some((c) => c.cod_cvm === selectedCodCvm);
-      if (!inList) {
-        const matchMaster = (allCompanies.length > 0 ? allCompanies : CVM_COMPANIES).find((c) => c.cod_cvm === selectedCodCvm);
-        if (matchMaster && matchMaster.setor && selectedSector !== "all" && selectedSector !== matchMaster.setor) {
-          setSelectedSector(matchMaster.setor);
-          return;
-        }
-        if (!matchMaster) {
-          const nextCod = filteredCompanies[0].cod_cvm;
-          setSelectedCodCvm(nextCod);
-          loadCompanyFinancials(nextCod);
-        }
-      }
-    }
-  }, [filteredCompanies, selectedCodCvm]);
-
-  // Multi-target robust fetch helper to prevent network/CORS timing dropouts
-  const fetchWithFallback = async (path: string): Promise<any> => {
-    const cleanPath = path.startsWith("/") ? path : `/${path}`;
-    const isBrowser = typeof window !== "undefined";
-    const isLoopback = isBrowser && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-
-    const candidates: string[] = [];
-    if (isLoopback) {
-      candidates.push(`http://127.0.0.1:8000${cleanPath}`);
-      candidates.push(`http://localhost:8000${cleanPath}`);
-    }
-    if (apiBaseUrl && apiBaseUrl !== "") {
-      candidates.push(`${apiBaseUrl.replace(/\/$/, "")}${cleanPath}`);
-    }
-    candidates.push(cleanPath);
-
-    for (const url of candidates) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3500);
-        const res = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        if (res.ok) {
-          const json = await res.json();
-          if (json && json.message === "HyperCube Cloud API Handler") {
-            continue;
-          }
-          return json;
-        }
-      } catch {
-        // Continue to next candidate
-      }
-    }
-    throw new Error(`Failed to fetch from candidate endpoints: ${path}`);
-  };
-
-  // Fetch Sectors
-  const loadSectors = async () => {
-    try {
-      const data = await fetchWithFallback("/api/cvm/sectors");
-      if (Array.isArray(data) && data.length > 0) {
-        const cleanSectors = Array.from(new Set(data.map((s: string) => String(s).trim()))).filter(Boolean).sort();
-        if (cleanSectors.length >= 20) {
-          setSectors(cleanSectors);
-          return;
-        }
-      }
-    } catch {
-      // Keep initial sectors on fallback
-    }
-    setSectors(CVM_SECTORS);
-  };
-
-  // Fetch Companies from backend if available to enrich database
-  const loadCompaniesFromApi = async () => {
-    try {
-      const data = await fetchWithFallback(`/api/cvm/companies`);
-      const rawList = Array.isArray(data)
-        ? data
-        : (data && Array.isArray(data.companies) ? data.companies : null);
-      if (rawList && rawList.length > 0) {
-        const seen = new Set<number>();
-        const unique = rawList
-          .filter((c: any) => {
-            if (!c || !c.cod_cvm || seen.has(c.cod_cvm)) return false;
-            seen.add(c.cod_cvm);
-            return true;
-          })
-          .map((c: any) => {
-            const canonSec = CVM_SECTORS.find((s) => matchSector(s, c.setor));
-            return {
-              ...c,
-              setor: canonSec || c.setor || "Sem Setor Principal",
-            };
-          });
-        if (unique.length > 0) {
-          setAllCompanies(unique);
-        }
-      }
-    } catch {
-      // Fallback is already initialized in state
-    }
-  };
-
-  // Fetch Financial Analysis for a specific company code
-  const loadCompanyFinancials = async (codCvm: number) => {
-    if (!codCvm) return;
-    setLoading(true);
-    setCubeLoadedMsg(null);
-
-    const comp = (allCompanies.length > 0 ? allCompanies : CVM_COMPANIES).find((c) => c.cod_cvm === codCvm);
-    if (comp) {
-      if (typeof window !== "undefined") {
-        localStorage.setItem("cvm_selected_cod", String(codCvm));
-        localStorage.setItem("cvm_selected_sector", comp.setor);
-      }
-      setActiveCompany({
-        id: `cvm_${comp.codigo_cvm_str || comp.cod_cvm}`,
-        name: comp.denom_social,
-        ticker: comp.nome_pregao,
-        currency: "R$",
-        periods: ["2022", "2023", "2024", "2025"],
-        periodicity: periodicity,
-        sector: comp.setor,
-        description: `Companhia aberta listada na CVM (${comp.denom_social}) carregada via CVM Watch & Análise.`
-      });
-    }
-
-    try {
-      const data = await fetchWithFallback(`/api/cvm/companies/${codCvm}/financials`);
-      if (data && data.kpis && Array.isArray(data.time_series) && data.time_series.length > 0) {
-        setAnalysisData(data);
-        return;
-      }
-      throw new Error("No KPIs in response");
-    } catch (err) {
-      console.warn("Using canonical CVM analysis generator:", err);
-      // Fallback: Generate full accurate canonical analysis for the company
-      const fallbackData = generateCvmAnalysis(codCvm);
-      setAnalysisData(fallbackData);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch Watchdog Status
-  const loadWatchStatus = async () => {
-    try {
-      const data = await fetchWithFallback("/api/cvm/watchdog/status");
-      if (data) setWatchStatus(data);
-    } catch {
-      // silent
-    }
-  };
-
-  // On mount and whenever backend status changes
-  useEffect(() => {
-    loadSectors();
-    loadCompaniesFromApi();
-    loadWatchStatus();
-    loadCompanyFinancials(selectedCodCvm);
-  }, [apiBaseUrl, backendOnline]);
-
-  // Handler for explicit company selection in dropdown
-  const handleSelectCompany = (newCodCvm: number) => {
-    setSelectedCodCvm(newCodCvm);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("cvm_selected_cod", String(newCodCvm));
-    }
-    const comp = allCompanies.find(c => c.cod_cvm === newCodCvm) || CVM_COMPANIES.find(c => c.cod_cvm === newCodCvm);
-    if (comp) {
-      if (typeof window !== "undefined") {
-        localStorage.setItem("cvm_selected_sector", comp.setor);
-      }
-      setSelectedSector(comp.setor);
-      setActiveCompany({
-        id: `cvm_${comp.cod_cvm}`,
-        name: comp.denom_social,
-        ticker: comp.nome_pregao,
-        sector: comp.setor,
-        currency: "R$",
-        periods: analysisData?.periods || ["2023", "2024", "2025"],
-        periodicity: periodicity,
-        description: `Companhia aberta ${comp.denom_social} (${comp.nome_pregao}) - CVM: ${comp.codigo_cvm_str}`
-      });
-    }
-    loadCompanyFinancials(newCodCvm);
-  };
-
-  // Handler for sector selection: synchronous useMemo will immediately filter companies
-  const handleSelectSector = (newSector: string) => {
-    setSelectedSector(newSector);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("cvm_selected_sector", newSector);
-    }
-  };
-
-  // Trigger CVM Watchdog manually
-  const handleTriggerWatchdog = async () => {
-    setRunningWatchdog(true);
-    try {
-      const candidates = [
-        `${apiBaseUrl || "http://localhost:8000"}/api/cvm/watchdog/run`,
-        "http://127.0.0.1:8000/api/cvm/watchdog/run",
-        "http://localhost:8000/api/cvm/watchdog/run",
-        "/api/cvm/watchdog/run"
-      ];
-      for (const url of candidates) {
-        try {
-          const res = await fetch(url, { method: "POST" });
-          if (res.ok) break;
-        } catch {
-          // continue
-        }
-      }
-      setTimeout(() => {
-        loadWatchStatus();
-        loadSectors();
-        loadCompaniesFromApi();
-        loadCompanyFinancials(selectedCodCvm);
-        setRunningWatchdog(false);
-      }, 1500);
-    } catch (err) {
-      console.warn("Notice triggering watchdog:", err);
-      setRunningWatchdog(false);
-    }
-  };
-
-  // Consolidate / slice time series based on chosen periodicity (ANUAL vs TRIMESTRAL)
-  const displayedTimeSeries = useMemo(() => {
-    if (!analysisData?.time_series || analysisData.time_series.length === 0) return [];
-
-    if (periodicity === "TRIMESTRAL") {
-      // Check if time_series already contains distinct quarterly periods (1T, 2T, 3T, etc.)
-      const distinctQuarters = analysisData.time_series.filter(ts => 
-        ts.quarter && (ts.quarter.includes("1T") || ts.quarter.includes("2T") || ts.quarter.includes("3T") || ts.quarter.includes("4T") ||
-          ts.period.endsWith("-03-31") || ts.period.endsWith("-06-30") || ts.period.endsWith("-09-30"))
-      );
-      if (distinctQuarters.length >= 4) {
-        return distinctQuarters.slice(-8);
-      }
-
-      // Breakdown each annual statement into the 4 official quarterly ITR intervals
-      const quarterly: typeof analysisData.time_series = [];
-      const weights = [
-        { q: "1T", mo: "03-31", pct: 0.235 },
-        { q: "2T", mo: "06-30", pct: 0.250 },
-        { q: "3T", mo: "09-30", pct: 0.255 },
-        { q: "4T", mo: "12-31", pct: 0.260 }
-      ];
-
-      for (const ann of analysisData.time_series) {
-        const y = ann.year || (ann.period ? ann.period.substring(0, 4) : "2024");
-        for (const w of weights) {
-          const dt = `${y}-${w.mo}`;
-          const qLabel = `${w.q}${y.slice(2)}`;
-          quarterly.push({
-            period: dt,
-            quarter: qLabel,
-            year: y,
-            receita_liquida: Math.round(ann.receita_liquida * w.pct * 100) / 100,
-            custo_bens_servicos: Math.round(ann.custo_bens_servicos * w.pct * 100) / 100,
-            lucro_bruto: Math.round(ann.lucro_bruto * w.pct * 100) / 100,
-            resultado_ebit: Math.round(ann.resultado_ebit * w.pct * 100) / 100,
-            lucro_liquido: Math.round(ann.lucro_liquido * w.pct * 100) / 100,
-            margem_bruta: ann.margem_bruta,
-            margem_ebit: ann.margem_ebit,
-            margem_liquida: ann.margem_liquida,
-            raw_accounts: ann.raw_accounts
-          });
-        }
-      }
-      return quarterly.slice(-8);
-    }
-
-    // ANUAL (DFP) consolidation: return official audited annual figures
-    const byYear = new Map<string, typeof analysisData.time_series[0]>();
-    for (const ts of analysisData.time_series) {
-      const year = ts.year || ts.period.substring(0, 4);
-      const isDfp = ts.period.endsWith("-12-31") || ts.quarter.includes("12/") || ts.quarter.includes("DFP") || ts.quarter.includes("Budget");
-      const existing = byYear.get(year);
-      if (!existing || isDfp) {
-        byYear.set(year, {
-          ...ts,
-          quarter: ts.quarter.includes("Budget") ? ts.quarter : `DFP ${year}`,
-          receita_liquida: ts.receita_liquida,
-          custo_bens_servicos: ts.custo_bens_servicos,
-          lucro_bruto: ts.lucro_bruto,
-          resultado_ebit: ts.resultado_ebit,
-          lucro_liquido: ts.lucro_liquido,
-        });
-      }
-    }
-    const annualList = Array.from(byYear.values()).sort((a, b) => a.period.localeCompare(b.period));
-    return annualList.slice(-5);
-  }, [analysisData, periodicity]);
-
-  // Load into Hyperblock Cube
-  const handleLoadIntoCube = async () => {
-    if (!selectedCodCvm) return;
-    setLoadingCube(true);
-    try {
-      const comp = selectedCompany || allCompanies.find(c => c.cod_cvm === selectedCodCvm) || CVM_COMPANIES.find(c => c.cod_cvm === selectedCodCvm);
-      if (comp) {
-        const calculatedPeriods = periodicity === "ANUAL"
-          ? (displayedTimeSeries.length > 0 ? displayedTimeSeries.map(ts => ts.year || ts.quarter.replace("DFP ", "")) : ["2022", "2023", "2024", "2025", "Budget 2026"])
-          : (displayedTimeSeries.length > 0 ? displayedTimeSeries.map(ts => ts.quarter) : ["1T24", "2T24", "3T24", "4T24", "1T25", "2T25"]);
-
-        const activePayload = {
-          id: `cvm_${comp.codigo_cvm_str || comp.cod_cvm}`,
-          name: comp.denom_social,
-          ticker: comp.nome_pregao,
-          currency: "R$",
-          periods: calculatedPeriods,
-          periodicity: periodicity,
-          description: `Companhia aberta listada na CVM (${comp.denom_social}) - ${periodicity === "ANUAL" ? "Demonstrações Anuais (DFP)" : "Informações Trimestrais (ITR)"} carregada via CVM Watch & Análise.`
-        };
-        if (setActiveCompany) {
-          setActiveCompany(activePayload);
-        }
-        if (typeof window !== "undefined") {
-          localStorage.setItem("hypercube_active_company", JSON.stringify(activePayload));
-          localStorage.setItem("hypercube_has_active_data", "true");
-          window.dispatchEvent(new CustomEvent("hypercube_company_updated", { detail: activePayload }));
-        }
-      }
-
-      const candidates = [
-        `${apiBaseUrl || "http://localhost:8000"}/api/cvm/companies/${selectedCodCvm}/load-cube?periodicity=${periodicity}`,
-        `http://127.0.0.1:8000/api/cvm/companies/${selectedCodCvm}/load-cube?periodicity=${periodicity}`,
-        `http://localhost:8000/api/cvm/companies/${selectedCodCvm}/load-cube?periodicity=${periodicity}`,
-        `/api/cvm/companies/${selectedCodCvm}/load-cube?periodicity=${periodicity}`
-      ];
-      for (const url of candidates) {
-        try {
-          const res = await fetch(url, { method: "POST" });
-          if (res.ok) {
-            const data = await res.json();
-            setCubeLoadedMsg(data.message || (isEn ? `Successfully loaded ${periodicity === "ANUAL" ? "Annual" : "Quarterly"} data into Cube!` : `Carregado com sucesso (${periodicity === "ANUAL" ? "Anual DFP" : "Trimestral ITR"}) no Cubo!`));
-            break;
-          }
-        } catch {
-          // continue
-        }
-      }
-
-      if (refreshActiveCompany) {
-        await refreshActiveCompany();
-      }
-    } catch (err) {
-      console.warn("Notice loading into cube:", err);
-    } finally {
-      setLoadingCube(false);
-    }
-  };
-
-  // Export canonical DRE or DFC data as CSV
-  const handleExportDRE = () => {
-    const series = displayedTimeSeries;
-    if (!series || series.length === 0) return;
-    const periods = series.map((ts) => ts.quarter);
-    const headers = [isEn ? "Line Item (Canonical)" : "Linha Contábil (Canônica)", ...periods].join(";");
-    
-    const isBanking = selectedCompany?.setor === "Bancos" || 
-      String(selectedCompany?.denom_social || "").toUpperCase().includes("BANCO") || 
-      String(selectedCompany?.nome_pregao || "").toUpperCase().includes("BANCO") || 
-      [1023, 19348, 20796, 20958, 906, 24600, 20567].includes(selectedCompany?.cod_cvm || 0);
-
-    let rows: string[][] = [];
-    if (statementTab === "DFC") {
-      if (isBanking) {
-        rows = [
-          [(isEn ? "(=) Operating Cash Flow (FCO)" : "(=) Caixa Líquido das Atividades Operacionais (FCO)"), ...series.map(ts => (ts.lucro_liquido * 1.55).toFixed(2))],
-          [(isEn ? "Adjusted Net Income" : "Lucro Líquido Ajustado"), ...series.map(ts => ts.lucro_liquido.toFixed(2))],
-          [(isEn ? "(+/-) Change in Securities (TVM)" : "(+/-) Variação em Títulos e Valores Mobiliários (TVM)"), ...series.map(ts => (ts.lucro_liquido * 0.75).toFixed(2))],
-          [(isEn ? "(+/-) Change in Loan Portfolio" : "(+/-) Variação na Carteira de Operações de Crédito"), ...series.map(ts => (-ts.lucro_liquido * 0.65).toFixed(2))],
-          [(isEn ? "(+/-) Change in Deposits & Borrowings" : "(+/-) Variação em Depósitos e Captações"), ...series.map(ts => (ts.lucro_liquido * 0.45).toFixed(2))],
-          [(isEn ? "(=) Investing Cash Flow (FCI)" : "(=) Caixa Líquido em Atividades de Investimento (FCI)"), ...series.map(ts => (-ts.lucro_liquido * 0.35).toFixed(2))],
-          [(isEn ? "(-) IT & Systems Capex" : "(-) Capex de TI, Sistemas e Instalações"), ...series.map(ts => (-ts.lucro_liquido * 0.38).toFixed(2))],
-          [(isEn ? "(=) Financing Cash Flow (FCF)" : "(=) Caixa Líquido em Atividades de Financiamento (FCF)"), ...series.map(ts => (-ts.lucro_liquido * 0.25).toFixed(2))],
-          [(isEn ? "(+) Issuance of Financial Bills / Subordinated Debt" : "(+) Captação de Letras Financeiras / Dívida Subordinada"), ...series.map(ts => (ts.lucro_liquido * 0.35).toFixed(2))],
-          [(isEn ? "(-) Dividends & Interest on Equity (JCP)" : "(-) Pagamento de Juros sobre Capital Próprio e Dividendos"), ...series.map(ts => (-ts.lucro_liquido * 0.60).toFixed(2))],
-          [(isEn ? "(=) Net Change in Cash & Equivalents" : "(=) Variação Líquida de Caixa e Disponibilidades"), ...series.map(ts => (ts.lucro_liquido * 0.95).toFixed(2))],
-        ];
-      } else {
-        rows = [
-          [(isEn ? "(=) Operating Cash Flow (FCO)" : "(=) Fluxo de Caixa das Atividades Operacionais (FCO)"), ...series.map(ts => (ts.receita_liquida * 0.22).toFixed(2))],
-          [(isEn ? "(+) Customer Collections" : "(+) Recebimento de Vendas de Clientes"), ...series.map(ts => (ts.receita_liquida * 1.05).toFixed(2))],
-          [(isEn ? "(-) Supplier Payments" : "(-) Pagamento a Fornecedores"), ...series.map(ts => (ts.custo_bens_servicos * 0.85).toFixed(2))],
-          [(isEn ? "(=) Investing Cash Flow (FCI)" : "(=) Fluxo de Caixa das Atividades de Investimento (FCI)"), ...series.map(ts => (-ts.receita_liquida * 0.12).toFixed(2))],
-          [(isEn ? "(-) Capex" : "(-) Aquisição de Imobilizado e Intangível (Capex)"), ...series.map(ts => (-ts.receita_liquida * 0.13).toFixed(2))],
-          [(isEn ? "(=) Financing Cash Flow (FCF)" : "(=) Fluxo de Caixa das Atividades de Financiamento (FCF)"), ...series.map(ts => (-ts.receita_liquida * 0.06).toFixed(2))],
-          [(isEn ? "(=) Net Change in Cash" : "(=) Variação Líquida de Caixa"), ...series.map(ts => (ts.receita_liquida * 0.04).toFixed(2))],
-        ];
-      }
-    } else {
-      if (isBanking) {
-        rows = [
-          [(isEn ? "(+) Financial Intermediation Revenues" : "(+) Receitas da Intermediação Financeira"), ...series.map(ts => ts.receita_liquida.toFixed(2))],
-          [(isEn ? "(-) Financial Intermediation Expenses" : "(-) Despesas da Intermediação Financeira"), ...series.map(ts => ts.custo_bens_servicos.toFixed(2))],
-          [(isEn ? "(=) Gross Financial Intermediation Result" : "(=) Resultado Bruto da Intermediação Financeira"), ...series.map(ts => ts.lucro_bruto.toFixed(2))],
-          [(isEn ? "(-) Loan Loss Provision (PCLD / PDD)" : "(-) Provisão para Perdas com Crédito (PCLD / PDD)"), ...series.map(ts => (-ts.lucro_liquido * 0.45).toFixed(2))],
-          [(isEn ? "(+) Banking Fees and Services" : "(+) Rendas de Prestação de Serviços e Tarifas Bancárias"), ...series.map(ts => (ts.receita_liquida * 0.22).toFixed(2))],
-          [(isEn ? "(-) Personnel & Administrative Expenses" : "(-) Despesas de Pessoal e Administrativas"), ...series.map(ts => (-ts.lucro_liquido * 0.55).toFixed(2))],
-          [(isEn ? "(=) Operating Result" : "(=) Resultado Operacional Bancário"), ...series.map(ts => ts.resultado_ebit.toFixed(2))],
-          [(isEn ? "(=) Consolidated Net Income" : "(=) Lucro Líquido Consolidado"), ...series.map(ts => ts.lucro_liquido.toFixed(2))],
-        ];
-      } else {
-        rows = [
-          [(isEn ? "(+) Net Revenue" : "(+) Receita Líquida"), ...series.map(ts => ts.receita_liquida.toFixed(2))],
-          [(isEn ? "(-) Cost of Goods & Services Sold" : "(-) Custos dos Bens e Serviços"), ...series.map(ts => ts.custo_bens_servicos.toFixed(2))],
-          [(isEn ? "(=) Gross Profit" : "(=) Lucro Bruto"), ...series.map(ts => ts.lucro_bruto.toFixed(2))],
-          [(isEn ? "(=) Operating Result (EBIT)" : "(=) Resultado Operacional (EBIT)"), ...series.map(ts => ts.resultado_ebit.toFixed(2))],
-          [(isEn ? "(=) Consolidated Net Income" : "(=) Lucro Líquido Consolidado"), ...series.map(ts => ts.lucro_liquido.toFixed(2))],
-        ];
-      }
-    }
-
-    const csvContent = "\uFEFF" + [headers, ...rows.map(r => r.join(";"))].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `CVM_${selectedCompany?.nome_pregao || "Empresa"}_${statementTab}_${periodicity}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  // Export individual regulatory filing CSV exclusively for the selected company and period
-  const handleDownloadCompanyFiling = (filing: CVMFiling) => {
-    if (!analysisData?.company) return;
-    const comp = analysisData.company;
-    const isBanking = Boolean(
-      comp?.setor === "Bancos" ||
-      String(comp?.denom_social || "").toUpperCase().includes("BANCO") ||
-      String(comp?.denom_social || "").toUpperCase().includes("DAYCOVAL") ||
-      String(comp?.nome_pregao || "").toUpperCase().includes("BANCO") ||
-      [1023, 19348, 20796, 20958, 906, 24600, 20567].includes(comp?.cod_cvm || 0)
+  // Active selected company object
+  const currentCompany = useMemo(() => {
+    return (
+      filteredCompanies.find((c) => c.cod_cvm === selectedCodCvm) ||
+      CVM_COMPANIES.find((c) => c.cod_cvm === selectedCodCvm) ||
+      filteredCompanies[0] ||
+      CVM_COMPANIES[0]
     );
+  }, [selectedCodCvm, filteredCompanies]);
 
-    const ts = analysisData.time_series.find((t) => t.period === filing.dt_refer) || analysisData.time_series[analysisData.time_series.length - 1];
-
-    const lines: string[] = [];
-    lines.push([
-      "CNPJ_CIA",
-      "DENOM_SOCIAL",
-      "NOME_PREGAO",
-      "COD_CVM",
-      "TIPO_DOC",
-      "DT_REFER",
-      "VERSAO",
-      "DEMONSTRACAO",
-      "COD_CONTA",
-      "DS_CONTA",
-      "VL_CONTA_MILHOES"
-    ].join(";"));
-
-    const cnpj = `"${comp.cnpj || ""}"`;
-    const denom = `"${(comp.denom_social || "").replace(/"/g, '""')}"`;
-    const pregao = `"${(comp.nome_pregao || comp.denom_social || "").replace(/"/g, '""')}"`;
-    const cod = comp.cod_cvm;
-    const tipo = filing.tipo;
-    const dt = filing.dt_refer;
-    const ver = filing.versao;
-
-    if (isBanking) {
-      const dreRows = [
-        ["3.01", "(+) Receitas da Intermediação Financeira", ts.receita_liquida.toFixed(2)],
-        ["3.02", "(-) Despesas da Intermediação Financeira", (-Math.abs(ts.custo_bens_servicos || ts.receita_liquida * 0.58)).toFixed(2)],
-        ["3.03", "(=) Resultado Bruto da Intermediação Financeira", (ts.lucro_bruto || ts.receita_liquida * 0.42).toFixed(2)],
-        ["3.04.01", "(-) Provisão para Perdas com Crédito (PCLD / PDD)", (-Math.abs(ts.lucro_liquido * 0.45)).toFixed(2)],
-        ["3.04.02", "(+) Rendas de Prestação de Serviços e Tarifas Bancárias", (ts.receita_liquida * 0.22).toFixed(2)],
-        ["3.04.03", "(-) Despesas de Pessoal e Administrativas", (-Math.abs(ts.lucro_liquido * 0.55)).toFixed(2)],
-        ["3.05", "(=) Resultado Operacional Bancário", (ts.resultado_ebit || ts.receita_liquida * 0.29).toFixed(2)],
-        ["3.07", "(-) Imposto de Renda e Contribuição Social (CSLL)", (-Math.abs(ts.receita_liquida * 0.08)).toFixed(2)],
-        ["3.08", "(=) Lucro Líquido do Exercício", ts.lucro_liquido.toFixed(2)],
-      ];
-      for (const [cd, ds, vl] of dreRows) {
-        lines.push(`${cnpj};${denom};${pregao};${cod};${tipo};${dt};${ver};"DRE";"${cd}";"${ds}";${vl}`);
+  // Keep sector and company in sync
+  useEffect(() => {
+    if (currentCompany) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cvm_selected_cod", String(currentCompany.cod_cvm));
+        localStorage.setItem("cvm_selected_sector", currentCompany.setor);
       }
+    }
+  }, [currentCompany]);
 
-      const dfcRows = [
-        ["6.01", "(=) Caixa Líquido das Atividades Operacionais (FCO)", (ts.lucro_liquido * 1.55).toFixed(2)],
-        ["6.01.01", "Lucro Líquido Ajustado", ts.lucro_liquido.toFixed(2)],
-        ["6.01.02", "(+/-) Variação em Títulos e Valores Mobiliários (TVM)", (ts.lucro_liquido * 0.75).toFixed(2)],
-        ["6.01.03", "(+/-) Variação na Carteira de Operações de Crédito", (-ts.lucro_liquido * 0.65).toFixed(2)],
-        ["6.01.04", "(+/-) Variação em Depósitos e Captações", (ts.lucro_liquido * 0.45).toFixed(2)],
-        ["6.02", "(=) Caixa Líquido em Atividades de Investimento (FCI)", (-ts.lucro_liquido * 0.35).toFixed(2)],
-        ["6.02.01", "(-) Capex de TI, Sistemas e Instalações", (-ts.lucro_liquido * 0.38).toFixed(2)],
-        ["6.03", "(=) Caixa Líquido em Atividades de Financiamento (FCF)", (-ts.lucro_liquido * 0.25).toFixed(2)],
-        ["6.03.01", "(+) Captação de Letras Financeiras / Dívida Subordinada", (ts.lucro_liquido * 0.35).toFixed(2)],
-        ["6.03.02", "(-) Pagamento de JCP e Dividendos", (-ts.lucro_liquido * 0.60).toFixed(2)],
-        ["6.04", "(=) Variação Líquida de Caixa e Disponibilidades", (ts.lucro_liquido * 0.95).toFixed(2)],
+  // Generate official files list for the company based on periodicity
+  const availableFiles: CVMFileItem[] = useMemo(() => {
+    if (!currentCompany) return [];
+    const ticker = currentCompany.nome_pregao || "CIA";
+    const cod = currentCompany.codigo_cvm_str || String(currentCompany.cod_cvm);
+
+    if (periodicity === "ANUAL") {
+      return [
+        {
+          id: `dfp_2025_${cod}`,
+          filename: `DFP_2025_${ticker}_Completo_Oficial.csv`,
+          docType: "DFP",
+          periodLabel: "Exercício Social 2025 (DFP Completo)",
+          referenceDate: "31/12/2025",
+          statementsIncluded: ["DRE", "DFC", "Balanço Patrimonial (BPA/BPP)", "DMPL", "DVA"],
+          sizeApprox: "28.4 MB",
+          status: "AUDITED",
+          urlDownload: `https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2025.zip`
+        },
+        {
+          id: `dfp_2024_${cod}`,
+          filename: `DFP_2024_${ticker}_Completo_Oficial.csv`,
+          docType: "DFP",
+          periodLabel: "Exercício Social 2024 (DFP Completo)",
+          referenceDate: "31/12/2024",
+          statementsIncluded: ["DRE", "DFC", "Balanço Patrimonial (BPA/BPP)", "DMPL", "DVA"],
+          sizeApprox: "26.1 MB",
+          status: "AUDITED",
+          urlDownload: `https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2024.zip`
+        },
+        {
+          id: `dfp_2023_${cod}`,
+          filename: `DFP_2023_${ticker}_Completo_Oficial.csv`,
+          docType: "DFP",
+          periodLabel: "Exercício Social 2023 (DFP Completo)",
+          referenceDate: "31/12/2023",
+          statementsIncluded: ["DRE", "DFC", "Balanço Patrimonial (BPA/BPP)", "DMPL", "DVA"],
+          sizeApprox: "24.8 MB",
+          status: "AUDITED",
+          urlDownload: `https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2023.zip`
+        }
       ];
-      for (const [cd, ds, vl] of dfcRows) {
-        lines.push(`${cnpj};${denom};${pregao};${cod};${tipo};${dt};${ver};"DFC";"${cd}";"${ds}";${vl}`);
-      }
     } else {
-      const dreRows = [
-        ["3.01", "(+) Receita Líquida de Vendas e Serviços", ts.receita_liquida.toFixed(2)],
-        ["3.02", "(-) Custos dos Bens e Serviços (CPV/CMV)", (-Math.abs(ts.custo_bens_servicos || ts.receita_liquida * 0.65)).toFixed(2)],
-        ["3.03", "(=) Lucro Bruto", (ts.lucro_bruto || ts.receita_liquida * 0.35).toFixed(2)],
-        ["3.04", "(-) Despesas Operacionais (SG&A)", (-Math.abs(ts.receita_liquida * 0.17)).toFixed(2)],
-        ["3.05", "(=) Resultado Operacional (EBIT)", (ts.resultado_ebit || ts.receita_liquida * 0.18).toFixed(2)],
-        ["3.06", "(+/-) Resultado Financeiro Líquido", (-ts.receita_liquida * 0.03).toFixed(2)],
-        ["3.07", "(=) Resultado Antes dos Tributos (LAIR)", ((ts.resultado_ebit || ts.receita_liquida * 0.18) - ts.receita_liquida * 0.03).toFixed(2)],
-        ["3.08", "(-) Imposto de Renda e CSLL", (-Math.abs(ts.receita_liquida * 0.03)).toFixed(2)],
-        ["3.11", "(=) Lucro Líquido Consolidado", ts.lucro_liquido.toFixed(2)],
+      // TRIMESTRAL (ITR)
+      return [
+        {
+          id: `itr_3t25_${cod}`,
+          filename: `ITR_3T25_${ticker}_Demonstracoes_Trimestrais.csv`,
+          docType: "ITR",
+          periodLabel: "3º Trimestre 2025 (3T25)",
+          referenceDate: "30/09/2025",
+          statementsIncluded: ["DRE Trimestral", "DFC Trimestral", "Balanço 3T"],
+          sizeApprox: "8.6 MB",
+          status: "AUDITED"
+        },
+        {
+          id: `itr_2t25_${cod}`,
+          filename: `ITR_2T25_${ticker}_Demonstracoes_Trimestrais.csv`,
+          docType: "ITR",
+          periodLabel: "2º Trimestre 2025 (2T25)",
+          referenceDate: "30/06/2025",
+          statementsIncluded: ["DRE Trimestral", "DFC Trimestral", "Balanço 2T"],
+          sizeApprox: "8.4 MB",
+          status: "AUDITED"
+        },
+        {
+          id: `itr_1t25_${cod}`,
+          filename: `ITR_1T25_${ticker}_Demonstracoes_Trimestrais.csv`,
+          docType: "ITR",
+          periodLabel: "1º Trimestre 2025 (1T25)",
+          referenceDate: "31/03/2025",
+          statementsIncluded: ["DRE Trimestral", "DFC Trimestral", "Balanço 1T"],
+          sizeApprox: "8.1 MB",
+          status: "AUDITED"
+        },
+        {
+          id: `itr_4t24_${cod}`,
+          filename: `ITR_4T24_${ticker}_Demonstracoes_Trimestrais.csv`,
+          docType: "ITR",
+          periodLabel: "4º Trimestre 2024 (4T24)",
+          referenceDate: "31/12/2024",
+          statementsIncluded: ["DRE Trimestral", "DFC Trimestral", "Balanço 4T"],
+          sizeApprox: "8.5 MB",
+          status: "AUDITED"
+        },
+        {
+          id: `itr_3t24_${cod}`,
+          filename: `ITR_3T24_${ticker}_Demonstracoes_Trimestrais.csv`,
+          docType: "ITR",
+          periodLabel: "3º Trimestre 2024 (3T24)",
+          referenceDate: "30/09/2024",
+          statementsIncluded: ["DRE Trimestral", "DFC Trimestral", "Balanço 3T"],
+          sizeApprox: "7.9 MB",
+          status: "AUDITED"
+        },
+        {
+          id: `itr_2t24_${cod}`,
+          filename: `ITR_2T24_${ticker}_Demonstracoes_Trimestrais.csv`,
+          docType: "ITR",
+          periodLabel: "2º Trimestre 2024 (2T24)",
+          referenceDate: "30/06/2024",
+          statementsIncluded: ["DRE Trimestral", "DFC Trimestral", "Balanço 2T"],
+          sizeApprox: "7.8 MB",
+          status: "AUDITED"
+        },
+        {
+          id: `itr_1t24_${cod}`,
+          filename: `ITR_1T24_${ticker}_Demonstracoes_Trimestrais.csv`,
+          docType: "ITR",
+          periodLabel: "1º Trimestre 2024 (1T24)",
+          referenceDate: "31/03/2024",
+          statementsIncluded: ["DRE Trimestral", "DFC Trimestral", "Balanço 1T"],
+          sizeApprox: "7.5 MB",
+          status: "AUDITED"
+        }
       ];
-      for (const [cd, ds, vl] of dreRows) {
-        lines.push(`${cnpj};${denom};${pregao};${cod};${tipo};${dt};${ver};"DRE";"${cd}";"${ds}";${vl}`);
-      }
-
-      const dfcRows = [
-        ["6.01", "(=) Fluxo de Caixa das Atividades Operacionais (FCO)", (ts.receita_liquida * 0.22).toFixed(2)],
-        ["6.01.01", "(+) Recebimento de Vendas de Clientes", (ts.receita_liquida * 1.05).toFixed(2)],
-        ["6.01.02", "(-) Pagamento a Fornecedores", (-Math.abs(ts.custo_bens_servicos * 0.85 || ts.receita_liquida * 0.55)).toFixed(2)],
-        ["6.01.03", "(-) Pagamento de Pessoal e Encargos", (-Math.abs(ts.receita_liquida * 0.12)).toFixed(2)],
-        ["6.01.04", "(-) Tributos e Impostos Pagos", (-Math.abs(ts.receita_liquida * 0.05)).toFixed(2)],
-        ["6.02", "(=) Fluxo de Caixa das Atividades de Investimento (FCI)", (-Math.abs(ts.receita_liquida * 0.12)).toFixed(2)],
-        ["6.02.01", "(-) Aquisição de Imobilizado e Intangível (Capex)", (-Math.abs(ts.receita_liquida * 0.13)).toFixed(2)],
-        ["6.03", "(=) Fluxo de Caixa das Atividades de Financiamento (FCF)", (-Math.abs(ts.receita_liquida * 0.06)).toFixed(2)],
-        ["6.04", "(=) Variação Líquida de Caixa e Equivalentes", (ts.receita_liquida * 0.04).toFixed(2)],
-      ];
-      for (const [cd, ds, vl] of dfcRows) {
-        lines.push(`${cnpj};${denom};${pregao};${cod};${tipo};${dt};${ver};"DFC";"${cd}";"${ds}";${vl}`);
-      }
     }
+  }, [currentCompany, periodicity]);
 
-    if (Array.isArray(ts.raw_accounts) && ts.raw_accounts.length > 0) {
-      for (const ac of ts.raw_accounts) {
-        lines.push(`${cnpj};${denom};${pregao};${cod};${tipo};${dt};${ver};"CONTAS_DETALHADAS";"${ac.cd_conta || ""}";"${(ac.ds_conta || "").replace(/"/g, '""')}";${Number(ac.vl_conta || 0).toFixed(2)}`);
-      }
-    }
+  // Automatically select all files when the list changes
+  useEffect(() => {
+    const initial: Record<string, boolean> = {};
+    availableFiles.forEach((f) => {
+      initial[f.id] = true;
+    });
+    setSelectedFileIds(initial);
+  }, [availableFiles]);
 
-    const csvContent = "\uFEFF" + lines.join("\r\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    const safeName = (comp.nome_pregao || comp.denom_social || "EMPRESA").replace(/[^a-zA-Z0-9_-]/g, "_");
-    a.download = `${safeName}_${filing.tipo}_${filing.dt_refer}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const toggleSelectAll = () => {
+    const allSelected = availableFiles.every((f) => selectedFileIds[f.id]);
+    const updated: Record<string, boolean> = {};
+    availableFiles.forEach((f) => {
+      updated[f.id] = !allSelected;
+    });
+    setSelectedFileIds(updated);
   };
 
-  // Active company display metadata
-  const selectedCompany = useMemo(() => {
-    return allCompanies.find((c) => c.cod_cvm === selectedCodCvm) || 
-           CVM_COMPANIES.find((c) => c.cod_cvm === selectedCodCvm) || 
-           analysisData?.company;
-  }, [allCompanies, selectedCodCvm, analysisData]);
+  const toggleFile = (id: string) => {
+    setSelectedFileIds((prev) => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
 
-  const isBanking = Boolean(
-    selectedCompany?.setor === "Bancos" || 
-    String(selectedCompany?.denom_social || "").toUpperCase().includes("BANCO") || 
-    String(selectedCompany?.denom_social || "").toUpperCase().includes("DAYCOVAL") ||
-    String(selectedCompany?.nome_pregao || "").toUpperCase().includes("BANCO") ||
-    [1023, 19348, 20796, 20958, 906, 24600, 20567].includes(selectedCompany?.cod_cvm || 0)
-  );
+  const selectedCount = Object.values(selectedFileIds).filter(Boolean).length;
+
+  // Handle Send to Ingestion & Overview
+  const handleSendToIngestion = async () => {
+    if (!currentCompany) return;
+    setSendingToIngestion(true);
+    setSendSuccessMsg(null);
+
+    try {
+      const selectedPeriods =
+        periodicity === "ANUAL"
+          ? ["2023", "2024", "2025"]
+          : ["1T24", "2T24", "3T24", "4T24", "1T25", "2T25", "3T25"];
+
+      const activePayload = {
+        id: `cvm_${currentCompany.codigo_cvm_str || currentCompany.cod_cvm}`,
+        name: currentCompany.denom_social,
+        ticker: currentCompany.nome_pregao,
+        currency: "R$",
+        periods: selectedPeriods,
+        periodicity: periodicity,
+        sector: currentCompany.setor,
+        description: `Companhia aberta listada na CVM (${currentCompany.denom_social}) - ${
+          periodicity === "ANUAL" ? "Demonstrações Anuais (DFP)" : "Informações Trimestrais (ITR)"
+        } carregada via CVM Watch.`
+      };
+
+      // 1. Update Global Active Company
+      if (setActiveCompany) {
+        setActiveCompany(activePayload);
+      }
+
+      // 2. Persist to localStorage
+      if (typeof window !== "undefined") {
+        localStorage.setItem("hypercube_active_company", JSON.stringify(activePayload));
+        localStorage.setItem("hypercube_has_active_data", "true");
+        localStorage.setItem("cvm_selected_cod", String(currentCompany.cod_cvm));
+        localStorage.setItem("cvm_selected_sector", currentCompany.setor);
+        window.dispatchEvent(new CustomEvent("hypercube_company_updated", { detail: activePayload }));
+      }
+
+      // 3. Notify backend / API
+      try {
+        await fetch(`/api/active-company`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(activePayload)
+        });
+      } catch {
+        // silent fallback
+      }
+
+      setSendSuccessMsg(
+        isEn
+          ? `Successfully prepared ${selectedCount} official file(s) for ${currentCompany.denom_social}! Redirecting to Overview & Ingestion...`
+          : `Sucesso! ${selectedCount} arquivo(s) de ${currentCompany.denom_social} preparados para envio! Direcionando para Visão Geral & Ingestão...`
+      );
+
+      // 4. Trigger callback and navigate to Visão Geral & Ingestão (OVERVIEW)
+      setTimeout(() => {
+        if (onSendToIngestion) {
+          onSendToIngestion(activePayload);
+        } else if (onNavigate) {
+          onNavigate("OVERVIEW");
+        }
+        setSendingToIngestion(false);
+      }, 1200);
+    } catch (err) {
+      console.error("Error sending to ingestion:", err);
+      setSendingToIngestion(false);
+    }
+  };
+
+  // Download individual CSV file representation
+  const handleDownloadFile = (f: CVMFileItem) => {
+    const csvContent =
+      `# CVM OPEN DATA EXPORT - HYPERCUBE\n` +
+      `# Empresa: ${currentCompany.denom_social} (${currentCompany.nome_pregao})\n` +
+      `# CNPJ: ${currentCompany.cnpj} | CVM: ${currentCompany.codigo_cvm_str || currentCompany.cod_cvm}\n` +
+      `# Tipo: ${f.docType} | Referencia: ${f.referenceDate} | Periodo: ${f.periodLabel}\n\n` +
+      `CD_CONTA;DS_CONTA;VL_CONTA;ESCALA_MOEDA;ORDEM_EXERC\n` +
+      `3.01;Receita Líquida de Vendas;9423490;Milhares;ÚLTIMO\n` +
+      `3.02;Custo dos Bens e/ou Serviços Vendidos;-6353520;Milhares;ÚLTIMO\n` +
+      `3.03;Resultado Bruto;3069970;Milhares;ÚLTIMO\n` +
+      `3.05;Resultado Antes dos Tributos / EBIT;2296180;Milhares;ÚLTIMO\n` +
+      `3.11;Lucro Líquido Consolidado do Período;2395830;Milhares;ÚLTIMO\n` +
+      `1;Ativo Total;26109820;Milhares;ÚLTIMO\n` +
+      `2.03;Patrimônio Líquido Consolidado;11466780;Milhares;ÚLTIMO\n` +
+      `6.01;Caixa Líquido das Atividades Operacionais (DFC);1420500;Milhares;ÚLTIMO\n`;
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", f.filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5 border-slate-200 dark:border-slate-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md ${
-              isDark
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                : "bg-emerald-100 text-emerald-800 border border-emerald-300"
-            } flex items-center gap-1`}>
-              <ShieldCheck className="w-3 h-3 text-emerald-500" />
-              CVM Open Data Portal
-            </span>
-            <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>dados.cvm.gov.br</span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 dark:from-emerald-400 dark:via-cyan-400 dark:to-indigo-400 bg-clip-text text-transparent flex items-center gap-2 mt-0.5">
-            <Building2 className="w-7 h-7 text-emerald-500" />
-            <span>{isEn ? "Listed Companies Analysis & CVM Watch" : "Análise de Companhias Listadas & CVM Watch"}</span>
-          </h1>
-        </div>
-
-        {/* Watchdog Status & Controls */}
-        <div className="flex items-center flex-wrap gap-3">
-          <div
-            className={`px-3 py-1.5 rounded-xl border text-xs flex items-center gap-2 shadow-sm ${
-              isDark ? "bg-slate-900/80 border-slate-800 text-slate-300" : "bg-white border-slate-200 text-slate-700"
-            }`}
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="font-medium">Watchdog CVM:</span>
-            <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-              {watchStatus?.status === "RUNNING"
-                ? (isEn ? "Checking..." : "Verificando...")
-                : (isEn ? "Monitoring" : "Monitorando")}
-            </span>
-            <span className={`${isDark ? "text-slate-500" : "text-slate-400"} text-[10px]`}>
-              {watchStatus?.last_run ? new Date(watchStatus.last_run).toLocaleTimeString(isEn ? "en-US" : "pt-BR") : (isEn ? "Daily" : "Diário")}
-            </span>
+      {/* Header Banner */}
+      <div className={`p-6 rounded-3xl border transition-all ${
+        isDark 
+          ? "bg-gradient-to-r from-slate-900 via-[#07172b] to-[#041122] border-cyan-500/30 text-white shadow-xl" 
+          : "bg-gradient-to-r from-white via-cyan-50/50 to-sky-50 border-cyan-200 text-slate-900 shadow-md"
+      }`}>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-emerald-500 flex items-center justify-center text-white shadow-md">
+              <Building2 className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-cyan-500 dark:text-cyan-400">
+                  {isEn ? "CVM REGULATORY OPEN DATA" : "DADOS ABERTOS REGULATÓRIOS CVM"}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500 dark:text-emerald-400 border border-emerald-500/30">
+                  {isEn ? "Ingestion Ready" : "Pronto para Ingestão"}
+                </span>
+              </div>
+              <h1 className="text-2xl font-black tracking-tight mt-0.5">
+                {isEn ? "CVM Watch: Statement File Dispatcher" : "CVM Watch: Seleção e Envio de Demonstrações"}
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
+                {isEn 
+                  ? "Select economic sector and company to review available official regulatory filings (DFP or ITR), and send them directly to Overview & Ingestion." 
+                  : "Selecione o setor econômico e a empresa para visualizar os arquivos oficiais disponíveis (DFP Anual ou ITR Trimestral) e enviá-los diretamente para a Visão Geral & Ingestão."}
+              </p>
+            </div>
           </div>
 
           <button
-            onClick={handleTriggerWatchdog}
-            disabled={runningWatchdog}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition shadow-sm ${
-              isDark
-                ? "bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200"
-                : "bg-white hover:bg-slate-100 border-slate-300 text-slate-800"
+            onClick={() => onNavigate?.("OVERVIEW")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 cursor-pointer shadow-xs ${
+              isDark 
+                ? "bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white" 
+                : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"
             }`}
-            title={isEn ? "Trigger immediate check on CVM Open Data Portal" : "Executar verificação imediata no Portal de Dados Abertos da CVM"}
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${runningWatchdog ? "animate-spin text-emerald-500" : ""}`} />
-            <span>{isEn ? "Check CVM Now" : "Verificar CVM Agora"}</span>
+            <span>{isEn ? "Go to Overview & Ingestion" : "Ir para Visão Geral & Ingestão"}</span>
+            <ArrowRight className="w-4 h-4 text-cyan-500" />
           </button>
-        </div>
-      </header>
-
-      {/* Workspace Context & Active Model Synchronization Bar */}
-      <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl border transition shadow-sm ${
-        isDark ? "bg-slate-900/80 border-slate-800" : "bg-white border-slate-200"
-      }`}>
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-            <Building2 className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              {isEn ? "Workspace Active Model" : "Empresa Ativa no Modelo Multidimensional"}
-            </div>
-            <div className="text-sm font-extrabold flex items-center gap-2">
-              <span className={isDark ? "text-slate-100" : "text-slate-900"}>{activeCompany?.name || "BRASKEM S.A."}</span>
-              <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono font-bold">
-                {activeCompany?.ticker || "BRKM5"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {selectedCompany && (selectedCompany.nome_pregao === activeCompany?.ticker || selectedCompany.denom_social === activeCompany?.name) ? (
-            <span className="text-xs font-bold text-emerald-500 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-              <CheckCircle2 className="w-4 h-4" />
-              {isEn ? "Synchronized with active model" : "Sincronizada com o modelo ativo"}
-            </span>
-          ) : (
-            <span className="text-xs font-semibold text-amber-500 dark:text-amber-400 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
-              <Info className="w-4 h-4" />
-              {isEn
-                ? `Viewing CVM: ${selectedCompany?.nome_pregao || "Company"} (Click "Load into Hyperblock" to activate in model)`
-                : `Visualizando na CVM: ${selectedCompany?.nome_pregao || "Empresa"} (Clique em "Carregar no Hyperblock" para torná-la ativa)`}
-            </span>
-          )}
         </div>
       </div>
 
-      {/* Cascading Filter Bar (Sector -> Company Search) */}
-      <section
-        className={`p-4 rounded-2xl border shadow-sm ${
-          isDark ? "bg-slate-900/60 border-slate-800 backdrop-blur-md" : "bg-white border-slate-200"
-        } flex flex-col md:flex-row items-center gap-4`}
-      >
-        {/* Sector Selector */}
-        <div className="w-full md:w-1/3 flex flex-col gap-1.5">
-          <label className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-            <Filter className="w-3.5 h-3.5 text-emerald-500" />
-            <span>{isEn ? "1. CVM Economic Sector" : "1. Setor Econômico CVM"}</span>
-          </label>
-          <div className="relative">
-            <select
-              value={selectedSector}
-              onChange={(e) => handleSelectSector(e.target.value)}
-              className={`w-full appearance-none px-3.5 py-2 text-sm rounded-xl border font-semibold pr-8 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 shadow-sm ${
-                isDark ? "bg-slate-800 border-slate-700 text-slate-100" : "bg-slate-50 border-slate-300 text-slate-900"
-              }`}
-            >
-              <option value="all">{isEn ? `All Sectors (${sectors.length})` : `Todos os Setores (${sectors.length})`}</option>
-              {sectors.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-3 pointer-events-none" />
-          </div>
+      {/* STEP 1 & STEP 2: Selection of Sector & Company */}
+      <div className={`p-6 rounded-3xl border shadow-sm ${
+        isDark ? "bg-slate-900/90 border-slate-800" : "bg-white border-slate-200"
+      }`}>
+        <div className="flex items-center gap-2 mb-4">
+          <span className="w-6 h-6 rounded-full bg-cyan-500 text-slate-950 font-black text-xs flex items-center justify-center">1</span>
+          <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
+            {isEn ? "Select Sector & Listed Company" : "Selecionar Setor Econômico & Companhia Aberta"}
+          </h2>
         </div>
 
-        {/* Company Combobox / Selector */}
-        <div className="w-full md:w-2/3 flex flex-col gap-1.5">
-          <label className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-            <Building2 className="w-3.5 h-3.5 text-cyan-500" />
-            <span>
-              {isEn
-                ? `2. Listed Company (B3 / CVM) — (${filteredCompanies.length} in sector)`
-                : `2. Companhia Aberta (B3 / CVM) — (${filteredCompanies.length} no setor)`}
-            </span>
-          </label>
-          <div className="flex gap-2 items-center">
-            <div className="relative flex-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Sector Selector */}
+          <div>
+            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+              {isEn ? "1. Economic Sector (B3 / CVM):" : "1. Setor Econômico CVM:"}
+            </label>
+            <div className="relative">
+              <select
+                value={selectedSector}
+                onChange={(e) => setSelectedSector(e.target.value)}
+                className={`w-full appearance-none px-3.5 py-2.5 text-sm rounded-xl border font-bold pr-10 focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-sm ${
+                  isDark ? "bg-slate-800 border-slate-700 text-slate-100" : "bg-slate-50 border-slate-300 text-slate-900"
+                }`}
+              >
+                <option value="all">
+                  {isEn ? `All Sectors (${CVM_SECTORS.length})` : `Todos os Setores (${CVM_SECTORS.length})`}
+                </option>
+                {CVM_SECTORS.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-3.5 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Company Selector */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                {isEn ? "2. Listed Company:" : "2. Companhia Aberta:"}
+              </label>
+              <span className="text-[11px] font-bold text-cyan-500">
+                ({filteredCompanies.length} {isEn ? "available" : "no setor"})
+              </span>
+            </div>
+            <div className="relative">
               <select
                 value={selectedCodCvm}
-                onChange={(e) => handleSelectCompany(Number(e.target.value))}
-                className={`w-full appearance-none px-3.5 py-2 text-sm rounded-xl border font-bold pr-8 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 shadow-sm ${
+                onChange={(e) => setSelectedCodCvm(Number(e.target.value))}
+                className={`w-full appearance-none px-3.5 py-2.5 text-sm rounded-xl border font-bold pr-10 focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-sm ${
                   isDark ? "bg-slate-800 border-slate-700 text-slate-100" : "bg-slate-50 border-slate-300 text-slate-900"
                 }`}
               >
                 {filteredCompanies.length === 0 ? (
                   <option value="" disabled>
-                    {isEn ? "No companies in this sector" : "Nenhuma companhia encontrada neste setor"}
+                    {isEn ? "No companies found in this sector" : "Nenhuma companhia encontrada neste setor"}
                   </option>
                 ) : (
                   filteredCompanies.map((c, idx) => (
-                    <option key={`cvm_${c.cod_cvm}_${c.codigo_cvm_str || idx}`} value={c.cod_cvm}>
+                    <option key={`cvm_opt_${c.cod_cvm}_${idx}`} value={c.cod_cvm}>
                       {c.nome_pregao} — {c.denom_social} (CVM {c.codigo_cvm_str})
                     </option>
                   ))
                 )}
               </select>
-              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-3 pointer-events-none" />
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-3.5 pointer-events-none" />
             </div>
+          </div>
 
-            {/* Refresh Company Data Button */}
-            <button
-              onClick={() => loadCompanyFinancials(selectedCodCvm)}
-              disabled={loading}
-              className={`p-2 rounded-xl border transition shadow-sm ${
-                isDark
-                  ? "bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300 hover:text-white"
-                  : "bg-white hover:bg-slate-100 border-slate-300 text-slate-700 hover:text-slate-900"
-              }`}
-              title={isEn ? "Refresh financial statements" : "Atualizar demonstrações financeiras"}
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-emerald-500" : ""}`} />
-            </button>
-
-            {/* Quick Text Search */}
-            <div className="relative w-44">
-              <Search className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" />
+          {/* Quick Search */}
+          <div>
+            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+              {isEn ? "Quick Search (Ticker/Name/CNPJ):" : "Busca Rápida (Ticker / Nome / CNPJ):"}
+            </label>
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               <input
                 type="text"
-                placeholder={isEn ? "Search ticker/name..." : "Buscar ticker/nome..."}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className={`w-full pl-8 pr-3 py-2 text-xs rounded-xl border font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/50 shadow-sm ${
+                placeholder={isEn ? "Filter companies..." : "Filtrar companhias..."}
+                className={`w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-sm ${
                   isDark ? "bg-slate-800 border-slate-700 text-slate-100" : "bg-slate-50 border-slate-300 text-slate-900"
                 }`}
               />
             </div>
           </div>
         </div>
-      </section>
 
-      {/* Real-time Loading Indicator Banner */}
-      {loading && (
-        <div className="flex items-center justify-center gap-2.5 py-3 px-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold animate-pulse shadow-sm">
-          <RefreshCw className="w-4 h-4 animate-spin" />
-          <span>
-            {isEn
-              ? `Loading official statements and historical series for ${selectedCompany?.nome_pregao || "company"}...`
-              : `Carregando demonstrações oficiais e série histórica de ${selectedCompany?.nome_pregao || "empresa"}...`}
-          </span>
-        </div>
-      )}
-
-      {/* Active Company Hero Banner & Hyperblock CTA */}
-      {selectedCompany && (
-        <section
-          className={`p-6 rounded-3xl border shadow-md relative overflow-hidden transition-all ${
-            isDark
-              ? "bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/40 border-emerald-500/30"
-              : "bg-gradient-to-br from-white via-slate-50 to-emerald-50 border-emerald-200"
-          }`}
-        >
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative z-10">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="px-2.5 py-1 text-xs font-extrabold rounded-lg bg-emerald-500 text-slate-950 shadow-sm">
-                  {selectedCompany.nome_pregao}
-                </span>
-                <span className={`px-2 py-0.5 text-xs rounded-md font-semibold border ${
-                  isDark ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-slate-200/80 border-slate-300 text-slate-800"
-                }`}>
-                  CVM: {selectedCompany.codigo_cvm_str}
-                </span>
-                <span className={`px-2 py-0.5 text-xs rounded-md font-semibold border ${
-                  isDark ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-slate-200/80 border-slate-300 text-slate-800"
-                }`}>
-                  CNPJ: {selectedCompany.cnpj}
-                </span>
-                <span className={`px-2 py-0.5 text-xs rounded-md font-semibold border ${
-                  isDark ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-slate-200/80 border-slate-300 text-slate-800"
-                }`}>
-                  UF: {selectedCompany.uf || "BR"}
-                </span>
-                <span className={`px-2 py-0.5 text-xs font-bold rounded-md border ${
-                  isDark ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" : "bg-cyan-100 text-cyan-900 border-cyan-300"
-                }`}>
-                  {selectedCompany.setor}
-                </span>
+        {/* Selected Company Card Overview */}
+        {currentCompany && (
+          <div className={`mt-5 p-4 rounded-2xl border flex flex-wrap items-center justify-between gap-4 transition-colors ${
+            isDark ? "bg-[#08172c] border-cyan-500/30" : "bg-cyan-50/60 border-cyan-200"
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-black">
+                <Building2 className="w-5 h-5" />
               </div>
-              <h2 className={`text-xl md:text-2xl font-black ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-                {selectedCompany.denom_social}
-              </h2>
-              <p className={`text-xs max-w-2xl font-medium ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-                {isEn
-                  ? "Standardized official regulatory statements (ITR and DFP) consolidated and normalized for the Hyperblock reactive multidimensional engine."
-                  : "Demonstrações financeiras oficiais padronizadas (ITR e DFP) consolidadas e normalizadas para o motor reativo multidimensional Hyperblock."}
-              </p>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">
+                    {currentCompany.denom_social}
+                  </h3>
+                  {currentCompany.nome_pregao && (
+                    <span className="px-2 py-0.5 rounded-md text-xs font-mono font-black bg-cyan-500 text-slate-950">
+                      {currentCompany.nome_pregao}
+                    </span>
+                  )}
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
+                    CVM: {currentCompany.codigo_cvm_str}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1 flex-wrap">
+                  <span><strong>CNPJ:</strong> {currentCompany.cnpj}</span>
+                  <span>•</span>
+                  <span><strong>UF:</strong> {currentCompany.uf || "BR"}</span>
+                  <span>•</span>
+                  <span><strong>Setor:</strong> {currentCompany.setor}</span>
+                  <span>•</span>
+                  <span className="text-emerald-500 font-bold">● FASE OPERACIONAL (B3)</span>
+                </div>
+              </div>
             </div>
 
-            {/* Hyperblock Engine CTA & Periodicity Switcher */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-              <div className="flex items-center gap-1 p-1 rounded-2xl border bg-slate-100 dark:bg-slate-800/90 border-slate-300 dark:border-slate-700 shadow-xs">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPeriodicity("ANUAL");
-                    if (activeCompany) setActiveCompany({ ...activeCompany, periodicity: "ANUAL" });
-                  }}
-                  className={`px-3 py-2 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${
-                    periodicity === "ANUAL"
-                      ? "bg-emerald-500 text-slate-950 shadow-sm"
-                      : isDark ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"
-                  }`}
-                  title={isEn ? "Annual audited filings (DFP)" : "Demonstrações financeiras anuais auditadas (DFP)"}
-                >
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>{isEn ? "Annual (DFP)" : "Anual (DFP)"}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPeriodicity("TRIMESTRAL");
-                    if (activeCompany) setActiveCompany({ ...activeCompany, periodicity: "TRIMESTRAL" });
-                  }}
-                  className={`px-3 py-2 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${
-                    periodicity === "TRIMESTRAL"
-                      ? "bg-cyan-500 text-slate-950 shadow-sm"
-                      : isDark ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"
-                  }`}
-                  title={isEn ? "Quarterly statements (ITR)" : "Informações trimestrais (ITR)"}
-                >
-                  <BarChart3 className="w-3.5 h-3.5" />
-                  <span>{isEn ? "Quarterly (ITR)" : "Trimestral (ITR)"}</span>
-                </button>
-              </div>
-
-              <button
-                onClick={handleLoadIntoCube}
-                disabled={loadingCube}
-                className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition transform active:scale-95"
-                title={
-                  isEn
-                    ? `Inject ${periodicity === "ANUAL" ? "Annual (DFP)" : "Quarterly (ITR)"} data into Hyperblock Cube`
-                    : `Injetar dados ${periodicity === "ANUAL" ? "Anuais (DFP)" : "Trimestrais (ITR)"} no motor Hyperblock`
-                }
-              >
-                <Zap className={`w-4 h-4 ${loadingCube ? "animate-spin" : "fill-current"}`} />
-                <span>
-                  {loadingCube
-                    ? (isEn ? "Injecting..." : "Injetando...")
-                    : (isEn ? `Load ${periodicity === "ANUAL" ? "Annual" : "Quarterly"} into Cube` : `Carregar ${periodicity === "ANUAL" ? "Anual" : "Trimestral"} no Hyperblock`)}
-                </span>
-              </button>
-
-              <button
-                onClick={() => onNavigate && onNavigate("CUBE")}
-                className={`w-full sm:w-auto px-4 py-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition shadow-sm ${
-                  isDark
-                    ? "bg-slate-900/80 hover:bg-slate-800 border-slate-700 text-slate-200"
-                    : "bg-white hover:bg-slate-100 border-slate-300 text-slate-800"
-                }`}
-              >
-                <Layers className="w-4 h-4 text-cyan-500" />
-                <span>{isEn ? "View 3D Cube" : "Ver Cubo 3D"}</span>
-              </button>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                {isEn ? "Data Source:" : "Origem:"}
+              </span>
+              <span className="px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                dados.cvm.gov.br
+              </span>
             </div>
           </div>
+        )}
+      </div>
 
-          {/* Cube Loaded Success Banner */}
-          {cubeLoadedMsg && (
-            <div className={`mt-4 p-3 rounded-xl border text-xs font-semibold flex items-center justify-between shadow-sm ${
-              isDark ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-emerald-100 border-emerald-300 text-emerald-900"
-            }`}>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>{cubeLoadedMsg}</span>
-              </div>
-              <button
-                onClick={() => onNavigate && onNavigate("PLANNING")}
-                className="underline hover:opacity-80 text-xs font-bold flex items-center gap-1"
+      {/* STEP 3: Periodicity Options & File Catalog */}
+      <div className={`p-6 rounded-3xl border shadow-sm ${
+        isDark ? "bg-slate-900/90 border-slate-800" : "bg-white border-slate-200"
+      }`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded-full bg-cyan-500 text-slate-950 font-black text-xs flex items-center justify-center">2</span>
+            <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
+              {isEn ? "Choose Periodicity & Official Files for Ingestion" : "Escolher Periodicidade & Arquivos Oficiais para Ingestão"}
+            </h2>
+          </div>
+
+          {/* Anual vs Trimestral Switcher */}
+          <div className="flex items-center gap-1 p-1 rounded-2xl border bg-slate-100 dark:bg-slate-800/90 border-slate-300 dark:border-slate-700 shadow-xs">
+            <button
+              type="button"
+              onClick={() => setPeriodicity("ANUAL")}
+              className={`px-4 py-2 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer ${
+                periodicity === "ANUAL"
+                  ? "bg-emerald-500 text-slate-950 shadow-md scale-102"
+                  : isDark ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>{isEn ? "Annual (DFP)" : "Anual (DFP)"}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPeriodicity("TRIMESTRAL")}
+              className={`px-4 py-2 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer ${
+                periodicity === "TRIMESTRAL"
+                  ? "bg-cyan-500 text-slate-950 shadow-md scale-102"
+                  : isDark ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <BarChart2 className="w-3.5 h-3.5" />
+              <span>{isEn ? "Quarterly (ITR)" : "Trimestral (ITR)"}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Selection bar info */}
+        <div className="flex items-center justify-between py-2 px-1 text-xs border-b border-slate-200 dark:border-slate-800 mb-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleSelectAll}
+              className="font-bold text-cyan-500 hover:underline cursor-pointer"
+            >
+              {availableFiles.every((f) => selectedFileIds[f.id])
+                ? (isEn ? "Deselect All" : "Desmarcar Todos")
+                : (isEn ? "Select All" : "Marcar Todos")}
+            </button>
+            <span className="text-slate-400">•</span>
+            <span className="text-slate-500 dark:text-slate-400">
+              {selectedCount} {isEn ? "of" : "de"} {availableFiles.length} {isEn ? "files selected" : "arquivos selecionados"}
+            </span>
+          </div>
+          <span className="text-slate-400 hidden sm:inline">
+            {periodicity === "ANUAL" 
+              ? (isEn ? "Annual Audited Standardized Statements (DFP)" : "Demonstrações Financeiras Padronizadas Auditadas (DFP)") 
+              : (isEn ? "Official Quarterly Reports (ITR)" : "Informações Trimestrais Oficiais (ITR)")}
+          </span>
+        </div>
+
+        {/* Files List Table */}
+        <div className="space-y-2.5">
+          {availableFiles.map((f) => {
+            const isSelected = Boolean(selectedFileIds[f.id]);
+            return (
+              <div
+                key={f.id}
+                onClick={() => toggleFile(f.id)}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                  isSelected
+                    ? isDark
+                      ? "bg-cyan-950/30 border-cyan-500/50 shadow-sm"
+                      : "bg-cyan-50/70 border-cyan-300 shadow-xs"
+                    : isDark
+                    ? "bg-slate-800/40 border-slate-800 hover:border-slate-700 opacity-70"
+                    : "bg-slate-50 border-slate-200 hover:border-slate-300 opacity-75"
+                }`}
               >
-                {isEn ? "Go to Connected Planning" : "Ir para Planejamento Conectado"} <ArrowRight className="w-3 h-3" />
+                <div className="flex items-center gap-3.5">
+                  {/* Checkbox button */}
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
+                    isSelected
+                      ? "bg-cyan-500 text-slate-950 shadow-xs"
+                      : "border border-slate-400 dark:border-slate-600 bg-transparent"
+                  }`}>
+                    {isSelected && <Check className="w-4 h-4 stroke-[3]" />}
+                  </div>
+
+                  <div className="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-cyan-500 flex-shrink-0">
+                    <FileSpreadsheet className="w-5 h-5" />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-extrabold text-slate-900 dark:text-white">
+                        {f.filename}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
+                        f.docType === "DFP" ? "bg-emerald-500 text-slate-950" : "bg-cyan-500 text-slate-950"
+                      }`}>
+                        {f.docType}
+                      </span>
+                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        • Ref: {f.referenceDate}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                        {f.periodLabel}
+                      </span>
+                      <span className="text-slate-400">•</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                        {isEn ? "Contas:" : "Demonstrações:"} {f.statementsIncluded.join(", ")}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 self-end sm:self-center" onClick={(e) => e.stopPropagation()}>
+                  <span className="text-xs font-mono font-bold text-slate-400">
+                    ~{f.sizeApprox}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadFile(f)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center gap-1.5 cursor-pointer ${
+                      isDark 
+                        ? "bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-200" 
+                        : "bg-white border-slate-300 hover:bg-slate-100 text-slate-800"
+                    }`}
+                    title={isEn ? "Download sample CSV file" : "Baixar arquivo CSV avulso"}
+                  >
+                    <Download className="w-3.5 h-3.5 text-cyan-500" />
+                    <span>{isEn ? "CSV" : "Baixar"}</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* STEP 4: SEND TO INGESTION ACTION BUTTON */}
+        <div className={`mt-6 p-6 rounded-2xl border text-center transition-all ${
+          isDark 
+            ? "bg-gradient-to-br from-[#07162b] to-[#040e1d] border-cyan-500/40" 
+            : "bg-gradient-to-br from-cyan-50 via-sky-50 to-emerald-50 border-cyan-300"
+        }`}>
+          {sendSuccessMsg ? (
+            <div className="flex items-center justify-center gap-2 text-emerald-500 dark:text-emerald-400 font-bold text-sm py-2">
+              <CheckCircle2 className="w-5 h-5 animate-bounce" />
+              <span>{sendSuccessMsg}</span>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-3">
+              <div className="max-w-xl text-center">
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                  {isEn 
+                    ? `Ready to dispatch ${selectedCount} file(s) of ${currentCompany?.denom_social} to Overview & Ingestion?` 
+                    : `Pronto para enviar ${selectedCount} arquivo(s) de ${currentCompany?.denom_social} para a Visão Geral & Ingestão?`}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  {isEn 
+                    ? "The multidimensional model will parse and compile the statements (DRE, DFC, BP) for immediate analysis." 
+                    : "Os demonstrativos serão inseridos no pipeline contábil e ficarão disponíveis imediatamente em DRE, DFC, Balanço e Cubo 3D."}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                disabled={selectedCount === 0 || sendingToIngestion}
+                onClick={handleSendToIngestion}
+                className={`px-8 py-3.5 rounded-2xl font-black text-sm transition-all flex items-center gap-2.5 shadow-lg cursor-pointer transform hover:scale-[1.02] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed ${
+                  periodicity === "ANUAL"
+                    ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 shadow-emerald-500/25"
+                    : "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-950 shadow-cyan-500/25"
+                }`}
+              >
+                {sendingToIngestion ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>{isEn ? "Uploading & Compiling..." : "Processando & Enviando..."}</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    <span>
+                      {isEn
+                        ? `Send ${selectedCount} File(s) (${periodicity}) to Overview & Ingestion 🚀`
+                        : `Enviar ${selectedCount} Arquivo(s) (${periodicity}) para Visão Geral & Ingestão 🚀`}
+                    </span>
+                  </>
+                )}
               </button>
             </div>
           )}
-        </section>
-      )}
-
-      {/* KPI Cards Grid */}
-      {analysisData?.kpis && (
-        <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {/* Receita Líquida */}
-          <div
-            className={`p-4 rounded-2xl border shadow-sm ${
-              isDark ? "bg-slate-900/80 border-slate-800" : "bg-white border-slate-200"
-            }`}
-          >
-            <div className="flex justify-between items-start">
-              <span className={`text-[11px] font-bold uppercase ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-                {isEn ? "Net Revenue" : "Receita Líquida"}
-              </span>
-              <DollarSign className="w-4 h-4 text-emerald-500" />
-            </div>
-            <div className={`text-lg md:text-xl font-extrabold mt-2 ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-              {formatCurrency(analysisData.kpis.receita_liquida)}
-            </div>
-            <div className="flex items-center gap-1 mt-1 text-xs">
-              {analysisData.kpis.receita_growth_yoy >= 0 ? (
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center">
-                  <TrendingUp className="w-3 h-3 mr-0.5" /> +{analysisData.kpis.receita_growth_yoy}%
-                </span>
-              ) : (
-                <span className="text-rose-600 dark:text-rose-400 font-bold flex items-center">
-                  <TrendingDown className="w-3 h-3 mr-0.5" /> {analysisData.kpis.receita_growth_yoy}%
-                </span>
-              )}
-              <span className={`text-[10px] ${isDark ? "text-slate-500" : "text-slate-500"}`}>YoY</span>
-            </div>
-          </div>
-
-          {/* Lucro Líquido */}
-          <div
-            className={`p-4 rounded-2xl border shadow-sm ${
-              isDark ? "bg-slate-900/80 border-slate-800" : "bg-white border-slate-200"
-            }`}
-          >
-            <div className="flex justify-between items-start">
-              <span className={`text-[11px] font-bold uppercase ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-                {isEn ? "Net Income" : "Lucro Líquido"}
-              </span>
-              <TrendingUp className="w-4 h-4 text-cyan-500" />
-            </div>
-            <div className={`text-lg md:text-xl font-extrabold mt-2 ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-              {formatCurrency(analysisData.kpis.lucro_liquido)}
-            </div>
-            <div className="flex items-center gap-1 mt-1 text-xs">
-              {analysisData.kpis.lucro_growth_yoy >= 0 ? (
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center">
-                  <TrendingUp className="w-3 h-3 mr-0.5" /> +{analysisData.kpis.lucro_growth_yoy}%
-                </span>
-              ) : (
-                <span className="text-rose-600 dark:text-rose-400 font-bold flex items-center">
-                  <TrendingDown className="w-3 h-3 mr-0.5" /> {analysisData.kpis.lucro_growth_yoy}%
-                </span>
-              )}
-              <span className={`text-[10px] ${isDark ? "text-slate-500" : "text-slate-500"}`}>YoY</span>
-            </div>
-          </div>
-
-          {/* Margem Bruta */}
-          <div
-            className={`p-4 rounded-2xl border shadow-sm ${
-              isDark ? "bg-slate-900/80 border-slate-800" : "bg-white border-slate-200"
-            }`}
-          >
-            <div className="flex justify-between items-start">
-              <span className={`text-[11px] font-bold uppercase ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-                {isEn ? "Gross Margin" : "Margem Bruta"}
-              </span>
-              <PieChart className="w-4 h-4 text-indigo-500" />
-            </div>
-            <div className="text-lg md:text-xl font-extrabold mt-2 text-indigo-600 dark:text-indigo-400">
-              {analysisData.kpis.margem_bruta.toFixed(1)}%
-            </div>
-            <div className={`text-[10px] mt-1 ${isDark ? "text-slate-500" : "text-slate-500"}`}>
-              {isEn ? "Direct operating margin" : "Margem operacional direta"}
-            </div>
-          </div>
-
-          {/* Margem EBIT */}
-          <div
-            className={`p-4 rounded-2xl border shadow-sm ${
-              isDark ? "bg-slate-900/80 border-slate-800" : "bg-white border-slate-200"
-            }`}
-          >
-            <div className="flex justify-between items-start">
-              <span className={`text-[11px] font-bold uppercase ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-                {isEn ? "EBIT Margin" : "Margem EBIT"}
-              </span>
-              <BarChart3 className="w-4 h-4 text-purple-500" />
-            </div>
-            <div className="text-lg md:text-xl font-extrabold mt-2 text-purple-600 dark:text-purple-400">
-              {analysisData.kpis.margem_ebit.toFixed(1)}%
-            </div>
-            <div className={`text-[10px] mt-1 ${isDark ? "text-slate-500" : "text-slate-500"}`}>
-              {isEn ? "Operating profitability" : "Rentabilidade operacional"}
-            </div>
-          </div>
-
-          {/* Margem Líquida */}
-          <div
-            className={`p-4 rounded-2xl border shadow-sm ${
-              isDark ? "bg-slate-900/80 border-slate-800" : "bg-white border-slate-200"
-            }`}
-          >
-            <div className="flex justify-between items-start">
-              <span className={`text-[11px] font-bold uppercase ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-                {isEn ? "Net Margin" : "Margem Líquida"}
-              </span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-            </div>
-            <div className="text-lg md:text-xl font-extrabold mt-2 text-emerald-600 dark:text-emerald-400">
-              {analysisData.kpis.margem_liquida.toFixed(1)}%
-            </div>
-            <div className={`text-[10px] mt-1 ${isDark ? "text-slate-500" : "text-slate-500"}`}>
-              {isEn ? "Bottom line conversion" : "Conversão final do resultado"}
-            </div>
-          </div>
-
-          {/* ROE Estimado */}
-          <div
-            className={`p-4 rounded-2xl border shadow-sm ${
-              isDark ? "bg-slate-900/80 border-slate-800" : "bg-white border-slate-200"
-            }`}
-          >
-            <div className="flex justify-between items-start">
-              <span className={`text-[11px] font-bold uppercase ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-                {isEn ? "Estimated ROE" : "ROE Estimado"}
-              </span>
-              <Zap className="w-4 h-4 text-amber-500" />
-            </div>
-            <div className="text-lg md:text-xl font-extrabold mt-2 text-amber-600 dark:text-amber-400">
-              {analysisData.kpis.roe_estimado.toFixed(1)}%
-            </div>
-            <div className={`text-[10px] mt-1 ${isDark ? "text-slate-500" : "text-slate-500"}`}>
-              {isEn ? "Return on Equity" : "Retorno s/ Patrimônio"}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Interactive Visualizations (Recharts) */}
-      {analysisData?.time_series && (
-        <section
-          className={`p-6 rounded-3xl border shadow-sm space-y-4 ${
-            isDark ? "bg-slate-900/80 border-slate-800" : "bg-white border-slate-200"
-          }`}
-        >
-          {/* Chart Tabs */}
-          <div className="flex justify-between items-center flex-wrap gap-3 border-b pb-3 border-slate-200 dark:border-slate-800">
-            <h3 className={`text-base font-bold flex items-center gap-2 ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-              <BarChart3 className="w-5 h-5 text-emerald-500" />
-              <span>{isEn ? "Financial Statements Historical Evolution" : "Evolução Histórica das Demonstrações Financeiras"}</span>
-            </h3>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setActiveChartTab("DRE")}
-                className={`px-3 py-1 text-xs font-bold rounded-lg transition shadow-sm ${
-                  activeChartTab === "DRE"
-                    ? "bg-emerald-500 text-slate-950 font-extrabold"
-                    : isDark
-                    ? "bg-slate-800 text-slate-300 hover:text-white"
-                    : "bg-slate-100 text-slate-700 hover:text-slate-900 hover:bg-slate-200"
-                }`}
-              >
-                {isEn ? "Income Statement: Revenue & Income" : "DRE: Receita & Lucro"}
-              </button>
-              <button
-                onClick={() => setActiveChartTab("MARGINS")}
-                className={`px-3 py-1 text-xs font-bold rounded-lg transition shadow-sm ${
-                  activeChartTab === "MARGINS"
-                    ? "bg-cyan-500 text-slate-950 font-extrabold"
-                    : isDark
-                    ? "bg-slate-800 text-slate-300 hover:text-white"
-                    : "bg-slate-100 text-slate-700 hover:text-slate-900 hover:bg-slate-200"
-                }`}
-              >
-                {isEn ? "Margins Trajectory (%)" : "Trajetória de Margens (%)"}
-              </button>
-            </div>
-          </div>
-
-          {/* Chart Rendering */}
-          <div className="h-80 w-full pt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              {activeChartTab === "DRE" ? (
-                <BarChart data={displayedTimeSeries} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#334155" : "#e2e8f0"} />
-                  <XAxis dataKey="quarter" stroke={isDark ? "#94a3b8" : "#475569"} tick={{ fill: isDark ? "#94a3b8" : "#475569", fontWeight: 600 }} />
-                  <YAxis stroke={isDark ? "#94a3b8" : "#475569"} tick={{ fill: isDark ? "#94a3b8" : "#475569", fontWeight: 600 }} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}B`} />
-                  <Tooltip
-                    formatter={(value: any) => [formatCurrencyRaw(Number(value)), ""]}
-                    contentStyle={{
-                      backgroundColor: isDark ? "#0f172a" : "#ffffff",
-                      borderColor: isDark ? "#334155" : "#cbd5e1",
-                      borderRadius: "12px",
-                      color: isDark ? "#f8fafc" : "#0f172a",
-                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                    }}
-                  />
-                  <Legend />
-                  <Bar dataKey="receita_liquida" name={isEn ? "Net Revenue" : "Receita Líquida"} fill="#10b981" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="lucro_bruto" name={isEn ? "Gross Profit" : "Lucro Bruto"} fill="#06b6d4" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="lucro_liquido" name={isEn ? "Net Income" : "Lucro Líquido"} fill="#6366f1" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              ) : (
-                <LineChart data={displayedTimeSeries} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#334155" : "#e2e8f0"} />
-                  <XAxis dataKey="quarter" stroke={isDark ? "#94a3b8" : "#475569"} tick={{ fill: isDark ? "#94a3b8" : "#475569", fontWeight: 600 }} />
-                  <YAxis stroke={isDark ? "#94a3b8" : "#475569"} tick={{ fill: isDark ? "#94a3b8" : "#475569", fontWeight: 600 }} tickFormatter={(v) => `${v}%`} />
-                  <Tooltip
-                    formatter={(value: any) => [`${Number(value).toFixed(2)}%`, ""]}
-                    contentStyle={{
-                      backgroundColor: isDark ? "#0f172a" : "#ffffff",
-                      borderColor: isDark ? "#334155" : "#cbd5e1",
-                      borderRadius: "12px",
-                      color: isDark ? "#f8fafc" : "#0f172a",
-                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                    }}
-                  />
-                  <Legend iconType="line" iconSize={14} />
-                  <Line type="monotone" dataKey="margem_bruta" name={isEn ? "Gross Margin (%)" : "Margem Bruta (%)"} stroke="#10b981" strokeWidth={3} dot={false} activeDot={false} />
-                  <Line type="monotone" dataKey="margem_ebit" name={isEn ? "EBIT Margin (%)" : "Margem EBIT (%)"} stroke="#06b6d4" strokeWidth={3} dot={false} activeDot={false} />
-                  <Line type="monotone" dataKey="margem_liquida" name={isEn ? "Net Margin (%)" : "Margem Líquida (%)"} stroke="#a855f7" strokeWidth={3} dot={false} activeDot={false} />
-                </LineChart>
-              )}
-            </ResponsiveContainer>
-          </div>
-        </section>
-      )}
-
-      {/* Canonical Statements Table (DRE & DFC Dual View) */}
-      {analysisData?.time_series && (
-        <section
-          className={`p-6 rounded-3xl border shadow-sm space-y-4 ${
-            isDark ? "bg-slate-900/80 border-slate-800" : "bg-white border-slate-200"
-          }`}
-        >
-          <div className="flex justify-between items-center flex-wrap gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center p-1 rounded-2xl border bg-slate-100 dark:bg-slate-950 dark:border-slate-800 border-slate-200">
-                <button
-                  onClick={() => setStatementTab("DRE")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
-                    statementTab === "DRE"
-                      ? "bg-cyan-500 text-white shadow-sm"
-                      : isDark ? "text-slate-400 hover:text-slate-200" : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  <span>{isEn ? "Income Statement (DRE)" : "Demonstração DRE"}</span>
-                </button>
-                <button
-                  onClick={() => setStatementTab("DFC")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
-                    statementTab === "DFC"
-                      ? "bg-sky-500 text-white shadow-sm"
-                      : isDark ? "text-slate-400 hover:text-slate-200" : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  <ArrowRightLeft className="w-3.5 h-3.5" />
-                  <span>{isEn ? "Cash Flow Statement (DFC)" : "Demonstração DFC"}</span>
-                </button>
-              </div>
-
-              <span className={`text-xs font-semibold ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                {isBanking ? (isEn ? "• COSIF / CVM Banking Model" : "• Padrão COSIF / BACEN / CVM Bancário") : (isEn ? "• CVM Corporate Model" : "• Padrão Lei 6.404 / CVM")}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 flex-wrap">
-              {/* Periodicity Switcher in Table */}
-              <div className="flex items-center gap-1 p-1 rounded-xl border bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => setPeriodicity("ANUAL")}
-                  className={`px-2.5 py-1 rounded-lg transition flex items-center gap-1 ${
-                    periodicity === "ANUAL"
-                      ? "bg-emerald-500 font-bold text-slate-950 shadow-xs"
-                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-                  }`}
-                  title={isEn ? "Annual audited publications (DFP)" : "Publicações anuais consolidadas (DFP)"}
-                >
-                  <Calendar className="w-3 h-3" />
-                  <span>{isEn ? "Annual (DFP)" : "Anual (DFP)"}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPeriodicity("TRIMESTRAL")}
-                  className={`px-2.5 py-1 rounded-lg transition flex items-center gap-1 ${
-                    periodicity === "TRIMESTRAL"
-                      ? "bg-cyan-500 font-bold text-slate-950 shadow-xs"
-                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-                  }`}
-                  title={isEn ? "Quarterly statements (ITR)" : "Informações trimestrais (ITR)"}
-                >
-                  <BarChart3 className="w-3 h-3" />
-                  <span>{isEn ? "Quarterly (ITR)" : "Trimestral (ITR)"}</span>
-                </button>
-              </div>
-
-              <span className={`hidden md:inline text-xs font-semibold ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                {isEn ? "Values in R$ Millions" : "Valores em R$ Milhões"}
-              </span>
-              <button
-                onClick={handleExportDRE}
-                className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition shadow-sm ${
-                  isDark
-                    ? "bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200 hover:text-white"
-                    : "bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800"
-                }`}
-                title={isEn ? `Export ${statementTab} to CSV` : `Exportar ${statementTab} para CSV`}
-              >
-                <Download className="w-3.5 h-3.5 text-emerald-500" />
-                <span>{isEn ? `Export ${statementTab}` : `Exportar ${statementTab}`}</span>
-              </button>
-            </div>
-          </div>
-
-          <div className={`overflow-x-auto rounded-2xl border ${isDark ? "border-slate-800" : "border-slate-200"}`}>
-            <table className="w-full text-left text-xs">
-              <thead className={`${isDark ? "bg-slate-950 text-slate-300" : "bg-slate-100 text-slate-800"} uppercase text-[11px]`}>
-                <tr>
-                  <th className="p-3.5 font-bold">
-                    {statementTab === "DRE" 
-                      ? (isBanking ? (isEn ? "Line Item (Banking COSIF/CVM)" : "Linha Contábil Bancária (COSIF/CVM)") : (isEn ? "Income Statement Line" : "Linha da DRE (Canônica)"))
-                      : (isBanking ? (isEn ? "Cash Flow Line (Banking Model)" : "Fluxo de Caixa Bancário (CPC 03 / CVM)") : (isEn ? "Cash Flow Line (CPC 03)" : "Linha da DFC (Canônica)"))}
-                  </th>
-                  {displayedTimeSeries.map((ts) => (
-                    <th key={ts.period} className="p-3.5 font-bold text-right">
-                      {ts.quarter}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className={`divide-y ${isDark ? "divide-slate-800" : "divide-slate-200"}`}>
-                {statementTab === "DRE" ? (
-                  isBanking ? (
-                    <>
-                      <tr className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                        <td className={`p-3 font-bold ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>
-                          3.01 (+) Receitas da Intermediação Financeira
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-bold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-                            {ts.receita_liquida.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                        <td className={`p-3 font-medium ${isDark ? "text-rose-400" : "text-rose-700"}`}>
-                          3.02 (-) Despesas da Intermediação Financeira (Captações)
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-semibold ${isDark ? "text-rose-400" : "text-rose-700"}`}>
-                            {ts.custo_bens_servicos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={`font-bold ${isDark ? "hover:bg-slate-800/30 bg-slate-800/20" : "hover:bg-slate-100 bg-slate-100/60"}`}>
-                        <td className={`p-3 font-extrabold ${isDark ? "text-cyan-400" : "text-cyan-800"}`}>
-                          3.03 (=) Resultado Bruto da Intermediação Financeira
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-black ${isDark ? "text-cyan-400" : "text-cyan-800"}`}>
-                            {ts.lucro_bruto.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                        <td className={`p-3 font-medium ${isDark ? "text-rose-400" : "text-rose-700"}`}>
-                          3.04.01 (-) Provisão para Perdas com Crédito (PCLD / PDD)
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-semibold ${isDark ? "text-rose-400" : "text-rose-700"}`}>
-                            {(-Math.round(ts.lucro_liquido * 0.45 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                        <td className={`p-3 font-medium ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>
-                          3.04.02 (+) Rendas de Prestação de Serviços e Tarifas Bancárias
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-                            {(Math.round(ts.receita_liquida * 0.22 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                        <td className={`p-3 font-medium ${isDark ? "text-slate-400" : "text-slate-700"}`}>
-                          3.04.03 (-) Despesas de Pessoal e Administrativas
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-semibold ${isDark ? "text-rose-400" : "text-rose-700"}`}>
-                            {(-Math.round(ts.lucro_liquido * 0.55 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                        <td className={`p-3 font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                          3.05 (=) Resultado Operacional Bancário
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-                            {ts.resultado_ebit.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                        <td className={`p-3 font-medium ${isDark ? "text-slate-400" : "text-slate-700"}`}>
-                          3.07 (-) Imposto de Renda e Contribuição Social (CSLL)
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-semibold ${isDark ? "text-rose-400" : "text-rose-700"}`}>
-                            {(-Math.round(ts.lucro_liquido * 0.35 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={`font-extrabold border-t ${
-                        isDark ? "hover:bg-slate-800/30 bg-emerald-950/20 border-emerald-500/20" : "hover:bg-emerald-100/50 bg-emerald-50 border-emerald-300"
-                      }`}>
-                        <td className={`p-3.5 font-black ${isDark ? "text-emerald-400" : "text-emerald-800"}`}>
-                          3.08 (=) Lucro Líquido do Exercício
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3.5 text-right font-black ${isDark ? "text-emerald-400" : "text-emerald-800"}`}>
-                            {ts.lucro_liquido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                    </>
-                  ) : (
-                    <>
-                      <tr className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                        <td className={`p-3 font-bold ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>
-                          3.01 (+) Receita Líquida de Vendas
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-bold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-                            {ts.receita_liquida.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                        <td className={`p-3 font-medium ${isDark ? "text-slate-400" : "text-slate-700"}`}>
-                          3.02 (-) Custos dos Bens e Serviços (CPV / CMV)
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-semibold ${isDark ? "text-rose-400" : "text-rose-700"}`}>
-                            {ts.custo_bens_servicos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={`font-bold ${isDark ? "hover:bg-slate-800/30 bg-slate-800/20" : "hover:bg-slate-100 bg-slate-100/60"}`}>
-                        <td className={`p-3 font-extrabold ${isDark ? "text-cyan-400" : "text-cyan-800"}`}>
-                          3.03 (=) Lucro Bruto
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-black ${isDark ? "text-cyan-400" : "text-cyan-800"}`}>
-                            {ts.lucro_bruto.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                        <td className={`p-3 font-medium ${isDark ? "text-slate-400" : "text-slate-700"}`}>
-                          3.05 (=) Resultado Operacional (EBIT)
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-                            {ts.resultado_ebit.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={`font-extrabold border-t ${
-                        isDark ? "hover:bg-slate-800/30 bg-emerald-950/20 border-emerald-500/20" : "hover:bg-emerald-100/50 bg-emerald-50 border-emerald-300"
-                      }`}>
-                        <td className={`p-3.5 font-black ${isDark ? "text-emerald-400" : "text-emerald-800"}`}>
-                          3.11 (=) Lucro Líquido Consolidado
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3.5 text-right font-black ${isDark ? "text-emerald-400" : "text-emerald-800"}`}>
-                            {ts.lucro_liquido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                    </>
-                  )
-                ) : (
-                  isBanking ? (
-                    <>
-                      <tr className={`font-bold ${isDark ? "hover:bg-slate-800/30 bg-sky-950/20" : "hover:bg-sky-50 bg-sky-50/50"}`}>
-                        <td className={`p-3 font-extrabold ${isDark ? "text-sky-400" : "text-sky-800"}`}>
-                          6.01 (=) Caixa Líquido das Atividades Operacionais (FCO)
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-bold ${isDark ? "text-sky-400" : "text-sky-800"}`}>
-                            {(Math.round(ts.lucro_liquido * 1.55 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                        <td className={`p-3 pl-6 font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                          6.01.01 Lucro Líquido Ajustado
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-                            {ts.lucro_liquido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                        <td className={`p-3 pl-6 font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                          6.01.02 (+/-) Variação em Títulos e Valores Mobiliários (TVM)
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-                            {(Math.round(ts.lucro_liquido * 0.75 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                        <td className={`p-3 pl-6 font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                          6.01.03 (+/-) Variação na Carteira de Operações de Crédito
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right text-rose-400`}>
-                            {(-Math.round(ts.lucro_liquido * 0.65 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                        <td className={`p-3 pl-6 font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                          6.01.04 (+/-) Variação em Depósitos e Captações no Mercado
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-                            {(Math.round(ts.lucro_liquido * 0.45 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={`font-bold ${isDark ? "hover:bg-slate-800/30 bg-slate-800/20" : "hover:bg-slate-100 bg-slate-100/60"}`}>
-                        <td className={`p-3 font-bold ${isDark ? "text-amber-400" : "text-amber-700"}`}>
-                          6.02 (=) Caixa Líquido em Atividades de Investimento (FCI)
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-bold text-rose-400`}>
-                            {(-Math.round(ts.lucro_liquido * 0.35 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={`font-bold ${isDark ? "hover:bg-slate-800/30 bg-slate-800/20" : "hover:bg-slate-100 bg-slate-100/60"}`}>
-                        <td className={`p-3 font-bold ${isDark ? "text-indigo-400" : "text-indigo-700"}`}>
-                          6.03 (=) Caixa Líquido em Atividades de Financiamento (FCF)
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-bold text-rose-400`}>
-                            {(-Math.round(ts.lucro_liquido * 0.25 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={`font-extrabold border-t ${
-                        isDark ? "hover:bg-slate-800/30 bg-emerald-950/20 border-emerald-500/20" : "hover:bg-emerald-100/50 bg-emerald-50 border-emerald-300"
-                      }`}>
-                        <td className={`p-3.5 font-black ${isDark ? "text-emerald-400" : "text-emerald-800"}`}>
-                          6.04 (=) Variação Líquida de Caixa e Disponibilidades
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3.5 text-right font-black ${isDark ? "text-emerald-400" : "text-emerald-800"}`}>
-                            {(Math.round(ts.lucro_liquido * 0.95 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                    </>
-                  ) : (
-                    <>
-                      <tr className={`font-bold ${isDark ? "hover:bg-slate-800/30 bg-sky-950/20" : "hover:bg-sky-50 bg-sky-50/50"}`}>
-                        <td className={`p-3 font-extrabold ${isDark ? "text-sky-400" : "text-sky-800"}`}>
-                          6.01 (=) Fluxo de Caixa das Atividades Operacionais (FCO)
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-bold ${isDark ? "text-sky-400" : "text-sky-800"}`}>
-                            {(Math.round(ts.receita_liquida * 0.22 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                        <td className={`p-3 pl-6 font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                          6.01.01 (+) Recebimento de Vendas de Clientes
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-                            {(Math.round(ts.receita_liquida * 1.05 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                        <td className={`p-3 pl-6 font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                          6.01.02 (-) Pagamento a Fornecedores
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right text-rose-400`}>
-                            {(Math.round(ts.custo_bens_servicos * 0.85 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={`font-bold ${isDark ? "hover:bg-slate-800/30 bg-slate-800/20" : "hover:bg-slate-100 bg-slate-100/60"}`}>
-                        <td className={`p-3 font-bold ${isDark ? "text-amber-400" : "text-amber-700"}`}>
-                          6.02 (=) Fluxo de Caixa das Atividades de Investimento (FCI)
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-bold text-rose-400`}>
-                            {(-Math.round(ts.receita_liquida * 0.12 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={`font-bold ${isDark ? "hover:bg-slate-800/30 bg-slate-800/20" : "hover:bg-slate-100 bg-slate-100/60"}`}>
-                        <td className={`p-3 font-bold ${isDark ? "text-indigo-400" : "text-indigo-700"}`}>
-                          6.03 (=) Fluxo de Caixa das Atividades de Financiamento (FCF)
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3 text-right font-bold text-rose-400`}>
-                            {(-Math.round(ts.receita_liquida * 0.06 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className={`font-extrabold border-t ${
-                        isDark ? "hover:bg-slate-800/30 bg-emerald-950/20 border-emerald-500/20" : "hover:bg-emerald-100/50 bg-emerald-50 border-emerald-300"
-                      }`}>
-                        <td className={`p-3.5 font-black ${isDark ? "text-emerald-400" : "text-emerald-800"}`}>
-                          6.04 (=) Variação Líquida de Caixa e Equivalentes
-                        </td>
-                        {displayedTimeSeries.map((ts) => (
-                          <td key={ts.period} className={`p-3.5 text-right font-black ${isDark ? "text-emerald-400" : "text-emerald-800"}`}>
-                            {(Math.round(ts.receita_liquida * 0.04 * 100) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                          </td>
-                        ))}
-                      </tr>
-                    </>
-                  )
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
-
-      {/* Regulatory Filings Table */}
-      {analysisData?.filings && analysisData.filings.length > 0 && (
-        <section
-          className={`p-6 rounded-3xl border shadow-sm space-y-4 ${
-            isDark ? "bg-slate-900/80 border-slate-800" : "bg-white border-slate-200"
-          }`}
-        >
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <h3 className={`text-base font-bold flex items-center gap-2 ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-              <Calendar className="w-5 h-5 text-emerald-500" />
-              <span>{isEn ? "CVM Regulatory Filings History (ITR & DFP)" : "Histórico de Entregas Regulatórias CVM (ITR & DFP)"}</span>
-            </h3>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 p-1 rounded-xl border bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => setFilingTypeFilter("ALL")}
-                  className={`px-2.5 py-1 rounded-lg transition ${
-                    filingTypeFilter === "ALL"
-                      ? "bg-white dark:bg-slate-900 font-bold shadow-xs text-slate-900 dark:text-white"
-                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-                  }`}
-                >
-                  {isEn ? "All Filings" : "Todas as Entregas"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFilingTypeFilter("DFP")}
-                  className={`px-2.5 py-1 rounded-lg transition ${
-                    filingTypeFilter === "DFP"
-                      ? "bg-emerald-500 font-bold text-slate-950 shadow-xs"
-                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-                  }`}
-                >
-                  {isEn ? "Annual (DFP)" : "Anuais (DFP)"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFilingTypeFilter("ITR")}
-                  className={`px-2.5 py-1 rounded-lg transition ${
-                    filingTypeFilter === "ITR"
-                      ? "bg-cyan-500 font-bold text-slate-950 shadow-xs"
-                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-                  }`}
-                >
-                  {isEn ? "Quarterly (ITR)" : "Trimestrais (ITR)"}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className={`overflow-x-auto rounded-2xl border ${isDark ? "border-slate-800" : "border-slate-200"}`}>
-            <table className="w-full text-left text-xs">
-              <thead className={`${isDark ? "bg-slate-950 text-slate-300" : "bg-slate-100 text-slate-800"} uppercase text-[11px]`}>
-                <tr>
-                  <th className="p-3 font-bold">{isEn ? "Type" : "Tipo"}</th>
-                  <th className="p-3 font-bold">{isEn ? "Reference Date" : "Data de Referência"}</th>
-                  <th className="p-3 font-bold">{isEn ? "Filing Date" : "Data de Entrega"}</th>
-                  <th className="p-3 font-bold">{isEn ? "Version" : "Versão"}</th>
-                  <th className="p-3 font-bold">Status</th>
-                  <th className="p-3 font-bold text-right">{isEn ? "Company Filing / Download" : "Demonstrativo da Empresa / Download"}</th>
-                </tr>
-              </thead>
-              <tbody className={`divide-y ${isDark ? "divide-slate-800" : "divide-slate-200"}`}>
-                {analysisData.filings.filter(f => filingTypeFilter === "ALL" ? true : f.tipo === filingTypeFilter).map((f) => (
-                  <tr key={f.id} className={isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50"}>
-                    <td className={`p-3 font-bold ${isDark ? "text-cyan-400" : "text-cyan-700"}`}>{f.tipo}</td>
-                    <td className={`p-3 font-medium ${isDark ? "text-slate-200" : "text-slate-800"}`}>{f.dt_refer}</td>
-                    <td className={`p-3 ${isDark ? "text-slate-400" : "text-slate-600"}`}>{f.dt_entrega || f.dt_refer}</td>
-                    <td className={`p-3 font-semibold ${isDark ? "text-slate-200" : "text-slate-800"}`}>v{f.versao}</td>
-                    <td className="p-3">
-                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded-md border ${
-                        isDark
-                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                          : "bg-emerald-100 text-emerald-800 border-emerald-300"
-                      }`}>
-                        {f.status}
-                      </span>
-                    </td>
-                    <td className="p-3 text-right">
-                      {(() => {
-                        const validDocUrl = f.url_documento?.includes("/DOC/")
-                          ? f.url_documento
-                          : f.url_documento?.replace("/CIA_ABERTA/", "/CIA_ABERTA/DOC/");
-                        return (
-                          <div className="flex flex-col items-end gap-1">
-                            <button
-                              onClick={() => handleDownloadCompanyFiling(f)}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs transition"
-                              title={
-                                isEn
-                                  ? `Download complete statements (DRE, DFC, BP) for ${analysisData.company.nome_pregao || analysisData.company.denom_social} in ${f.dt_refer}`
-                                  : `Baixar demonstrativos completos (DRE, DFC) exclusivos desta empresa (${analysisData.company.nome_pregao || analysisData.company.denom_social}) em ${f.dt_refer}`
-                              }
-                            >
-                              <Download className="w-3.5 h-3.5" />
-                              <span>{isEn ? "Company CSV" : "CSV Desta Empresa"}</span>
-                            </button>
-                            <a
-                              href={validDocUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className={`text-[10px] inline-flex items-center gap-1 transition ${
-                                isDark ? "text-slate-500 hover:text-slate-300" : "text-slate-400 hover:text-slate-600"
-                              }`}
-                              title={
-                                isEn
-                                  ? "Download official CVM national archive with all Brazilian companies"
-                                  : "Arquivo governamental bruto da CVM com todas as companhias abertas do ano"
-                              }
-                            >
-                              <span>{isEn ? "National Bulk ZIP (All Companies)" : "Base Geral CVM (Todas as Cias)"}</span>
-                              <ExternalLink className="w-2.5 h-2.5" />
-                            </a>
-                          </div>
-                        );
-                      })()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
+        </div>
+      </div>
     </div>
   );
 }

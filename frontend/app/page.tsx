@@ -1386,7 +1386,24 @@ function DashboardContent() {
 
           {viewMode === "CVM" && (
             <div className="max-w-[1400px] mx-auto py-8 px-8 space-y-6">
-              <CVMWatchPanel onNavigate={(mode) => setViewMode(mode as any)} />
+              <CVMWatchPanel
+                onNavigate={(mode) => setViewMode(mode as any)}
+                onSendToIngestion={(companyInfo) => {
+                  if (companyInfo) {
+                    setActiveCompany(companyInfo);
+                  }
+                  refreshActiveCompany();
+                  fetchData();
+                  setPipelineProgress({
+                    status: "completed",
+                    percent: 100,
+                    message: language === "en"
+                      ? `Statements for ${companyInfo.name} loaded successfully from CVM!`
+                      : `Demonstrações de ${companyInfo.name} enviadas com sucesso para a Visão Geral & Ingestão!`
+                  });
+                  setViewMode("OVERVIEW");
+                }}
+              />
               <PageExplainerGuide pageKey="CVM" />
             </div>
           )}
