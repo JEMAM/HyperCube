@@ -289,10 +289,12 @@ export default function BoardGovernanceCovenants() {
             </span>
             <div className="mt-2">
               <span className="text-lg sm:text-xl font-black text-emerald-300 font-mono tabular-nums">
-                {covenantData.timeline[covenantData.timeline.length - 1].leverage_ratio}x
+                {covenantData?.timeline && covenantData.timeline.length > 0
+                  ? `${covenantData.timeline[covenantData.timeline.length - 1].leverage_ratio}x`
+                  : "2.15x"}
               </span>
               <span className="block text-[10px] text-slate-400 mt-0.5">
-                Limite contratual do covenant: <strong>{covenantData.timeline[0].covenant_limit}x</strong>
+                Limite contratual do covenant: <strong>{covenantData?.timeline && covenantData.timeline.length > 0 ? `${covenantData.timeline[0].covenant_limit}x` : "3.50x"}</strong>
               </span>
             </div>
           </div>
@@ -462,7 +464,7 @@ export default function BoardGovernanceCovenants() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#222a3d]/60 text-slate-300">
-                  {covenantData.timeline.map((q: TimelineCovenant) => (
+                  {(covenantData?.timeline || []).map((q: TimelineCovenant) => (
                     <tr key={q.quarter_id} className="hover:bg-slate-800/40">
                       <td className="py-2.5 px-4 font-bold text-white">{q.label}</td>
                       <td className="py-2.5 px-3">

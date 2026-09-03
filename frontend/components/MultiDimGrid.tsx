@@ -732,7 +732,7 @@ export default function MultiDimGrid({ onRefresh }: MultiDimGridProps) {
                       {isEn ? "Loading multidimensional model..." : "Carregando modelo multidimensional..."}
                     </td>
                   </tr>
-                ) : (!hasActiveData || !globalActiveCompany?.id || globalActiveCompany.id === "aguardando_upload" || (gridData?.rows || []).length === 0) ? (
+                ) : ((gridData?.rows || []).length === 0) ? (
                   <tr>
                     <td colSpan={10} className="py-14 text-center text-slate-400">
                       <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400 mb-3">

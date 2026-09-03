@@ -429,7 +429,58 @@ function buildGovernanceCovenants(comp: any) {
         current_value: 0.85,
         is_compliant: true,
         buffer_pct: 43.3,
-        status: "SAFE"
+      }
+    ],
+    timeline: [
+      {
+        quarter_id: "Q1_2025",
+        label: "Q1 2025",
+        period_type: "ACTUAL",
+        is_actual: true,
+        leverage_ratio: 2.35,
+        covenant_limit: 3.5,
+        is_compliant: true,
+        debt_headroom_brl: 2100000000.0
+      },
+      {
+        quarter_id: "Q2_2025",
+        label: "Q2 2025",
+        period_type: "ACTUAL",
+        is_actual: true,
+        leverage_ratio: 2.28,
+        covenant_limit: 3.5,
+        is_compliant: true,
+        debt_headroom_brl: 2250000000.0
+      },
+      {
+        quarter_id: "Q3_2025",
+        label: "Q3 2025",
+        period_type: "ACTUAL",
+        is_actual: true,
+        leverage_ratio: 2.20,
+        covenant_limit: 3.5,
+        is_compliant: true,
+        debt_headroom_brl: 2320000000.0
+      },
+      {
+        quarter_id: "Q4_2025",
+        label: "Q4 2025",
+        period_type: "ACTUAL",
+        is_actual: true,
+        leverage_ratio: 2.15,
+        covenant_limit: 3.5,
+        is_compliant: true,
+        debt_headroom_brl: 2400000000.0
+      },
+      {
+        quarter_id: "Q1_2026",
+        label: "Q1 2026",
+        period_type: "FORECAST",
+        is_actual: false,
+        leverage_ratio: 2.10,
+        covenant_limit: 3.5,
+        is_compliant: true,
+        debt_headroom_brl: 2550000000.0
       }
     ]
   };
