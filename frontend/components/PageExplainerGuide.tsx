@@ -606,7 +606,10 @@ export default function PageExplainerGuide({ pageKey }: PageExplainerGuideProps)
   const isPlanejamento = guide.category === "PLANEJAMENTO";
 
   return (
-    <div className="w-full mt-10 font-sans animate-in fade-in duration-300">
+    <div
+      data-explainer-guide="true"
+      className="explainer-guide-root no-print print:hidden w-full mt-10 font-sans animate-in fade-in duration-300"
+    >
       <div
         className={`no-print print:hidden rounded-3xl border transition-all duration-300 overflow-hidden shadow-xl ${
           isDark

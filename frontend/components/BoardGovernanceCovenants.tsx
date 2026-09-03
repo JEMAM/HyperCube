@@ -265,6 +265,12 @@ Chancelado digitalmente pelo Motor de Análise Autônoma HyperCube (${clientAiMo
     <div className="space-y-6 animate-fadeIn pb-16">
       {/* Print Stylesheet embedded */}
       <style jsx global>{`
+        body.in-governance-report .explainer-guide-root,
+        body.in-governance-report [data-explainer-guide],
+        body:has(.print-area) .explainer-guide-root,
+        body:has(.print-area) [data-explainer-guide] {
+          display: none !important;
+        }
         @media print {
           /* Hide EVERYTHING in body by default */
           body * {
