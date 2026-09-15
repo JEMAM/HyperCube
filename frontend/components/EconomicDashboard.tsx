@@ -330,8 +330,8 @@ export default function EconomicDashboard({ apiBaseUrl }: EconomicDashboardProps
       const statusUrl = getApiUrl("/api/economy/sync-status", apiBaseUrl);
 
       const [indRes, statusRes] = await Promise.all([
-        fetch(indUrl).catch(() => null),
-        fetch(statusUrl).catch(() => null),
+        fetch(indUrl, { cache: "no-store" }).catch(() => null),
+        fetch(statusUrl, { cache: "no-store" }).catch(() => null),
       ]);
 
       if (indRes && indRes.ok) {

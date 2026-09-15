@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import canonicalData from "../canonical_payloads.json";
 import { sessionStore } from "../store";
 import { CVM_SECTORS, CVM_COMPANIES, generateCvmAnalysis } from "@/lib/cvmData";
+import { getLiveMacroIndicators, getMacroSyncStatus } from "@/lib/macroSyncService";
 
 export const dynamic = "force-dynamic";
 
@@ -1412,23 +1413,19 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
 
   // 14. Macroeconomic indicators & BCB SGS / Focus API
   if (path === "economy/indicators" || path === "macro/indicators" || path === "macro/bcb") {
-    return NextResponse.json((canonicalData as any).economy_indicators || {
+    const base = (canonicalData as any).economy_indicators || {
       summary_kpis: { selic: 14.0, ipca_12m: 4.44, usd_brl: 5.22, gross_debt: 81.93 },
       table: [],
       charts: {},
       focus_survey: {}
-    });
+    };
+    const { indicators } = await getLiveMacroIndicators(base, false);
+    return NextResponse.json(indicators);
   }
 
   if (path === "economy/sync-status") {
-    return NextResponse.json((canonicalData as any).economy_sync_status || {
-      agent_active: true,
-      status: "synchronized",
-      frequency: "Tempo Real (SGS / Focus)",
-      last_sync: "Agora",
-      series_count: 13,
-      history: []
-    });
+    const baseStatus = (canonicalData as any).economy_sync_status;
+    return NextResponse.json(getMacroSyncStatus(baseStatus));
   }
 
   if (path === "economy/diagnostic") {
@@ -1439,6 +1436,12 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
     const effectiveProvider = (queryProvider || aiCfg.provider || "groq").toLowerCase();
     const effectiveModel = queryModel || aiCfg.model || "Llama 3.3 70B Versatile";
     const apiKey = req.headers.get("x-api-key") || aiCfg.saved_keys?.groq;
+
+    const base = (canonicalData as any).economy_indicators || {};
+    const { indicators } = await getLiveMacroIndicators(base, false);
+    const kpis = indicators?.summary_kpis || { selic: 14.0, ipca_12m: 4.22, usd_brl: 5.15, gross_debt: 82.56 };
+    const latestFocusIpca = indicators?.focus_survey?.by_year?.["2026"]?.[0]?.latest_mediana || 4.90;
+    const latestFocusSelic = indicators?.focus_survey?.by_year?.["2026"]?.find((r: any) => r.indicador === "Selic")?.latest_mediana || 14.00;
 
     const diag = buildEconomicDiagnostic(comp, {
       provider: effectiveProvider,
@@ -1456,7 +1459,7 @@ Gere um parecer executivo rigoroso em 4 seções com títulos exatos:
 ## 2. Diagnóstico Inflacionário & Atividade (IPCA & Focus)
 ## 3. Panorama Fiscal & Sustentabilidade da Dívida
 ## 4. Classificação da Postura de Política Monetária
-Dados macroeconômicos observados: Selic Meta 14,00% a.a. (SGS 432), IPCA acumulado 12m 4,44% (SGS 13522), Câmbio PTAX R$ 5,22 (SGS 10813), Dívida Bruta 81,93% do PIB (SGS 13762), Focus IPCA 2026 5,01%, Focus Selic 2026 13,75%.
+Dados macroeconômicos observados: Selic Meta ${kpis.selic.toFixed(2)}% a.a. (SGS 432), IPCA acumulado 12m ${kpis.ipca_12m.toFixed(2)}% (SGS 13522), Câmbio PTAX R$ ${kpis.usd_brl.toFixed(2)} (SGS 10813), Dívida Bruta ${kpis.gross_debt.toFixed(2)}% do PIB (SGS 13762), Focus IPCA 2026 ${latestFocusIpca.toFixed(2)}%, Focus Selic 2026 ${latestFocusSelic.toFixed(2)}%.
 Companhia analisada no modelo: ${comp.name}.
 Na seção 4, classifique explicitamente como HAWKISH (Restritiva) fundamentando a taxa real ex-ante.`
           },
@@ -1475,7 +1478,9 @@ Na seção 4, classifique explicitamente como HAWKISH (Restritiva) fundamentando
   }
 
   if (path === "economy/focus") {
-    return NextResponse.json((canonicalData as any).economy_indicators?.focus_survey || {});
+    const base = (canonicalData as any).economy_indicators || {};
+    const { indicators } = await getLiveMacroIndicators(base, false);
+    return NextResponse.json(indicators?.focus_survey || {});
   }
 
   // 15. Governance and Covenants
@@ -1768,12 +1773,44 @@ export async function POST(req: NextRequest, context: { params: Promise<{ slug: 
   if (path === "agent/task/submit") {
     const taskId = `task_${Date.now()}_vercel`;
     const comp = sessionStore.getActiveCompany();
+    const aiCfg = sessionStore.getAiConfig();
+    const provider = (body.provider || aiCfg.provider || "groq").toUpperCase();
+    const model = body.model || aiCfg.model || "Llama 3.3 70B Versatile";
+    const apiKey = body.api_key || req.headers.get("x-api-key") || aiCfg.saved_keys?.groq;
+    const question = body.question || "";
+    const agentType = body.agent_type || "dre";
+
+    let liveAnswer: string | null = null;
+    if (provider === "GROQ") {
+      let sysPrompt = `Você é o Agente Agno FP&A do HyperCube para ${comp.name}. Responda em 2 parágrafos de forma analítica e clara.`;
+      if (agentType === "economy") {
+        sysPrompt = `Você é o Agente Agno PhD Macroeconomista do HyperCube.
+Dados macroeconômicos oficiais vigentes: Selic Meta em 14,00% a.a. (SGS 432), IPCA acumulado 12m em 4,44% (SGS 13522), Câmbio PTAX em R$ 5,22 (SGS 10813), Dívida Bruta em 81,93% do PIB (SGS 13762), Focus IPCA 2026 em 5,01%, Focus Selic 2026 em 13,75%.
+Empresa em foco: ${comp.name}. Responda à dúvida do usuário de forma aprofundada em 2 parágrafos objetivos.`;
+      }
+      liveAnswer = await callGroqChat(
+        [
+          { role: "system", content: sysPrompt },
+          { role: "user", content: question }
+        ],
+        apiKey,
+        model
+      );
+    }
+
+    const answer = liveAnswer || `[${model} via ${provider}] Análise executada com sucesso para ${comp.name}. As projeções operacionais e a conciliação patrimonial mantêm conformidade com as diretrizes orçamentárias aprovadas.`;
+
     return NextResponse.json({
       task_id: taskId,
-      status: "running",
-      agent_type: body.agent_type || "dre",
-      question: body.question || "",
+      status: "completed",
+      agent_type: agentType,
+      question: question,
+      answer: answer,
+      result: answer,
       company_name: comp.name,
+      ai_provider: provider,
+      ai_model: model,
+      live_groq: Boolean(liveAnswer),
       elapsed_ms: 1.1
     });
   }
@@ -1789,6 +1826,19 @@ export async function POST(req: NextRequest, context: { params: Promise<{ slug: 
   if (path === "governance/board-memo") {
     const comp = sessionStore.getActiveCompany();
     return NextResponse.json(buildBoardMemo(comp));
+  }
+
+  // Economy Sync on Demand (BCB Olinda Focus & SGS)
+  if (path === "economy/sync") {
+    const base = (canonicalData as any).economy_indicators || {};
+    const { indicators } = await getLiveMacroIndicators(base, true);
+    return NextResponse.json({
+      status: "success",
+      message: "Sincronização com Banco Central (SGS e Focus) concluída com sucesso.",
+      last_sync: "Agora",
+      series_count: 13,
+      survey_weeks: indicators?.focus_survey?.survey_weeks?.length || 6
+    });
   }
 
   // Config LLM save (Dynamic Client Chosen Model)

@@ -132,15 +132,18 @@ def fetch_focus_market_expectations() -> Dict[str, Any]:
     url = (
         "https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoAnuais?"
         "$filter=baseCalculo eq 0 and (Indicador eq 'IPCA' or Indicador eq 'Selic' or Indicador eq 'Câmbio' or Indicador eq 'PIB Total' or Indicador eq 'IGP-M' or Indicador eq 'Resultado primário' or Indicador eq 'Dívida líquida do setor público')&"
-        "$top=5000&"
+        "$top=1200&"
         "$orderby=Data desc&"
         "$format=json"
     )
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json"
+    }
     
     raw_records = []
     try:
-        res = requests.get(url, headers=headers, verify=False, timeout=10)
+        res = requests.get(url, headers=headers, verify=False, timeout=12)
         if res.status_code == 200:
             raw_records = res.json().get("value", [])
     except Exception as e:
